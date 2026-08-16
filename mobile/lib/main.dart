@@ -437,6 +437,60 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     });
   }
 
+  void _editInfoDialog() {
+    final lastNameCtrl = TextEditingController(text: _info['last_name'] ?? '');
+    final firstNameCtrl = TextEditingController(text: _info['first_name'] ?? '');
+    final phoneCtrl = TextEditingController(text: _info['primary_phone'] ?? '');
+    final secPhoneCtrl = TextEditingController(text: _info['secondary_phone'] ?? '');
+    final addressCtrl = TextEditingController(text: _info['address'] ?? _info['adressepay'] ?? '');
+    final districtCtrl = TextEditingController(text: _info['district'] ?? '');
+    final neighborhoodCtrl = TextEditingController(text: _info['neighborhood'] ?? '');
+    final summaryCtrl = TextEditingController(text: _info['professional_summary'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Informations Générales'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *')),
+              TextField(controller: firstNameCtrl, decoration: const InputDecoration(labelText: 'Prénom *')),
+              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
+              TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
+              TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse / Adressepay')),
+              TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
+              TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
+              TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              await ApiService.saveProfileInfo({
+                'last_name': lastNameCtrl.text,
+                'first_name': firstNameCtrl.text,
+                'primary_phone': phoneCtrl.text,
+                'secondary_phone': secPhoneCtrl.text,
+                'address': addressCtrl.text,
+                'adressepay': addressCtrl.text,
+                'district': districtCtrl.text,
+                'neighborhood': neighborhoodCtrl.text,
+                'professional_summary': summaryCtrl.text,
+              });
+              Navigator.pop(ctx);
+              _loadAll();
+            },
+            child: const Text('Enregistrer'),
+          )
+        ],
+      ),
+    );
+  }
+
   void _addExpDialog() {
     final titleCtrl = TextEditingController();
     final companyCtrl = TextEditingController();
@@ -490,17 +544,24 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final titleCtrl = TextEditingController();
     final yearCtrl = TextEditingController(text: '2025');
     final instCtrl = TextEditingController();
+    final locCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Ajouter un certificat'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé certificat *')),
-            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
-            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé certificat *')),
+              TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+              TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
+              TextField(controller: locCtrl, decoration: const InputDecoration(labelText: 'Lieu')),
+              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
@@ -511,6 +572,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   'title': titleCtrl.text,
                   'year': int.tryParse(yearCtrl.text) ?? 2025,
                   'institution': instCtrl.text,
+                  'location': locCtrl.text,
+                  'description': descCtrl.text,
                 });
                 Navigator.pop(ctx);
                 _loadAll();
@@ -528,18 +591,25 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final yearCtrl = TextEditingController(text: '2024');
     final instCtrl = TextEditingController();
     final degreeCtrl = TextEditingController(text: 'Licence');
+    final fieldCtrl = TextEditingController();
+    final skillsCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Ajouter un diplôme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé du diplôme *')),
-            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
-            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
-            TextField(controller: degreeCtrl, decoration: const InputDecoration(labelText: 'Niveau d\'étude *')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé du diplôme *')),
+              TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+              TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
+              TextField(controller: degreeCtrl, decoration: const InputDecoration(labelText: 'Niveau d\'étude *')),
+              TextField(controller: fieldCtrl, decoration: const InputDecoration(labelText: 'Spécialité')),
+              TextField(controller: skillsCtrl, decoration: const InputDecoration(labelText: 'Compétences acquises')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
@@ -551,6 +621,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   'year': int.tryParse(yearCtrl.text) ?? 2024,
                   'institution': instCtrl.text,
                   'degree_level': degreeCtrl.text,
+                  'field_of_study': fieldCtrl.text,
+                  'skills_acquired': skillsCtrl.text,
                 });
                 Navigator.pop(ctx);
                 _loadAll();
@@ -566,18 +638,25 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
   void _addProjDialog() {
     final nameCtrl = TextEditingController();
     final industryCtrl = TextEditingController(text: 'Informatique');
+    final benCtrl = TextEditingController();
+    final linkCtrl = TextEditingController();
     final descCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Ajouter un projet'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nom du projet *')),
-            TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
-            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nom du projet *')),
+              TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
+              TextField(controller: benCtrl, decoration: const InputDecoration(labelText: 'Bénéficiaire')),
+              TextField(controller: linkCtrl, decoration: const InputDecoration(labelText: 'Lien d\'hébergement')),
+              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
@@ -587,6 +666,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                 await ApiService.addSectionItem('projects', {
                   'name': nameCtrl.text,
                   'industry': industryCtrl.text,
+                  'beneficiary': benCtrl.text,
+                  'link_url': linkCtrl.text,
                   'description': descCtrl.text,
                 });
                 Navigator.pop(ctx);
@@ -619,11 +700,17 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Profil Structuré', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Informations Générales', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+                      IconButton(onPressed: _editInfoDialog, icon: const Icon(Icons.edit, color: Color(0xFF185FA5))),
+                    ],
+                  ),
                   Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   Text('Adresse: ${_info['address'] ?? _info['adressepay'] ?? 'Avenue de l\'Indépendance'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('Arrondissement: ${_info['district'] ?? 'Poto-Poto'} | Quartier: ${_info['neighborhood'] ?? 'Centre'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),
