@@ -450,3 +450,164 @@ Pour permettre un test instantané sans blocage lors de l'évaluation :
   - **Nom d'utilisateur :** `admin` (ou `obieydany`)
   - **Mot de passe :** `admin1234`
   - **Rôle :** Superutilisateur / Administrateur PRO avec profil complet et abonnement actif.
+
+
+================================================================================
+# PROMPT POUR JULES IA — Refonte du module "Profil" (Mobile + Frontend)
+================================================================================
+
+## CONTEXTE
+
+Tu es Jules, un agent IA de développement. Tu dois intervenir sur le module **Profil** de l'application (mobile + frontend web). Actuellement, certaines sections du profil sont affichées/éditées en **markdown libre**. Ta mission est de **remplacer ce système par des champs structurés** (formulaires typés, avec leurs propres modèles de données), et d'**ajouter des boutons d'action** permettant à l'utilisateur d'ajouter/modifier/supprimer chaque élément (expérience, certification, diplôme, projet).
+
+Cette refonte concerne :
+1. Le **backend** (API — modèles de données, endpoints CRUD, gestion des fichiers PDF)
+2. Le **frontend web**
+3. L'**application mobile**
+
+---
+
+## OBJECTIF GÉNÉRAL
+
+Remplacer l'édition markdown du profil par des **sections structurées avec formulaires dédiés**, chacune avec :
+- Un **bouton d'action "Ajouter"** (ex: "Ajouter une expérience", "Ajouter un certificat", "Ajouter un diplôme", "Ajouter un projet")
+- Des **boutons d'action par item** : Modifier / Supprimer
+- Une **validation des champs** côté frontend ET backend
+- Un **rendu propre** en lecture (fiche de profil) et en édition (formulaire)
+
+---
+
+## STRUCTURE DÉTAILLÉE DES SECTIONS ET CHAMPS
+
+### 1. INFO (informations générales — section unique, pas de liste)
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Nom | texte | Oui |
+| Prénom | texte | Oui |
+| Genre | choix (Homme / Femme / Autre — à définir selon les besoins métier) | Oui |
+| Date de naissance | date | Oui |
+| Numéro principal | téléphone | Oui |
+| Numéro secondaire | téléphone | Non |
+| Résumé professionnel | texte long (zone de texte, pas de markdown) | Non |
+| Adresse (à corriger : "adressepay" → "Adresse") | texte | Non |
+| Arrondissement | texte / liste déroulante | Non |
+| Quartier | texte | Non |
+
+### 2. EXPÉRIENCE (liste, avec bouton "Ajouter une expérience")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Poste occupé | texte | Oui |
+| Structure | texte | Oui |
+| Secteur d'activité | texte / liste déroulante | Oui |
+| Lieu | texte | Non |
+| Date de début | date | Oui |
+| Date de fin | date | Conditionnel |
+| Jusqu'à présent | booléen (case à cocher) | — si cochée, désactive/masque "Date de fin" |
+| Compétences acquises | liste de tags / texte | Non |
+
+### 3. CERTIFICATIONS ET ATTESTATIONS (liste, avec bouton "Ajouter un certificat")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Libellé du certificat | texte | Oui |
+| Année | numérique | Oui |
+| Institution | texte | Oui |
+| Lieu | texte | Non |
+| Date de début | date | Non |
+| Date de fin | date | Non |
+| Description | texte long | Non |
+| Certificat en PDF | upload fichier PDF | **Optionnel** |
+
+### 4. DIPLÔMES (liste, avec bouton "Ajouter un diplôme")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Libellé du diplôme | texte | Oui |
+| Année | numérique | Oui |
+| Institution | texte | Oui |
+| Niveau d'étude | texte / liste déroulante (ex: Bac, Licence, Master, Doctorat...) | Oui |
+| Spécialité | texte | Non |
+| Lieu | texte | Non |
+| Date de début | date | Non |
+| Date de fin | date | Non |
+| Diplôme en PDF | upload fichier PDF | **Optionnel** |
+| Compétences acquises | liste de tags / texte | Non |
+
+### 5. PROJETS (liste, avec bouton "Ajouter un projet")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Nom du projet | texte | Oui |
+| Secteur d'activité | texte / liste déroulante | Oui |
+| Bénéficiaire | texte | Non |
+| Lien d'hébergement | URL | Non |
+| Description | texte long | Non |
+
+---
+
+## ⚠️ EXIGENCE CRITIQUE — GESTION DES FICHIERS PDF (Certificats & Diplômes)
+
+1. L'upload des fichiers PDF (certificat, diplôme) est **OPTIONNEL** : l'utilisateur doit pouvoir créer/enregistrer un certificat ou un diplôme **sans** joindre de PDF.
+2. Quand un PDF **est** fourni :
+   - Le **backend** doit se charger de l'envoi du fichier vers **Google Drive**, via l'**API Google Drive** (jamais de stockage du PDF en local ou en base uniquement).
+   - Une fois le fichier stocké, le backend doit **rendre le lien de partage PUBLIC** (permission de lecture pour "toute personne disposant du lien").
+   - Le lien public généré doit être **enregistré en base** (champ `pdf_url` ou équivalent) et associé à l'entrée correspondante (certificat ou diplôme).
+   - Le frontend ne fait **jamais** l'upload direct vers Google Drive : il envoie le fichier au backend (multipart/form-data), et c'est le backend qui orchestre l'envoi vers Drive et la mise à jour de la permission.
+3. **Ces liens PDF publics doivent figurer sur le CV généré** (export CV / PDF de profil) : chaque certificat et diplôme listé sur le CV doit afficher un lien cliquable vers le PDF correspondant sur Google Drive, s'il existe.
+4. Prévoir une gestion d'erreur robuste : si l'upload vers Drive échoue, l'enregistrement de la certification/diplôme ne doit pas échouer entièrement — informer l'utilisateur que les données ont été enregistrées mais que le PDF n'a pas pu être uploadé, avec possibilité de réessayer plus tard.
+
+---
+
+## BOUTONS D'ACTION À IMPLÉMENTER (mobile + frontend)
+
+Pour chaque section liste (Expérience, Certifications, Diplômes, Projets) :
+- Bouton **"+ Ajouter [une expérience / un certificat / un diplôme / un projet]"** en haut ou en bas de la section
+- Sur chaque item existant : icônes/boutons **Modifier** et **Supprimer**
+- Confirmation avant suppression (modale/dialogue)
+- Retour visuel de succès/échec après chaque action (toast, snackbar, etc.)
+
+Pour la section Info :
+- Bouton **"Modifier mes informations"**
+- Sauvegarde avec validation en temps réel des champs obligatoires
+
+---
+
+## TÂCHES ATTENDUES DE JULES IA
+
+1. **Backend** :
+   - Créer/adapter les modèles de données pour chaque section (Info, Expérience, Certification, Diplôme, Projet) avec les champs listés ci-dessus.
+   - Créer les endpoints CRUD (create, read, update, delete) pour chaque section liste.
+   - Implémenter l'intégration Google Drive API (upload + permission publique) pour les PDF de certificats et diplômes.
+   - Exposer les liens PDF publics dans les endpoints de récupération du profil et dans l'endpoint/génération du CV.
+   - Gérer la validation des champs obligatoires côté serveur.
+
+2. **Frontend web** :
+   - Remplacer l'éditeur markdown actuel par des formulaires structurés par section.
+   - Implémenter les boutons d'action (Ajouter / Modifier / Supprimer) avec appels API correspondants.
+   - Champ upload PDF optionnel avec indicateur de statut d'upload (en cours / réussi / échoué).
+   - Afficher les liens PDF (Google Drive) sur les fiches de certificats/diplômes et sur le CV généré.
+
+3. **Mobile** :
+   - Même logique que le frontend web, adaptée aux composants natifs/mobiles (formulaires, boutons d'action, sélection de fichier PDF depuis l'appareil, upload optionnel).
+   - Gérer les permissions d'accès aux fichiers sur mobile (sélection PDF).
+
+4. **Cohérence CV** :
+   - S'assurer que le module de génération du CV (PDF ou autre format) récupère et affiche les liens publics des certificats et diplômes.
+
+---
+
+## CONTRAINTES TECHNIQUES / QUALITÉ
+
+- Ne pas casser les données existantes en markdown : prévoir une migration ou une compatibilité ascendante si des profils existants utilisent déjà l'ancien format.
+- Respecter la même stack que le reste du projet (à préciser par le développeur si Jules IA n'a pas accès au repo).
+- Code backend en Django REST Framework si applicable (endpoints RESTful, sérializers dédiés par section).
+- Champs "obligatoire/optionnel" doivent être validés à la fois côté client (UX immédiate) et côté serveur (sécurité des données).
+- Prévoir des tests unitaires/API pour les endpoints CRUD et pour l'upload PDF vers Google Drive.
+
+---
+
+## LIVRABLES ATTENDUS
+
+- Modèles de données mis à jour (migrations incluses)
+- Sérializers / endpoints API documentés
+- Intégration Google Drive fonctionnelle (upload + lien public)
+- Composants frontend web pour chaque section (formulaires + affichage)
+- Composants mobile équivalents
+- Mise à jour du module de génération de CV pour inclure les liens PDF
