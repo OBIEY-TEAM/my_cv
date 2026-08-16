@@ -237,3 +237,83 @@ L'agent IA doit exécuter la procédure d'auto-correction suivante :
    - Contrôler le build sur Render via l'API.
    - Visiter `https://luka-mosala-web.onrender.com` et faire une capture d'écran visuelle.
    - Si une erreur d'hôte non autorisé ou écran blanc survient (ex: `preview.allowedHosts`), corriger immédiatement, committer, pusher et révisiter le site jusqu'à validation visuelle complète.
+
+
+================================================================================
+# PROMPT IA — CONCEPTION DES INTERFACES WEB & MOBILE (UI/UX)
+================================================================================
+
+Vous êtes l'Expert Principal UI/UX et Designer Front-End de la plateforme **Luka Mosala / PostulIA**.
+Votre mission est de concevoir et d'implémenter le système de design visuel et les interfaces utilisateur (React Web, Angular Admin, Flutter Mobile) en respectant strictement la charte graphique de la marque.
+
+---
+
+## 1. CHARTE GRAPHIQUE & PALETTE DE COULEURS
+
+La plateforme adopte une identité visuelle moderne, professionnelle, rassurante et axée sur la conversion et la clarté.
+
+### Palette de Couleurs Officielles (PostulIA / Luka Mosala) :
+- **Bleu Nuit Profond (`#0B1F3A`) :** Couleur primaire pour le Header, les cartes principales, la typographie des titres et l'identité institutionnelle.
+- **Bleu Royal Dynamique (`#185FA5`) :** Couleur secondaire pour les boutons d'action principale (CTA), les liens, les états actifs et le survol (hover).
+- **Vert Émeraude (`#0F6E56`) :** Couleur d'accentuation, badges de statut "Prêt", "Payé", "Succès", validation de formulaires et indicateurs de performance.
+- **Gris Neutre Chaud (`#444441`) :** Couleur du texte principal, sous-titres, bordures subtiles et éléments secondaires.
+- **Sable / Beige Clair (`#F1EFE8`) :** Couleur de fond globale, conteneurs secondaires, cartes de contenu légères pour un confort visuel optimal.
+- **Blanc Pur (`#FFFFFF`) :** Fond des cartes actives, modales et zones de saisie de texte.
+
+### Typographie & Grille :
+- **Police Principale :** Inter / Plus Jakarta Sans / Roboto (avec fallbacks système modernes sans-serif).
+- **Titres :** Font Weight 700 / 600, couleur `#0B1F3A`.
+- **Corps de texte :** Font Weight 400 / 500, couleur `#444441`.
+- **Bordures & Arrondis :** Border-radius de `12px` (cartes) et `8px` (boutons et champs de saisie). Ombrages doux (`box-shadow: 0 4px 20px rgba(11, 31, 58, 0.08)`).
+
+---
+
+## 2. ÉCRANS ET WIREFRAMES À DÉVELOPPER (WEB & MOBILE)
+
+### Écran 1 : Landing Page & Tarifs Abonnements (Airtel Money & MTN MoMo)
+- **Header Nav :** Logo PostulIA / Luka Mosala, Liens navigation (Accueil, Fonctionnalités, Tarifs), Bouton "Connexion / Espace Candidat".
+- **Hero Section :** Titre percutant *"Générez vos dossiers de candidature sur-mesure en 1 clic grâce à l'IA"*, illustration dynamique, CTA principal "Créer ma candidature".
+- **Grille de Tarifs Abonnements :**
+  - **Offre Découverte (Gratuit / Test) :** 1 candidature offerte.
+  - **Pass PRO 24h (1 000 XAF) :** Génération illimitée pendant 24h.
+  - **Abonnement Mensuel PRO (5 000 XAF) :** Génération illimitée, export ZIP, modèles CV premium.
+  - *Intégration directe des logos Airtel Money & MTN Mobile Money.*
+
+### Écran 2 : Dashboard Candidat & Suivi des Candidatures
+- **Sidebar Navigation :** Tableau de bord, Mes Candidatures, Mon Profil / CV Source, Mes Abonnements, Paramètres.
+- **Statistiques clés :** Nombre de CVs générés, candidatures envoyées, abonnement actif (jours restants).
+- **Liste des candidatures :** Tableau responsive / cartes mobiles récapitulant les offres postulées (ACPE, Blue Collar, etc.) avec accès aux PDFs (CV, Lettre) et au texte Email.
+
+### Écran 3 : Formulaire Intelligent de Génération IA
+- **Étape 1 :** Saisie du lien de l'offre d'emploi ou copier-coller du texte de l'annonce.
+- **Étape 2 :** Sélection ou mise à jour du profil candidat (Photo de profil recadrée, compétences clés, diplômes).
+- **Étape 3 :** Options IA (Ton de la lettre de motivation, mots-clés spécifiques à mettre en avant).
+- **Bouton d'action :** "Lancer la génération IA" avec loader animé et barre de progression.
+
+### Écran 4 : Visualiseur PDF & Export Multi-Formats (1 Page Stricte)
+- **Prévisualisation en direct :** Visualisation split-screen (Gauche: Paramètres & Texte Email / Droite: Aperçu PDF du CV et de la Lettre sur 1 page exacte).
+- **Actions rapides :** Boutons "Télécharger le CV PDF", "Télécharger la Lettre PDF", "Copier le texte de l'email", "Télécharger le Pack ZIP complet".
+
+### Écran 5 : Back-Office Admin (Angular / Dashboard Django)
+- **Gestion des utilisateurs & Abonnements :** Table récapitulative des transactions Airtel/MTN.
+- **Metrics de performance :** Nombre de générations IA par jour, taux de conversion, logs d'utilisation.
+- **Gestion des Modèles ReportLab / Prompt IA :** Éditeur de configurations pour ajuster les prompts et règles de mise en page.
+
+### Écran 6 : Application Mobile Flutter (Responsive Web & Mobile Native)
+- **Layout Adaptatif :** Bottom Navigation Bar (Accueil, Scanner/Nouveau, Historique, Profil).
+- **Capture d'Offre :** Possibilité de coller l'URL d'une offre ou de capturer une image d'annonce via la caméra.
+- **Export direct :** Partage direct des PDFs générés via WhatsApp, Email ou stockage du téléphone.
+
+---
+
+## 3. RÈGLES DE DÉVELOPPEMENT FRONT-END & COMPOSANTS UI
+
+1. **Composants Reutilisables :**
+   - `<Button variant="primary|secondary|emerald" />`
+   - `<Card header="" footer="" />`
+   - `<PdfViewer src="" page={1} />`
+   - `<StatusBadge status="completed|pending|failed" />`
+
+2. **Responsivité & Performance :**
+   - CSS Grid & Flexbox, Breakpoints Tailwind/Bootstrap pour Mobile (<768px), Tablette (768-1024px), Desktop (>1024px).
+   - Chargement asynchrone des PDFs et Skeleton Loaders pendant la génération IA.
