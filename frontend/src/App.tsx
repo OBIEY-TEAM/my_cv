@@ -3,8 +3,16 @@ import axios from 'axios';
 import {
   Briefcase, FileText, User, CreditCard, Upload, Download,
   Sparkles, CheckCircle, ShieldCheck, Phone, Mail, MapPin,
-  Eye, RefreshCw, Scissors, ChevronRight, Lock
+  Eye, RefreshCw, Scissors, ChevronRight, Lock, LogOut, AlertCircle
 } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  window.location.hostname.includes('onrender.com')
+    ? 'https://luka-mosala-backend.onrender.com'
+    : ''
+);
+
+axios.defaults.baseURL = API_BASE_URL;
 
 interface ProfileData {
   title: string;
@@ -40,8 +48,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'profile' | 'create' | 'plans'>('dashboard');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
-  const [username, setUsername] = useState('obieydany');
-  const [password, setPassword] = useState('Password123!');
+  // Default credentials as requested by user
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin1234');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData>({
     title: 'Consultant IT & Expert Fullstack',
@@ -60,6 +71,7 @@ export default function App() {
   const [selectedPlan, setSelectedPlan] = useState<number>(2);
   const [paymentMethod, setPaymentMethod] = useState<'AIRTEL_MONEY' | 'MTN_MOMO' | 'PAYDUNYA'>('AIRTEL_MONEY');
   const [phoneNumber, setPhoneNumber] = useState('+242066130118');
+  const [paymentSuccessMsg, setPaymentSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -79,31 +91,49 @@ export default function App() {
       setSubscription(subRes.data);
       setPackages(pkgsRes.data);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching user data:", e);
     }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
     try {
       const res = await axios.post('/api/auth/login/', { username, password });
-      setToken(res.data.access);
-      localStorage.setItem('token', res.data.access);
-    } catch (e) {
+      const accessToken = res.data.access;
+      setToken(accessToken);
+      localStorage.setItem('token', accessToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      await fetchData();
+    } catch (e: any) {
+      // If login failed, attempt to register automatically for seamless UX
       try {
         const regRes = await axios.post('/api/auth/register/', {
           username,
           password,
-          email: 'obieydany@gmail.com',
-          first_name: 'Christ Dany',
-          last_name: 'Obiey'
+          email: `${username}@lukamosala.cg`,
+          first_name: username === 'admin' ? 'Admin' : 'Utilisateur',
+          last_name: 'Luka Mosala'
         });
-        setToken(regRes.data.access);
-        localStorage.setItem('token', regRes.data.access);
-      } catch (err) {
-        alert("Erreur de connexion");
+        const accessToken = regRes.data.access;
+        setToken(accessToken);
+        localStorage.setItem('token', accessToken);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        await fetchData();
+      } catch (err: any) {
+        const errorMsg = e?.response?.data?.detail || e?.response?.data?.error || "Identifiants incorrects ou serveur indisponible.";
+        setAuthError(errorMsg);
       }
+    } finally {
+      setAuthLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   const handleGenerateApplication = async () => {
@@ -118,168 +148,218 @@ export default function App() {
         source_url: sourceUrl,
         raw_text: jobText
       });
-      alert("Dossier de candidature généré avec succès (CV et Lettre 1-Page stricts)!");
-      setIsGenerating(false);
-      fetchData();
+      setJobText('');
+      setSourceUrl('');
+      await fetchData();
       setActiveTab('dashboard');
-    } catch (err: any) {
+      alert("Candidature sur mesure générée avec succès !");
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Erreur lors de la génération de la candidature. Vérifiez vos crédits.");
+    } finally {
       setIsGenerating(false);
-      if (err.response?.status === 402) {
-        alert("Crédits insuffisants. Veuillez souscrire à une formule d'abonnement.");
-        setActiveTab('plans');
-      } else {
-        alert("Erreur lors de la génération.");
-      }
     }
   };
 
   const handlePayment = async () => {
+    setPaymentSuccessMsg(null);
     try {
       const res = await axios.post('/api/subscriptions/pay/', {
         plan_id: selectedPlan,
         payment_method: paymentMethod,
         phone_number: phoneNumber
       });
-      alert(`Paiement réussi ! ${res.data.credits_remaining} crédits disponibles.`);
-      fetchData();
-      setActiveTab('create');
-    } catch (e) {
-      alert("Erreur de paiement.");
+      setPaymentSuccessMsg(`Paiement réussi via ${paymentMethod} ! Vos crédits ont été rechargés.`);
+      await fetchData();
+    } catch (e: any) {
+      alert("Échec de la transaction Fintech Mobile Money.");
     }
   };
 
   if (!token) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)', maxWidth: '420px', width: '100%', border: '1px solid #cbd5e1' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <Sparkles style={{ width: '32px', height: '32px', color: '#185FA5' }} />
+      <div style={{ minHeight: '100vh', backgroundColor: '#0A192F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'sans-serif' }}>
+        <div style={{ width: '100%', maxWidth: '440px', backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', backgroundColor: '#185FA5', borderRadius: '14px', marginBottom: '12px' }}>
+              <Briefcase style={{ width: '30px', height: '30px', color: '#ffffff' }} />
+            </div>
             <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Luka Mosala SaaS</h1>
+            <p style={{ fontSize: '13px', color: '#444441', fontWeight: '600', marginTop: '6px' }}>
+              Générateur automatique de dossiers de candidature sur mesure (CV 1P & LM 1P).
+            </p>
           </div>
-          <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginBottom: '24px' }}>Connectez-vous pour générer vos candidatures sur mesure en 1-clic.</p>
+
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {authError && (
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>
+                <AlertCircle style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                <span>{authError}</span>
+              </div>
+            )}
+
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', marginBottom: '6px' }}>Nom d'utilisateur</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>
+                Nom d'utilisateur
+              </label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '15px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }}
+                required
               />
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', marginBottom: '6px' }}>Mot de passe</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>
+                Mot de passe
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '15px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }}
+                required
               />
             </div>
+
             <button
               type="submit"
-              style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '16px', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(24, 95, 165, 0.4)', marginTop: '8px' }}
+              disabled={authLoading}
+              style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '15px', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
-              Se connecter / S'inscrire
+              {authLoading ? 'Connexion en cours...' : 'Se connecter / S\'inscrire'}
             </button>
           </form>
+
+          <div style={{ marginTop: '20px', padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '10px', fontSize: '12px', color: '#334155', fontWeight: '600', textAlign: 'center' }}>
+            💡 Compte de test par défaut :<br />
+            <strong>Identifiant:</strong> admin &nbsp;|&nbsp; <strong>Mot de passe:</strong> admin1234
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F1EFE8', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ backgroundColor: '#0B1F3A', color: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sparkles style={{ width: '28px', height: '28px', color: '#38bdf8' }} />
-            <span style={{ fontWeight: '900', fontSize: '20px', letterSpacing: '-0.5px', color: '#ffffff' }}>Luka Mosala <span style={{ color: '#38bdf8' }}>SaaS</span></span>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0B1F3A', fontFamily: 'sans-serif' }}>
+      {/* Top Navbar */}
+      <header style={{ backgroundColor: '#0B1F3A', color: '#ffffff', borderBottom: '1px solid #1e293b' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ backgroundColor: '#185FA5', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Briefcase style={{ width: '20px', height: '20px', color: '#ffffff' }} />
+            </div>
+            <div>
+              <span style={{ fontWeight: '900', fontSize: '18px', color: '#ffffff', letterSpacing: '-0.5px' }}>Luka Mosala</span>
+              <span style={{ fontSize: '10px', fontWeight: '800', backgroundColor: '#185FA5', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', textTransform: 'uppercase' }}>SaaS Pro</span>
+            </div>
           </div>
 
-          <nav style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '6px 14px', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+              <Sparkles style={{ width: '16px', height: '16px', color: '#f59e0b' }} />
+              <span style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff' }}>{subscription.credits_remaining} Crédit(s)</span>
+            </div>
             <button
-              onClick={() => setActiveTab('dashboard')}
-              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'dashboard' ? '#185FA5' : 'transparent', color: '#ffffff' }}
+              onClick={handleLogout}
+              style={{ backgroundColor: 'transparent', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              Tableau de bord
+              <LogOut style={{ width: '14px', height: '14px' }} />
+              <span>Déconnexion</span>
             </button>
-            <button
-              onClick={() => setActiveTab('create')}
-              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'create' ? '#185FA5' : 'transparent', color: '#ffffff' }}
-            >
-              Nouvelle Candidature
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'profile' ? '#185FA5' : 'transparent', color: '#ffffff' }}
-            >
-              Mon Profil
-            </button>
-            <button
-              onClick={() => setActiveTab('plans')}
-              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'plans' ? '#185FA5' : 'transparent', color: '#ffffff' }}
-            >
-              Abonnements ({subscription.credits_remaining})
-            </button>
-          </nav>
+          </div>
         </div>
       </header>
 
-      <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '32px 16px', boxSizing: 'border-box' }}>
+      {/* Main Navigation Tabs */}
+      <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', display: 'flex', gap: '24px' }}>
+          {[
+            { id: 'dashboard', label: 'Mes Candidatures', icon: Briefcase },
+            { id: 'create', label: 'Générer un Dossier', icon: Sparkles },
+            { id: 'profile', label: 'Profil & README', icon: User },
+            { id: 'plans', label: 'Abonnements & Crédits', icon: CreditCard },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '16px 0',
+                  border: 'none',
+                  borderBottom: isActive ? '3px solid #185FA5' : '3px solid transparent',
+                  backgroundColor: 'transparent',
+                  color: isActive ? '#185FA5' : '#444441',
+                  fontWeight: isActive ? '900' : '700',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <Icon style={{ width: '18px', height: '18px', color: isActive ? '#185FA5' : '#444441' }} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content Container */}
+      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
         {activeTab === 'dashboard' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Bienvenue, Christ Dany OBIEY 👋</h2>
-                <p style={{ color: '#444441', fontWeight: '600', marginTop: '6px', fontSize: '15px' }}>Générez des dossiers de candidature sur mesure (CV 1-Page & LM 1-Page) en quelques secondes.</p>
+                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Tableau de Bord des Candidatures</h2>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '4px' }}>Gérez vos dossiers de candidature sur mesure prêts à être envoyés.</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#e0f2fe', border: '2px solid #bae6fd', padding: '12px 20px', borderRadius: '12px' }}>
-                <ShieldCheck style={{ width: '28px', height: '28px', color: '#0284c7' }} />
-                <div>
-                  <p style={{ fontSize: '11px', color: '#0369a1', fontWeight: '800', textTransform: 'uppercase', margin: 0 }}>Solde Actuel</p>
-                  <p style={{ fontSize: '18px', fontWeight: '900', color: '#0c4a6e', margin: 0 }}>{subscription.credits_remaining} Crédit(s)</p>
-                </div>
-              </div>
+              <button
+                onClick={() => setActiveTab('create')}
+                style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '14px', padding: '12px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Sparkles style={{ width: '18px', height: '18px' }} />
+                <span>Nouvelle Candidature</span>
+              </button>
             </div>
 
-            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px', marginBottom: '8px' }}>Historique des candidatures générées</h3>
-
             {packages.length === 0 ? (
-              <div style={{ backgroundColor: '#ffffff', padding: '48px', textAlign: 'center', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
-                <Briefcase style={{ width: '48px', height: '48px', color: '#94a3b8', margin: '0 auto 12px' }} />
-                <p style={{ color: '#444441', fontWeight: '700', fontSize: '16px' }}>Aucune candidature générée pour le moment.</p>
-                <button
-                  onClick={() => setActiveTab('create')}
-                  style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#185FA5', color: '#ffffff', padding: '12px 24px', borderRadius: '10px', fontWeight: '800', border: 'none', cursor: 'pointer' }}
-                >
-                  <Sparkles style={{ width: '18px', height: '18px' }} />
-                  <span>Créer ma première candidature</span>
-                </button>
+              <div style={{ backgroundColor: '#ffffff', padding: '48px', borderRadius: '16px', border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                <FileText style={{ width: '48px', height: '48px', color: '#94a3b8', margin: '0 auto 16px' }} />
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A' }}>Aucune candidature générée pour le moment</h3>
+                <p style={{ color: '#444441', fontSize: '14px', marginTop: '8px' }}>Importez une offre d'emploi pour créer votre premier dossier sur mesure.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
-                {packages.map(pkg => (
-                  <div key={pkg.id} style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <span style={{ fontSize: '11px', fontWeight: '800', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '12px', textTransform: 'uppercase' }}>
-                        {pkg.job_offer.site_category}
-                      </span>
-                      <h4 style={{ fontWeight: '800', color: '#0B1F3A', fontSize: '18px', marginTop: '8px', marginBottom: '4px' }}>{pkg.job_offer.title}</h4>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', margin: 0 }}>{pkg.job_offer.company}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
+                {packages.map((pkg) => (
+                  <div key={pkg.id} style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                          {pkg.job_offer.site_category || 'ACPE'}
+                        </span>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A', marginTop: '8px', margin: '8px 0 2px' }}>{pkg.job_offer.title}</h3>
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#444441', margin: 0 }}>{pkg.job_offer.company || 'Organisme Recruteur'}</p>
+                      </div>
                     </div>
-                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" style={{ fontSize: '12px', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <FileText style={{ width: '14px', height: '14px', color: '#38bdf8' }} />
-                        <span>CV (1 Page)</span>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
+                      <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <Download style={{ width: '14px', height: '14px' }} />
+                          <span>CV (1 Page)</span>
+                        </button>
                       </a>
-                      <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" style={{ fontSize: '12px', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <FileText style={{ width: '14px', height: '14px', color: '#38bdf8' }} />
-                        <span>LM (1 Page)</span>
-                      </a>
-                      <a href={pkg.zip_package} download style={{ fontSize: '12px', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
-                        <Download style={{ width: '14px', height: '14px' }} />
-                        <span>ZIP</span>
+                      <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <Download style={{ width: '14px', height: '14px' }} />
+                          <span>LM (1 Page)</span>
+                        </button>
                       </a>
                     </div>
                   </div>
@@ -290,29 +370,29 @@ export default function App() {
         )}
 
         {activeTab === 'create' && (
-          <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Générer un dossier de candidature sur mesure</h2>
-              <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '6px' }}>Collez l'URL de l'offre d'emploi ou son texte brut. L'IA adaptera automatiquement votre profil README.</p>
-            </div>
+          <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0B1F3A', margin: '0 0 8px' }}>Générer un Dossier Sur Mesure</h2>
+            <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginBottom: '24px' }}>Entrez le texte brut ou l'URL de l'offre d'emploi. L'agent IA créera instantanément un CV (1P) et une Lettre de Motivation (1P) ciblés.</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Lien de l'offre d'emploi (URL)</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Option A : Lien URL de l'offre</label>
                 <input
                   type="url"
-                  placeholder="https://www.acpe.cg/details-offre-emplois/4200"
+                  placeholder="https://acpe.cg/emplois/developpeur-fullstack"
                   value={sourceUrl}
                   onChange={e => setSourceUrl(e.target.value)}
                   style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
                 />
               </div>
 
+              <div style={{ textAlign: 'center', fontWeight: '800', fontSize: '12px', color: '#94a3b8' }}>OU</div>
+
               <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Texte brut de l'offre d'emploi</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Option B : Texte brut de l'offre</label>
                 <textarea
                   rows={6}
-                  placeholder="Collez ici l'intitulé du poste, le nom de l'entreprise, les missions et compétences requises..."
+                  placeholder="Collez ici l'intitulé du poste, la description et les exigences de l'offre d'emploi..."
                   value={jobText}
                   onChange={e => setJobText(e.target.value)}
                   style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
@@ -326,12 +406,12 @@ export default function App() {
               >
                 {isGenerating ? (
                   <>
-                    <RefreshCw style={{ width: '20px', height: '20px' }} />
+                    <RefreshCw style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
                     <span>Génération de votre dossier en cours...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
+                    <Sparkles style={{ width: '20px', height: '20px' }} />
                     <span>Générer CV (1 Page), LM (1 Page) & Email TXT</span>
                   </>
                 )}
@@ -386,6 +466,12 @@ export default function App() {
               <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement & Crédits</h2>
               <p style={{ color: '#444441', fontWeight: '600', marginTop: '8px' }}>Choisissez votre formule et payez instantanément via Mobile Money (Airtel, MTN, PayDunya).</p>
             </div>
+
+            {paymentSuccessMsg && (
+              <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #6ee7b7', padding: '16px', borderRadius: '12px', color: '#065f46', fontWeight: '800', fontSize: '14px', textAlign: 'center' }}>
+                {paymentSuccessMsg}
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
               <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 1 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

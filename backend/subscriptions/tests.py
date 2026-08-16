@@ -8,11 +8,13 @@ class SubscriptionsTest(TestCase):
         self.client = APIClient()
         self.user = User.objects.create_user(username='subuser', password='Password123!')
         self.client.force_authenticate(user=self.user)
-        self.plan = SubscriptionPlan.objects.create(
+        self.plan, _ = SubscriptionPlan.objects.get_or_create(
             code='PACK_5',
-            name='Formule Pack 5 Candidatures',
-            price_fcfa=2000,
-            credits_included=5
+            defaults={
+                'name': 'Formule Pack 5 Candidatures',
+                'price_fcfa': 2000,
+                'credits_included': 5
+            }
         )
 
     def test_initiate_payment(self):
