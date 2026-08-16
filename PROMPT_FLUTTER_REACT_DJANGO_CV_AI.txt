@@ -71,7 +71,7 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
 
 ## 3. CONFIGURATION RENDER BLUEPRINT (`render.yaml`)
 
-Demande à l'IA de générer le fichier `render.yaml` à la racine du projet pour permettre le déploiement gratuit et automatisé de l'ensemble des 4 services sur Render :
+Générer le fichier `render.yaml` à la racine du projet pour permettre le déploiement gratuit et automatisé de l'ensemble des 4 services sur Render :
 
 ```yaml
 services:
@@ -91,7 +91,7 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: luka_mosala.settings
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://client-luka-mosala.onrender.com,https://admin-luka-mosala.onrender.com,https://mobile-luka-mosala.onrender.com"
+        value: "https://client-luka-mosala.onrender.com,https://admin-luka-mosala.onrender.com,https://mobile-luka-mosala.onrender.com,https://luka-mosala-web.onrender.com"
 
   # 2. Web Client Service (React.js / Vite)
   - type: web
@@ -132,7 +132,50 @@ services:
 
 ---
 
-## 4. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
+## 4. INSTRUCTION DECONTRÔLE EN TEMPS RÉEL SUR RENDER & RÉSOLUTIONS DES ERREURS DE DÉPLOIEMENT
+
+### A. Accès API Render & Diagnostic Visuel
+1. **Accès API Render :** L'agent IA utilise son intégration de clé API Render (tools MCP Render) pour contrôler les services en direct, consulter les logs de build/déploiement et suivre les statuts.
+2. **Branche Git rattachée au déploiement en temps réel :**
+   - Utiliser la branche active rattachée aux auto-deploys Render (ex: `jules-8374694265899943435-377d46a8`).
+   - Après chaque modification ou correction de code, effectuer un push sur cette branche pour déclencher immédiatement un nouveau build sur Render.
+
+3. **Vérification du Rendu Visuel sur l'URL de Déploiement :**
+   - Accéder et visiter le site en ligne : `https://luka-mosala-web.onrender.com` (ou l'URL cliente correspondante).
+   - Faire une capture d'écran du résultat visuel (avec les outils de navigation/capture headless de l'agent IA) pour vérifier l'état d'affichage réel.
+
+### B. Gestion des Erreurs Courantes & Auto-Correction
+En cas de page blanche, d'erreur serveur, ou d'erreur spécifique du type :
+> `Blocked request. This host ("luka-mosala-web.onrender.com") is not allowed. To allow this host, add "luka-mosala-web.onrender.com" to preview.allowedHosts in vite.config.js.`
+
+L'agent IA doit exécuter la procédure d'auto-correction suivante :
+1. **Ouvrir et corriger la configuration Vite (`site_client_react/vite.config.js` ou `vite.config.ts`) :**
+   ```javascript
+   export default defineConfig({
+     preview: {
+       allowedHosts: ['luka-mosala-web.onrender.com', 'client-luka-mosala.onrender.com', '.onrender.com', 'all']
+     },
+     server: {
+       allowedHosts: ['luka-mosala-web.onrender.com', 'client-luka-mosala.onrender.com', '.onrender.com', 'all']
+     }
+   })
+   ```
+2. **Corriger la configuration CORS / ALLOWED_HOSTS du backend Django (`settings.py`) :**
+   ```python
+   ALLOWED_HOSTS = ['backend-luka-mosala.onrender.com', 'luka-mosala-web.onrender.com', '.onrender.com', 'localhost']
+   CORS_ALLOWED_ORIGINS = [
+       "https://client-luka-mosala.onrender.com",
+       "https://luka-mosala-web.onrender.com",
+       "https://admin-luka-mosala.onrender.com",
+       "https://mobile-luka-mosala.onrender.com"
+   ]
+   ```
+3. **Commit et Push immédiat** sur la branche de déploiement (`jules-8374694265899943435-377d46a8`).
+4. **Revisiter le site** `https://luka-mosala-web.onrender.com` dès que le déploiement est vert sur Render, prendre une nouvelle capture d'écran et valider le bon fonctionnement jusqu'à l'obtention d'un résultat visuel 100% fonctionnel et conforme.
+
+---
+
+## 5. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
 
 ### 1. Gestion de Compte & Authentification Utilisateur
 - **Inscription & Connexion :** Email/Mot de passe, OAuth2 (Google, GitHub).
@@ -171,7 +214,7 @@ services:
 
 ---
 
-## 5. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
+## 6. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
 
 1. **Créer le Fichier `render.yaml` :**
    - Générer à la racine du projet la configuration Render Blueprint contenant les 4 services avec le nom de projet **luka-mosala**.
@@ -189,7 +232,8 @@ services:
    - Implémenter les flux de paiement Airtel Money & MTN MoMo.
    - Ajouter le visualiseur PDF et le bouton d'export ZIP des candidatures.
 
-5. **Tests & Vérifications :**
-   - Valider que chaque CV et Lettre de Motivation générés font **exactement 1 page**.
-   - Vérifier la conformité des données générées avec les informations du profil utilisateur.
-   - Tester le flux d'achat par Mobile Money et la livraison immédiate des fichiers.
+5. **Déploiement Render, Capture d'Écran Visuelle & Auto-Correction Continu :**
+   - Pousser le code sur la branche de déploiement `jules-8374694265899943435-377d46a8`.
+   - Contrôler le build sur Render via l'API.
+   - Visiter `https://luka-mosala-web.onrender.com` et faire une capture d'écran visuelle.
+   - Si une erreur d'hôte non autorisé ou écran blanc survient (ex: `preview.allowedHosts`), corriger immédiatement, committer, pusher et révisiter le site jusqu'à validation visuelle complète.
