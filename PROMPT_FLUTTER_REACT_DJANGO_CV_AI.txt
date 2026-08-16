@@ -1,0 +1,124 @@
+# PROMPT SPÉCIFICATION ARCHITECTURALE & DÉVELOPPEMENT D'APPLICATION
+# NOM DU PROJET : "AI JobApply SaaS" - Générateur Automatisé de Candidatures Sur Mesure
+# DESTINATAIRE IA : Jules AI / Agent IA Autonome de Développement
+
+---
+
+## 1. VISION DU PROJET & OBJECTIF GÉNÉRAL
+Construire une plateforme SaaS complète (Mobile Flutter + Web React + Backend Django REST Framework) connectée aux API d'Intelligence Artificielle (Jules / OpenAI / Claude) et aux passerelles de paiement Mobile Money (Airtel Money, MTN Mobile Money, PayDunya).
+
+L'application permet à tout utilisateur d'importer une offre d'emploi (via un lien URL, un fichier PDF ou un texte brut), une photo de profil et son profil/CV de référence (style README/markdown), puis de générer instantanément un dossier de candidature complet et sur mesure :
+1. **CV Professionnel sur mesure (PDF - Strictement 1 page)** avec photo recadrée professionnellement.
+2. **Lettre de Motivation personnalisée (PDF - Strictement 1 page)** structurée et rédigée selon l'offre.
+3. **Email de candidature rédigé (.txt)** prêt à copier-coller.
+4. **PDF de l'offre d'emploi originale** archivée.
+5. **Arborescence de dossiers organisée** par site/organisme et intitulé de poste.
+
+---
+
+## 2. ARCHITECTURE TECHNIQUE GLOBALE DU SYSTÈME
+
+```
+ [ APPLICATION MOBILE FLUTTER ]     [ APPLICATION WEB REACT / NEXT.JS ]
+     (iOS / Android Cross-Platform)             (Desktop / Tablet Responsive)
+                    │                                    │
+                    └───────────────┬────────────────────┘
+                                    │ (APIs REST / JSON / JWT)
+                                    ▼
+                    [ BACKEND DJANGO REST FRAMEWORK ]
+                    (Authentification, Métier, ORM, Celery)
+                      │             │               │
+      ┌───────────────┘             │               └───────────────┐
+      ▼                             ▼                               ▼
+[ BASE POSTGRESQL / REDIS ]   [ AGENT IA / JULES API ]   [ PAYMENTS FINTECH ]
+ (Données Users, Subscriptions) (Génération CV/LM/Email)   (Airtel Money, MTN MoMo)
+```
+
+### A. Backend : Django REST Framework (DRF) + Python
+- **API RESTful securisée :** Authentification JWT (SimpleJWT), CORS, throttled endpoints.
+- **ORM & Base de données :** PostgreSQL (Production) / SQLite (Dev), Redis pour le caching.
+- **Tâches Asynchrones & queues :** Celery / Redis pour le scraping des offres web et la génération de PDF lourds sans bloquer l'API.
+- **Intégration GitHub / Jules AI API :**
+  * Service de synchronisation avec GitHub via Octokit / Git Python API.
+  * Webhooks & appels API vers l'agent IA (Jules API / LLM) pour analyser l'offre et générer le contenu du CV, de la Lettre de Motivation et de l'Email.
+- **Génération de PDF :** Moteur Python ReportLab / WeasyPrint pour générer des PDFs au design moderne respectant strictement la limite d'1 page.
+- **Paiements Mobile Money :** Module d'intégration Webhook / REST avec les API Fintech (Airtel Money Congo, MTN Mobile Money Congo, PayDunya, SankMoney).
+
+### B. Application Mobile : Flutter (Dart)
+- **Multiplateforme :** iOS et Android avec Material Design 3 / Cupertinoui.
+- **Gestion d'État :** BLoC / Provider / Riverpod.
+- **Fonctionnalités Clés :**
+  * Appareil photo intégré (Camera Plugin / Image Picker) pour capturer la photo de profil en direct ou choisir depuis la galerie.
+  * Module de recadrage intelligent de photo de profil (Crop 1:1 buste/visage avec espace au-dessus de la tête).
+  * Upload de fichiers (PDF d'offres d'emploi, Markdown README de profil).
+  * Lecteur PDF natif pour prévisualiser le CV et la Lettre de Motivation générés.
+  * Téléchargement & Partage direct (Share Plus, File Saver).
+
+### C. Application Web : React.js / TypeScript (ou Next.js)
+- **UI/UX Moderne :** Tailwind CSS, Shadcn/UI, Lucide Icons, Framer Motion.
+- **Dashboard Réactif :**
+  * Glisser-déposer (Drag & Drop) pour les fichiers d'offres et photos.
+  * Éditeur Markdown / WYSIWYG pour éditer son profil README et ses compétences.
+  * Prévisualisation en direct (Live PDF Preview) du CV et de la Lettre de Motivation.
+  * Historique des candidatures et statut des paiements.
+
+---
+
+## 3. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
+
+### 1. Gestion de Compte & Authentification Utilisateur
+- **Inscription & Connexion :** Email/Mot de passe, OAuth2 (Google, GitHub).
+- **Gestion du Profil :** Nom, Prénom, Titre principal, Numéro de téléphone (+242...), Email, Villes (Pointe-Noire, Brazzaville...), Liens sociaux (LinkedIn, GitHub).
+- **Gestion du Profil de Référence (README) :** Saisie des compétences, formations, expériences et projets sous forme structurée README/Markdown.
+- **Gestion de la Photo de Profil :** Prise de photo intégrée (caméra) ou upload. Module de recadrage automatique professionnel (visage centré, espace au-dessus de la tête conservé).
+
+### 2. Formules d'Abonnement & Paiement Fintech
+- **Plans / Formules d'abonnement :**
+  * *Formule Découverte (Gratuit) :* 1 candidature offerte.
+  * *Formule Pack 5 Candidatures :* 2 000 FCFA.
+  * *Formule Illimitée Mensuelle :* 5 000 FCFA / mois.
+- **Modes de Paiement Intégrés :**
+  * **Airtel Money** (Initiation USSD Push + vérification automatique du statut).
+  * **MTN Mobile Money (MoMo)** (API MoMo Pay Push USSD).
+  * **PayDunya / Card Payment**.
+- **Historique & Facturation :**
+  * Reçus de paiement téléchargeables en PDF.
+  * Suivi du solde de crédits de candidatures et statut de l'abonnement.
+
+### 3. Module d'Analyse d'Offre & Génération IA (Jules AI Engine)
+- **Sources d'Offre Acceptées :**
+  1. Lien URL (Scraping automatique de sites comme ACPE, BlueCollarCongo, Emploi Congo, etc.).
+  2. Document PDF d'offre téléversé.
+  3. Copier-coller de texte brut d'offre.
+- **Moteur de Génération IA :**
+  * Analyse sémantique des exigences de l'offre (compétences clés, hard skills, soft skills, missions).
+  * Reformulation et sur-mesure dynamique du profil utilisateur (issu du README).
+- **Livrables Générés Automatiquement :**
+  * `OBIEY-[ABRÉVIATION-POSTE]-CV.pdf` : CV moderne 2 colonnes avec photo, **exactement 1 page**.
+  * `OBIEY-[ABRÉVIATION-POSTE]-LM.pdf` : Lettre de motivation ciblée, **exactement 1 page**.
+  * `OBIEY-[ABRÉVIATION-POSTE]-EMAIL.txt` : Email prêt à l'envoi avec objet et corps structuré.
+  * `OBIEY-[ABRÉVIATION-POSTE]-OFFRE.pdf` : Archivage PDF de l'offre nettoyée.
+- **Arborescence Répertoire Téléchargeable :**
+  * Dossier ZIP téléchargeable contenant l'arborescence complète organisée (ex: `/acpe/Développeur Full Stack Mobile/...`).
+
+---
+
+## 4. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
+
+1. **Initialiser le Backend Django REST Framework :**
+   - Créer les applications Django : `users`, `profile_manager`, `jobs`, `subscriptions`, `ai_engine`, `pdf_generator`.
+   - Configurer les modèles de données (User, Profile, JobOffer, ApplicationPackage, Subscription, Transaction).
+
+2. **Mettre en place l'intégration Agent IA & Engine PDF :**
+   - Implémenter le service Python ReportLab pour générer des PDFs ultra-pros au format 1 page stricte.
+   - Intégrer l'API Jules / OpenAI pour la rédaction personnalisée selon le prompt maître validé.
+
+3. **Développer le Frontend Web React & l'Application Mobile Flutter :**
+   - Développer les écrans de création de compte, d'upload de photo/README et de sélection de formule d'abonnement.
+   - Implémenter les flux de paiement Airtel Money & MTN MoMo.
+   - Ajouter le visualiseur PDF et le bouton d'export ZIP des candidatures.
+
+4. **Tests & Vérifications :**
+   - Valider que chaque CV et Lettre de Motivation générés font **exactement 1 page**.
+   - Vérifier la conformité des données générées avec les informations du profil utilisateur.
+   - Tester le flux d'achat par Mobile Money et la livraison immédiate des fichiers.
