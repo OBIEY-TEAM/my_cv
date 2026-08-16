@@ -440,16 +440,26 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
   void _addExpDialog() {
     final titleCtrl = TextEditingController();
     final companyCtrl = TextEditingController();
+    final industryCtrl = TextEditingController(text: 'Informatique');
+    final locationCtrl = TextEditingController();
+    final skillsCtrl = TextEditingController();
+    bool isCurrent = true;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Ajouter une expérience'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Poste *')),
-            TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Structure *')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Poste occupé *')),
+              TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Structure *')),
+              TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
+              TextField(controller: locationCtrl, decoration: const InputDecoration(labelText: 'Lieu')),
+              TextField(controller: skillsCtrl, decoration: const InputDecoration(labelText: 'Compétences acquises')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
@@ -459,9 +469,125 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                 await ApiService.addSectionItem('experiences', {
                   'title': titleCtrl.text,
                   'company': companyCtrl.text,
-                  'industry': 'Informatique',
+                  'industry': industryCtrl.text,
+                  'location': locationCtrl.text,
                   'start_date': '2024-01-01',
-                  'is_current': true,
+                  'is_current': isCurrent,
+                  'skills_acquired': skillsCtrl.text,
+                });
+                Navigator.pop(ctx);
+                _loadAll();
+              }
+            },
+            child: const Text('Ajouter'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _addCertDialog() {
+    final titleCtrl = TextEditingController();
+    final yearCtrl = TextEditingController(text: '2025');
+    final instCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ajouter un certificat'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé certificat *')),
+            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleCtrl.text.isNotEmpty) {
+                await ApiService.addSectionItem('certifications', {
+                  'title': titleCtrl.text,
+                  'year': int.tryParse(yearCtrl.text) ?? 2025,
+                  'institution': instCtrl.text,
+                });
+                Navigator.pop(ctx);
+                _loadAll();
+              }
+            },
+            child: const Text('Ajouter'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _addEduDialog() {
+    final titleCtrl = TextEditingController();
+    final yearCtrl = TextEditingController(text: '2024');
+    final instCtrl = TextEditingController();
+    final degreeCtrl = TextEditingController(text: 'Licence');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ajouter un diplôme'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé du diplôme *')),
+            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
+            TextField(controller: degreeCtrl, decoration: const InputDecoration(labelText: 'Niveau d\'étude *')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleCtrl.text.isNotEmpty) {
+                await ApiService.addSectionItem('educations', {
+                  'title': titleCtrl.text,
+                  'year': int.tryParse(yearCtrl.text) ?? 2024,
+                  'institution': instCtrl.text,
+                  'degree_level': degreeCtrl.text,
+                });
+                Navigator.pop(ctx);
+                _loadAll();
+              }
+            },
+            child: const Text('Ajouter'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _addProjDialog() {
+    final nameCtrl = TextEditingController();
+    final industryCtrl = TextEditingController(text: 'Informatique');
+    final descCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ajouter un projet'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nom du projet *')),
+            TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
+            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.isNotEmpty) {
+                await ApiService.addSectionItem('projects', {
+                  'name': nameCtrl.text,
+                  'industry': industryCtrl.text,
+                  'description': descCtrl.text,
                 });
                 Navigator.pop(ctx);
                 _loadAll();
@@ -497,26 +623,92 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   const SizedBox(height: 6),
                   Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('Adresse: ${_info['address'] ?? _info['adressepay'] ?? 'Avenue de l\'Indépendance'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
+
+          // 1. Expériences
           _buildSectionHeader('Expériences Professionnelles', _addExpDialog),
-          ..._experiences.map((exp) => Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              title: Text(exp['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('${exp['company'] ?? ''} (${exp['start_date'] ?? ''})'),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  await ApiService.deleteSectionItem('experiences', exp['id']);
-                  _loadAll();
-                },
+          if (_experiences.isEmpty)
+            const Padding(padding: EdgeInsets.all(8.0), child: Text('Aucune expérience ajoutée.'))
+          else
+            ..._experiences.map((exp) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text(exp['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('${exp['company'] ?? ''} (${exp['start_date'] ?? ''})'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    await ApiService.deleteSectionItem('experiences', exp['id']);
+                    _loadAll();
+                  },
+                ),
               ),
-            ),
-          )),
+            )),
+
+          // 2. Certifications
+          _buildSectionHeader('Certifications et Attestations', _addCertDialog),
+          if (_certifications.isEmpty)
+            const Padding(padding: EdgeInsets.all(8.0), child: Text('Aucune certification ajoutée.'))
+          else
+            ..._certifications.map((cert) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text('${cert['title']} (${cert['year']})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(cert['institution'] ?? ''),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    await ApiService.deleteSectionItem('certifications', cert['id']);
+                    _loadAll();
+                  },
+                ),
+              ),
+            )),
+
+          // 3. Diplômes
+          _buildSectionHeader('Diplômes', _addEduDialog),
+          if (_educations.isEmpty)
+            const Padding(padding: EdgeInsets.all(8.0), child: Text('Aucun diplôme ajouté.'))
+          else
+            ..._educations.map((edu) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text('${edu['title']} - ${edu['degree_level']} (${edu['year']})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(edu['institution'] ?? ''),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    await ApiService.deleteSectionItem('educations', edu['id']);
+                    _loadAll();
+                  },
+                ),
+              ),
+            )),
+
+          // 4. Projets
+          _buildSectionHeader('Projets', _addProjDialog),
+          if (_projects.isEmpty)
+            const Padding(padding: EdgeInsets.all(8.0), child: Text('Aucun projet ajouté.'))
+          else
+            ..._projects.map((proj) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text(proj['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(proj['industry'] ?? ''),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    await ApiService.deleteSectionItem('projects', proj['id']);
+                    _loadAll();
+                  },
+                ),
+              ),
+            )),
         ],
       ),
     );
@@ -524,12 +716,12 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
 
   Widget _buildSectionHeader(String title, VoidCallback onAdd) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-          IconButton(onPressed: onAdd, icon: const Icon(Icons.add_circle, color: Color(0xFF185FA5))),
+          IconButton(onPressed: onAdd, icon: const Icon(Icons.add_circle, color: Color(0xFF185FA5), size: 28)),
         ],
       ),
     );

@@ -29,16 +29,17 @@ class UserProfileInfo(models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile_info')
-    last_name = models.CharField(max_length=100)
-    first_name = models.CharField(max_length=100)
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='MALE')
-    birth_date = models.DateField(null=True, blank=True)
-    primary_phone = models.CharField(max_length=30)
-    secondary_phone = models.CharField(max_length=30, blank=True, default='')
-    professional_summary = models.TextField(blank=True, default='')
-    address = models.CharField(max_length=255, blank=True, default='')
-    district = models.CharField(max_length=100, blank=True, default='')
-    neighborhood = models.CharField(max_length=100, blank=True, default='')
+    last_name = models.CharField(max_length=100)  # Nom
+    first_name = models.CharField(max_length=100)  # Prénom
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='MALE')  # Genre
+    birth_date = models.DateField(null=True, blank=True)  # Date de naissance
+    primary_phone = models.CharField(max_length=30)  # Numéro principal
+    secondary_phone = models.CharField(max_length=30, blank=True, default='')  # Numéro secondaire
+    professional_summary = models.TextField(blank=True, default='')  # Résumé professionnel
+    address = models.CharField(max_length=255, blank=True, default='')  # Adresse / adressepay
+    adressepay = models.CharField(max_length=255, blank=True, default='')  # Champ alias adressepay
+    district = models.CharField(max_length=100, blank=True, default='')  # Arrondissement
+    neighborhood = models.CharField(max_length=100, blank=True, default='')  # Quartier
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -51,9 +52,9 @@ class Experience(models.Model):
     title = models.CharField(max_length=200)  # Poste occupé
     company = models.CharField(max_length=200)  # Structure
     industry = models.CharField(max_length=100)  # Secteur d'activité
-    location = models.CharField(max_length=100, blank=True, default='')
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=100, blank=True, default='')  # Lieu
+    start_date = models.DateField()  # Date de début
+    end_date = models.DateField(null=True, blank=True)  # Date de fin
     is_current = models.BooleanField(default=False)  # Jusqu'à présent
     skills_acquired = models.CharField(max_length=500, blank=True, default='')  # Compétences acquises
 
@@ -68,16 +69,16 @@ class Experience(models.Model):
 
 class Certification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certifications')
-    title = models.CharField(max_length=200)  # Libellé du certificat
-    year = models.IntegerField()
-    institution = models.CharField(max_length=200)
-    location = models.CharField(max_length=100, blank=True, default='')
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    description = models.TextField(blank=True, default='')
+    title = models.CharField(max_length=200)  # Libellé certificat
+    year = models.IntegerField()  # Année
+    institution = models.CharField(max_length=200)  # Institution
+    location = models.CharField(max_length=100, blank=True, default='')  # Lieu
+    start_date = models.DateField(null=True, blank=True)  # Date de début
+    end_date = models.DateField(null=True, blank=True)  # Date de fin
+    description = models.TextField(blank=True, default='')  # Description
 
     pdf_file = models.FileField(upload_to='certifications/pdf/', blank=True, null=True)
-    pdf_url = models.URLField(blank=True, default='')  # Google Drive Public URL
+    pdf_url = models.URLField(blank=True, default='')  # En pdf (Google Drive Public URL)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -91,18 +92,18 @@ class Certification(models.Model):
 class Education(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='educations')
     title = models.CharField(max_length=200)  # Libellé du diplôme
-    year = models.IntegerField()
-    institution = models.CharField(max_length=200)
-    degree_level = models.CharField(max_length=100)  # Niveau d'étude (Bac, Licence, Master, Doctorat...)
+    year = models.IntegerField()  # Année
+    institution = models.CharField(max_length=200)  # Institution
+    degree_level = models.CharField(max_length=100)  # Niveau d'étude
     field_of_study = models.CharField(max_length=200, blank=True, default='')  # Spécialité
-    location = models.CharField(max_length=100, blank=True, default='')
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=100, blank=True, default='')  # Lieu
+    start_date = models.DateField(null=True, blank=True)  # Date de début
+    end_date = models.DateField(null=True, blank=True)  # Date de fin
     description = models.TextField(blank=True, default='')
-    skills_acquired = models.CharField(max_length=500, blank=True, default='')
+    skills_acquired = models.CharField(max_length=500, blank=True, default='')  # Compétences acquises
 
     pdf_file = models.FileField(upload_to='educations/pdf/', blank=True, null=True)
-    pdf_url = models.URLField(blank=True, default='')  # Google Drive Public URL
+    pdf_url = models.URLField(blank=True, default='')  # Diplôme en pdf (Google Drive Public URL)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -115,11 +116,11 @@ class Education(models.Model):
 
 class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)  # Nom du projet
     industry = models.CharField(max_length=100)  # Secteur d'activité
     beneficiary = models.CharField(max_length=200, blank=True, default='')  # Bénéficiaire
     link_url = models.URLField(blank=True, default='')  # Lien d'hébergement
-    description = models.TextField(blank=True, default='')
+    description = models.TextField(blank=True, default='')  # Description
 
     created_at = models.DateTimeField(auto_now_add=True)
 

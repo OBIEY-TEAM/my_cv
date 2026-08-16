@@ -15,14 +15,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (
 
 axios.defaults.baseURL = API_BASE_URL;
 
-interface ProfileData {
-  title: string;
-  phone: string;
-  cities: string;
-  readme_content: string;
-  cropped_photo: string | null;
-}
-
 interface UserInfo {
   first_name: string;
   last_name: string;
@@ -32,6 +24,7 @@ interface UserInfo {
   secondary_phone: string;
   professional_summary: string;
   address: string;
+  adressepay: string;
   district: string;
   neighborhood: string;
 }
@@ -68,6 +61,8 @@ interface Education {
   degree_level: string;
   field_of_study: string;
   location: string;
+  start_date: string | null;
+  end_date: string | null;
   description: string;
   skills_acquired: string;
   pdf_url: string;
@@ -113,14 +108,6 @@ export default function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
-  const [profile, setProfile] = useState<ProfileData>({
-    title: 'Consultant IT & Expert Fullstack',
-    phone: '+242 06 613 01 18',
-    cities: 'Brazzaville & Pointe-Noire, Congo',
-    readme_content: '',
-    cropped_photo: null
-  });
-
   const [userInfo, setUserInfo] = useState<UserInfo>({
     first_name: 'Christ Dany',
     last_name: 'Obiey',
@@ -130,6 +117,7 @@ export default function App() {
     secondary_phone: '',
     professional_summary: 'Consultant IT & Expert Fullstack.',
     address: 'Avenue de l\'Indépendance',
+    adressepay: 'Avenue de l\'Indépendance',
     district: 'Poto-Poto',
     neighborhood: 'Centre'
   });
@@ -156,7 +144,7 @@ export default function App() {
   const [showEduModal, setShowEduModal] = useState(false);
   const [eduForm, setEduForm] = useState<Education>({
     title: '', year: 2024, institution: '', degree_level: 'Licence',
-    field_of_study: '', location: '', description: '', skills_acquired: '', pdf_url: ''
+    field_of_study: '', location: '', start_date: null, end_date: null, description: '', skills_acquired: '', pdf_url: ''
   });
   const [eduFile, setEduFile] = useState<File | null>(null);
 
@@ -185,8 +173,7 @@ export default function App() {
 
   const fetchData = async () => {
     try {
-      const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
-        axios.get('/api/profile/'),
+      const [infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
         axios.get('/api/profile/info/'),
         axios.get('/api/subscriptions/me/'),
         axios.get('/api/jobs/packages/'),
@@ -195,7 +182,6 @@ export default function App() {
         axios.get('/api/profile/educations/'),
         axios.get('/api/profile/projects/')
       ]);
-      setProfile(profRes.data);
       if (infoRes.data) setUserInfo(infoRes.data);
       setSubscription(subRes.data);
       setPackages(pkgsRes.data);
@@ -244,7 +230,7 @@ export default function App() {
   const handleSaveInfo = async () => {
     try {
       await axios.patch('/api/profile/info/', userInfo);
-      alert("Informations personnelles enregistrées !");
+      alert("Informations enregistrées avec succès !");
     } catch (e) {
       alert("Erreur lors de l'enregistrement des informations.");
     }
@@ -498,7 +484,7 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>1. Informations Générales</h3>
                 <button onClick={handleSaveInfo} style={{ backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Check style={{ width: '16px', height: '16px' }} /> Enregistrer
+                  <Check style={{ width: '16px', height: '16px' }} /> Enregistrer mes informations
                 </button>
               </div>
 
@@ -524,17 +510,29 @@ export default function App() {
                   <input type="date" value={userInfo.birth_date || ''} onChange={e => setUserInfo({...userInfo, birth_date: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Téléphone Principal *</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Numéro principal *</label>
                   <input type="text" value={userInfo.primary_phone} onChange={e => setUserInfo({...userInfo, primary_phone: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Adresse</label>
-                  <input type="text" value={userInfo.address} onChange={e => setUserInfo({...userInfo, address: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Numéro secondaire</label>
+                  <input type="text" value={userInfo.secondary_phone} onChange={e => setUserInfo({...userInfo, secondary_phone: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Adresse / Adressepay</label>
+                  <input type="text" value={userInfo.address} onChange={e => setUserInfo({...userInfo, address: e.target.value, adressepay: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Arrondissement</label>
+                  <input type="text" value={userInfo.district} onChange={e => setUserInfo({...userInfo, district: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Quartier</label>
+                  <input type="text" value={userInfo.neighborhood} onChange={e => setUserInfo({...userInfo, neighborhood: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                 </div>
               </div>
 
               <div style={{ marginTop: '16px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Résumé Professionnel</label>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Résumé professionnel</label>
                 <textarea rows={3} value={userInfo.professional_summary} onChange={e => setUserInfo({...userInfo, professional_summary: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               </div>
             </div>
@@ -553,7 +551,8 @@ export default function App() {
                   <div key={exp.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{exp.title} - <span style={{ color: '#185FA5' }}>{exp.company}</span></h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{exp.industry} | {exp.start_date} à {exp.is_current ? 'Présent' : exp.end_date}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{exp.industry} | {exp.location} | {exp.start_date} à {exp.is_current ? 'Présent' : exp.end_date}</p>
+                      {exp.skills_acquired && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#0F6E56', fontWeight: '700' }}>Compétences: {exp.skills_acquired}</p>}
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setExpForm(exp); setShowExpModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -578,7 +577,7 @@ export default function App() {
                   <div key={cert.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{cert.title} ({cert.year})</h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{cert.institution} {cert.pdf_url && <a href={cert.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{cert.institution} | {cert.location} {cert.pdf_url && <a href={cert.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setCertForm(cert); setShowCertModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -593,7 +592,7 @@ export default function App() {
             <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>4. Diplômes</h3>
-                <button onClick={() => { setEduForm({ title: '', year: 2024, institution: '', degree_level: 'Licence', field_of_study: '', location: '', description: '', skills_acquired: '', pdf_url: '' }); setShowEduModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button onClick={() => { setEduForm({ title: '', year: 2024, institution: '', degree_level: 'Licence', field_of_study: '', location: '', start_date: null, end_date: null, description: '', skills_acquired: '', pdf_url: '' }); setShowEduModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Plus style={{ width: '16px', height: '16px' }} /> Ajouter un diplôme
                 </button>
               </div>
@@ -603,7 +602,7 @@ export default function App() {
                   <div key={edu.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{edu.title} - {edu.degree_level} ({edu.year})</h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{edu.institution} {edu.pdf_url && <a href={edu.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{edu.institution} | Spécialité: {edu.field_of_study} {edu.pdf_url && <a href={edu.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setEduForm(edu); setShowEduModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -628,7 +627,7 @@ export default function App() {
                   <div key={proj.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{proj.name} ({proj.industry})</h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{proj.description}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>Bénéficiaire: {proj.beneficiary} | {proj.description}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setProjForm(proj); setShowProjModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -649,11 +648,14 @@ export default function App() {
               <input type="text" placeholder="Poste occupé *" value={expForm.title} onChange={e => setExpForm({...expForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Structure *" value={expForm.company} onChange={e => setExpForm({...expForm, company: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Secteur d'activité *" value={expForm.industry} onChange={e => setExpForm({...expForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Lieu" value={expForm.location} onChange={e => setExpForm({...expForm, location: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="date" value={expForm.start_date} onChange={e => setExpForm({...expForm, start_date: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <input type="checkbox" checked={expForm.is_current} onChange={e => setExpForm({...expForm, is_current: e.target.checked})} />
                 <label style={{ fontSize: '12px', fontWeight: '800' }}>Jusqu'à présent</label>
               </div>
+              {!expForm.is_current && <input type="date" value={expForm.end_date || ''} onChange={e => setExpForm({...expForm, end_date: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />}
+              <input type="text" placeholder="Compétences acquises" value={expForm.skills_acquired} onChange={e => setExpForm({...expForm, skills_acquired: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
                 <button onClick={() => setShowExpModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
                 <button onClick={handleSaveExperience} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
@@ -669,8 +671,10 @@ export default function App() {
               <input type="text" placeholder="Libellé du certificat *" value={certForm.title} onChange={e => setCertForm({...certForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="number" placeholder="Année *" value={certForm.year} onChange={e => setCertForm({...certForm, year: parseInt(e.target.value) || 2025})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Institution *" value={certForm.institution} onChange={e => setCertForm({...certForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Lieu" value={certForm.location} onChange={e => setCertForm({...certForm, location: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <textarea placeholder="Description" value={certForm.description} onChange={e => setCertForm({...certForm, description: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }}></textarea>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Certificat PDF (Optionnel - Upload Google Drive)</label>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Certificat PDF (Optionnel - Google Drive)</label>
                 <input type="file" accept="application/pdf" onChange={e => setCertFile(e.target.files ? e.target.files[0] : null)} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
@@ -689,8 +693,10 @@ export default function App() {
               <input type="number" placeholder="Année *" value={eduForm.year} onChange={e => setEduForm({...eduForm, year: parseInt(e.target.value) || 2024})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Institution *" value={eduForm.institution} onChange={e => setEduForm({...eduForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Niveau d'étude (Bac, Licence, Master) *" value={eduForm.degree_level} onChange={e => setEduForm({...eduForm, degree_level: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Spécialité" value={eduForm.field_of_study} onChange={e => setEduForm({...eduForm, field_of_study: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Compétences acquises" value={eduForm.skills_acquired} onChange={e => setEduForm({...eduForm, skills_acquired: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Diplôme PDF (Optionnel - Upload Google Drive)</label>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Diplôme PDF (Optionnel - Google Drive)</label>
                 <input type="file" accept="application/pdf" onChange={e => setEduFile(e.target.files ? e.target.files[0] : null)} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
@@ -707,6 +713,8 @@ export default function App() {
               <h3 style={{ margin: 0, fontWeight: '900' }}>Projet</h3>
               <input type="text" placeholder="Nom du projet *" value={projForm.name} onChange={e => setProjForm({...projForm, name: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <input type="text" placeholder="Secteur d'activité *" value={projForm.industry} onChange={e => setProjForm({...projForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Bénéficiaire" value={projForm.beneficiary} onChange={e => setProjForm({...projForm, beneficiary: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="url" placeholder="Lien d'hébergement" value={projForm.link_url} onChange={e => setProjForm({...projForm, link_url: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
               <textarea placeholder="Description" value={projForm.description} onChange={e => setProjForm({...projForm, description: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }}></textarea>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
                 <button onClick={() => setShowProjModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
