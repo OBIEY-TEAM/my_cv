@@ -15,7 +15,7 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://luka-mosala-web.onrender.com,https://luka-mosala-mobile.onrender.com"
+        value: "https://luka-mosala-web.onrender.com,https://client-luka-mosala.onrender.com,https://admin-luka-mosala.onrender.com,https://mobile-luka-mosala.onrender.com"
 
   # 2. Web Client Service (React.js / Vite)
   - type: web
