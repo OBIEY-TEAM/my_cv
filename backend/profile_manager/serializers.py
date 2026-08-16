@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile
+from .models import Profile, UserProfileInfo, Experience, Certification, Education, Project
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
@@ -15,3 +15,38 @@ class ProfileSerializer(serializers.ModelSerializer):
             'readme_content', 'original_photo', 'cropped_photo',
             'created_at', 'updated_at'
         )
+
+
+class UserProfileInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfileInfo
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Experience
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+
+class CertificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certification
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+
+class EducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Education
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = '__all__'
+        read_only_fields = ('user',)

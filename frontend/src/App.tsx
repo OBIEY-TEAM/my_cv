@@ -3,7 +3,8 @@ import axios from 'axios';
 import {
   Briefcase, FileText, User, CreditCard, Upload, Download,
   Sparkles, CheckCircle, ShieldCheck, Phone, Mail, MapPin,
-  Eye, RefreshCw, Scissors, ChevronRight, Lock, LogOut, AlertCircle
+  Eye, RefreshCw, Scissors, ChevronRight, Lock, LogOut, AlertCircle,
+  Plus, Trash2, Edit, Award, GraduationCap, FolderGit2, Check
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
@@ -20,6 +21,65 @@ interface ProfileData {
   cities: string;
   readme_content: string;
   cropped_photo: string | null;
+}
+
+interface UserInfo {
+  first_name: string;
+  last_name: string;
+  gender: string;
+  birth_date: string | null;
+  primary_phone: string;
+  secondary_phone: string;
+  professional_summary: string;
+  address: string;
+  district: string;
+  neighborhood: string;
+}
+
+interface Experience {
+  id?: number;
+  title: string;
+  company: string;
+  industry: string;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  is_current: boolean;
+  skills_acquired: string;
+}
+
+interface Certification {
+  id?: number;
+  title: string;
+  year: number;
+  institution: string;
+  location: string;
+  start_date: string | null;
+  end_date: string | null;
+  description: string;
+  pdf_url: string;
+}
+
+interface Education {
+  id?: number;
+  title: string;
+  year: number;
+  institution: string;
+  degree_level: string;
+  field_of_study: string;
+  location: string;
+  description: string;
+  skills_acquired: string;
+  pdf_url: string;
+}
+
+interface Project {
+  id?: number;
+  name: string;
+  industry: string;
+  beneficiary: string;
+  link_url: string;
+  description: string;
 }
 
 interface ApplicationPackage {
@@ -48,7 +108,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'profile' | 'create' | 'plans'>('dashboard');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
-  // Default credentials as requested by user
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin1234');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -58,8 +117,52 @@ export default function App() {
     title: 'Consultant IT & Expert Fullstack',
     phone: '+242 06 613 01 18',
     cities: 'Brazzaville & Pointe-Noire, Congo',
-    readme_content: '# CV | CHRIST DANY OBIEY\nConsultant IT & Transformation Digitale',
+    readme_content: '',
     cropped_photo: null
+  });
+
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    first_name: 'Christ Dany',
+    last_name: 'Obiey',
+    gender: 'MALE',
+    birth_date: '1995-05-10',
+    primary_phone: '+242 06 613 01 18',
+    secondary_phone: '',
+    professional_summary: 'Consultant IT & Expert Fullstack.',
+    address: 'Avenue de l\'Indépendance',
+    district: 'Poto-Poto',
+    neighborhood: 'Centre'
+  });
+
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [educations, setEducations] = useState<Education[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  // Modals / Form States
+  const [showExpModal, setShowExpModal] = useState(false);
+  const [expForm, setExpForm] = useState<Experience>({
+    title: '', company: '', industry: 'Informatique', location: '',
+    start_date: '2024-01-01', end_date: null, is_current: false, skills_acquired: ''
+  });
+
+  const [showCertModal, setShowCertModal] = useState(false);
+  const [certForm, setCertForm] = useState<Certification>({
+    title: '', year: 2025, institution: '', location: '',
+    start_date: null, end_date: null, description: '', pdf_url: ''
+  });
+  const [certFile, setCertFile] = useState<File | null>(null);
+
+  const [showEduModal, setShowEduModal] = useState(false);
+  const [eduForm, setEduForm] = useState<Education>({
+    title: '', year: 2024, institution: '', degree_level: 'Licence',
+    field_of_study: '', location: '', description: '', skills_acquired: '', pdf_url: ''
+  });
+  const [eduFile, setEduFile] = useState<File | null>(null);
+
+  const [showProjModal, setShowProjModal] = useState(false);
+  const [projForm, setProjForm] = useState<Project>({
+    name: '', industry: 'Informatique', beneficiary: '', link_url: '', description: ''
   });
 
   const [jobText, setJobText] = useState('');
@@ -82,16 +185,26 @@ export default function App() {
 
   const fetchData = async () => {
     try {
-      const [profRes, subRes, pkgsRes] = await Promise.all([
+      const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
         axios.get('/api/profile/'),
+        axios.get('/api/profile/info/'),
         axios.get('/api/subscriptions/me/'),
-        axios.get('/api/jobs/packages/')
+        axios.get('/api/jobs/packages/'),
+        axios.get('/api/profile/experiences/'),
+        axios.get('/api/profile/certifications/'),
+        axios.get('/api/profile/educations/'),
+        axios.get('/api/profile/projects/')
       ]);
       setProfile(profRes.data);
+      if (infoRes.data) setUserInfo(infoRes.data);
       setSubscription(subRes.data);
       setPackages(pkgsRes.data);
+      setExperiences(expRes.data);
+      setCertifications(certRes.data);
+      setEducations(eduRes.data);
+      setProjects(projRes.data);
     } catch (e) {
-      console.error("Error fetching user data:", e);
+      console.error("Error fetching data:", e);
     }
   };
 
@@ -107,7 +220,6 @@ export default function App() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       await fetchData();
     } catch (e: any) {
-      // If login failed, attempt to register automatically for seamless UX
       try {
         const regRes = await axios.post('/api/auth/register/', {
           username,
@@ -122,18 +234,128 @@ export default function App() {
         axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         await fetchData();
       } catch (err: any) {
-        const errorMsg = e?.response?.data?.detail || e?.response?.data?.error || "Identifiants incorrects ou serveur indisponible.";
-        setAuthError(errorMsg);
+        setAuthError("Identifiants incorrects ou serveur indisponible.");
       }
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    setToken(null);
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+  const handleSaveInfo = async () => {
+    try {
+      await axios.patch('/api/profile/info/', userInfo);
+      alert("Informations personnelles enregistrées !");
+    } catch (e) {
+      alert("Erreur lors de l'enregistrement des informations.");
+    }
+  };
+
+  const handleSaveExperience = async () => {
+    try {
+      if (expForm.id) {
+        await axios.put(`/api/profile/experiences/${expForm.id}/`, expForm);
+      } else {
+        await axios.post('/api/profile/experiences/', expForm);
+      }
+      setShowExpModal(false);
+      await fetchData();
+    } catch (e) {
+      alert("Erreur lors de la sauvegarde de l'expérience.");
+    }
+  };
+
+  const handleDeleteExperience = async (id: number) => {
+    if (confirm("Supprimer cette expérience ?")) {
+      await axios.delete(`/api/profile/experiences/${id}/`);
+      await fetchData();
+    }
+  };
+
+  const handleSaveCertification = async () => {
+    try {
+      const formData = new FormData();
+      Object.keys(certForm).forEach(key => {
+        const val = (certForm as any)[key];
+        if (val !== null && val !== undefined) formData.append(key, val);
+      });
+      if (certFile) formData.append('pdf_file', certFile);
+
+      if (certForm.id) {
+        await axios.put(`/api/profile/certifications/${certForm.id}/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        await axios.post('/api/profile/certifications/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      setShowCertModal(false);
+      setCertFile(null);
+      await fetchData();
+    } catch (e) {
+      alert("Erreur lors de la sauvegarde du certificat.");
+    }
+  };
+
+  const handleDeleteCertification = async (id: number) => {
+    if (confirm("Supprimer ce certificat ?")) {
+      await axios.delete(`/api/profile/certifications/${id}/`);
+      await fetchData();
+    }
+  };
+
+  const handleSaveEducation = async () => {
+    try {
+      const formData = new FormData();
+      Object.keys(eduForm).forEach(key => {
+        const val = (eduForm as any)[key];
+        if (val !== null && val !== undefined) formData.append(key, val);
+      });
+      if (eduFile) formData.append('pdf_file', eduFile);
+
+      if (eduForm.id) {
+        await axios.put(`/api/profile/educations/${eduForm.id}/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        await axios.post('/api/profile/educations/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      setShowEduModal(false);
+      setEduFile(null);
+      await fetchData();
+    } catch (e) {
+      alert("Erreur lors de la sauvegarde du diplôme.");
+    }
+  };
+
+  const handleDeleteEducation = async (id: number) => {
+    if (confirm("Supprimer ce diplôme ?")) {
+      await axios.delete(`/api/profile/educations/${id}/`);
+      await fetchData();
+    }
+  };
+
+  const handleSaveProject = async () => {
+    try {
+      if (projForm.id) {
+        await axios.put(`/api/profile/projects/${projForm.id}/`, projForm);
+      } else {
+        await axios.post('/api/profile/projects/', projForm);
+      }
+      setShowProjModal(false);
+      await fetchData();
+    } catch (e) {
+      alert("Erreur lors de la sauvegarde du projet.");
+    }
+  };
+
+  const handleDeleteProject = async (id: number) => {
+    if (confirm("Supprimer ce projet ?")) {
+      await axios.delete(`/api/profile/projects/${id}/`);
+      await fetchData();
+    }
   };
 
   const handleGenerateApplication = async () => {
@@ -154,7 +376,7 @@ export default function App() {
       setActiveTab('dashboard');
       alert("Candidature sur mesure générée avec succès !");
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erreur lors de la génération de la candidature. Vérifiez vos crédits.");
+      alert(e?.response?.data?.error || "Erreur lors de la génération de la candidature.");
     } finally {
       setIsGenerating(false);
     }
@@ -163,7 +385,7 @@ export default function App() {
   const handlePayment = async () => {
     setPaymentSuccessMsg(null);
     try {
-      const res = await axios.post('/api/subscriptions/pay/', {
+      await axios.post('/api/subscriptions/pay/', {
         plan_id: selectedPlan,
         payment_method: paymentMethod,
         phone_number: phoneNumber
@@ -198,43 +420,22 @@ export default function App() {
             )}
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>
-                Nom d'utilisateur
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }}
-                required
-              />
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Nom d'utilisateur</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }} required />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>
-                Mot de passe
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }}
-                required
-              />
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Mot de passe</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', boxSizing: 'border-box' }} required />
             </div>
 
-            <button
-              type="submit"
-              disabled={authLoading}
-              style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '15px', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            >
-              {authLoading ? 'Connexion en cours...' : 'Se connecter / S\'inscrire'}
+            <button type="submit" disabled={authLoading} style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '15px', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', marginTop: '8px' }}>
+              {authLoading ? 'Connexion...' : 'Se connecter / S\'inscrire'}
             </button>
           </form>
 
           <div style={{ marginTop: '20px', padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '10px', fontSize: '12px', color: '#334155', fontWeight: '600', textAlign: 'center' }}>
-            💡 Compte de test par défaut :<br />
-            <strong>Identifiant:</strong> admin &nbsp;|&nbsp; <strong>Mot de passe:</strong> admin1234
+            💡 Compte de test par défaut : <strong>admin</strong> / <strong>admin1234</strong>
           </div>
         </div>
       </div>
@@ -243,75 +444,279 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0B1F3A', fontFamily: 'sans-serif' }}>
-      {/* Top Navbar */}
       <header style={{ backgroundColor: '#0B1F3A', color: '#ffffff', borderBottom: '1px solid #1e293b' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ backgroundColor: '#185FA5', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: '#185FA5', padding: '8px', borderRadius: '10px' }}>
               <Briefcase style={{ width: '20px', height: '20px', color: '#ffffff' }} />
             </div>
-            <div>
-              <span style={{ fontWeight: '900', fontSize: '18px', color: '#ffffff', letterSpacing: '-0.5px' }}>Luka Mosala</span>
-              <span style={{ fontSize: '10px', fontWeight: '800', backgroundColor: '#185FA5', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', textTransform: 'uppercase' }}>SaaS Pro</span>
-            </div>
+            <span style={{ fontWeight: '900', fontSize: '18px', color: '#ffffff' }}>Luka Mosala SaaS</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '6px 14px', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '6px 14px', borderRadius: '20px' }}>
               <Sparkles style={{ width: '16px', height: '16px', color: '#f59e0b' }} />
               <span style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff' }}>{subscription.credits_remaining} Crédit(s)</span>
             </div>
-            <button
-              onClick={handleLogout}
-              style={{ backgroundColor: 'transparent', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
+            <button onClick={() => { setToken(null); localStorage.removeItem('token'); }} style={{ backgroundColor: 'transparent', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
               <LogOut style={{ width: '14px', height: '14px' }} />
-              <span>Déconnexion</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Navigation Tabs */}
       <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', display: 'flex', gap: '24px' }}>
           {[
             { id: 'dashboard', label: 'Mes Candidatures', icon: Briefcase },
             { id: 'create', label: 'Générer un Dossier', icon: Sparkles },
-            { id: 'profile', label: 'Profil & README', icon: User },
+            { id: 'profile', label: 'Profil Structuré', icon: User },
             { id: 'plans', label: 'Abonnements & Crédits', icon: CreditCard },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '16px 0',
-                  border: 'none',
-                  borderBottom: isActive ? '3px solid #185FA5' : '3px solid transparent',
-                  backgroundColor: 'transparent',
-                  color: isActive ? '#185FA5' : '#444441',
-                  fontWeight: isActive ? '900' : '700',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <Icon style={{ width: '18px', height: '18px', color: isActive ? '#185FA5' : '#444441' }} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px', padding: '16px 0', border: 'none',
+                borderBottom: activeTab === tab.id ? '3px solid #185FA5' : '3px solid transparent',
+                backgroundColor: 'transparent', color: activeTab === tab.id ? '#185FA5' : '#444441',
+                fontWeight: activeTab === tab.id ? '900' : '700', fontSize: '14px', cursor: 'pointer'
+              }}
+            >
+              <tab.icon style={{ width: '18px', height: '18px' }} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Content Container */}
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
+        {activeTab === 'profile' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            {/* 1. INFO GENERALE */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>1. Informations Générales</h3>
+                <button onClick={handleSaveInfo} style={{ backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Check style={{ width: '16px', height: '16px' }} /> Enregistrer
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Nom *</label>
+                  <input type="text" value={userInfo.last_name} onChange={e => setUserInfo({...userInfo, last_name: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Prénom *</label>
+                  <input type="text" value={userInfo.first_name} onChange={e => setUserInfo({...userInfo, first_name: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Genre *</label>
+                  <select value={userInfo.gender} onChange={e => setUserInfo({...userInfo, gender: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                    <option value="MALE">Homme</option>
+                    <option value="FEMALE">Femme</option>
+                    <option value="OTHER">Autre</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Date de naissance *</label>
+                  <input type="date" value={userInfo.birth_date || ''} onChange={e => setUserInfo({...userInfo, birth_date: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Téléphone Principal *</label>
+                  <input type="text" value={userInfo.primary_phone} onChange={e => setUserInfo({...userInfo, primary_phone: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Adresse</label>
+                  <input type="text" value={userInfo.address} onChange={e => setUserInfo({...userInfo, address: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Résumé Professionnel</label>
+                <textarea rows={3} value={userInfo.professional_summary} onChange={e => setUserInfo({...userInfo, professional_summary: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              </div>
+            </div>
+
+            {/* 2. EXPERIENCES */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>2. Expériences Professionnelles</h3>
+                <button onClick={() => { setExpForm({ title: '', company: '', industry: 'Informatique', location: '', start_date: '2024-01-01', end_date: null, is_current: false, skills_acquired: '' }); setShowExpModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus style={{ width: '16px', height: '16px' }} /> Ajouter une expérience
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {experiences.map(exp => (
+                  <div key={exp.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{exp.title} - <span style={{ color: '#185FA5' }}>{exp.company}</span></h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{exp.industry} | {exp.start_date} à {exp.is_current ? 'Présent' : exp.end_date}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => { setExpForm(exp); setShowExpModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
+                      <button onClick={() => handleDeleteExperience(exp.id!)} style={{ backgroundColor: '#fef2f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Trash2 style={{ width: '16px', height: '16px' }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. CERTIFICATIONS */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>3. Certifications et Attestations</h3>
+                <button onClick={() => { setCertForm({ title: '', year: 2025, institution: '', location: '', start_date: null, end_date: null, description: '', pdf_url: '' }); setShowCertModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus style={{ width: '16px', height: '16px' }} /> Ajouter un certificat
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {certifications.map(cert => (
+                  <div key={cert.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{cert.title} ({cert.year})</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{cert.institution} {cert.pdf_url && <a href={cert.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => { setCertForm(cert); setShowCertModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
+                      <button onClick={() => handleDeleteCertification(cert.id!)} style={{ backgroundColor: '#fef2f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Trash2 style={{ width: '16px', height: '16px' }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. DIPLOMES */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>4. Diplômes</h3>
+                <button onClick={() => { setEduForm({ title: '', year: 2024, institution: '', degree_level: 'Licence', field_of_study: '', location: '', description: '', skills_acquired: '', pdf_url: '' }); setShowEduModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus style={{ width: '16px', height: '16px' }} /> Ajouter un diplôme
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {educations.map(edu => (
+                  <div key={edu.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{edu.title} - {edu.degree_level} ({edu.year})</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{edu.institution} {edu.pdf_url && <a href={edu.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => { setEduForm(edu); setShowEduModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
+                      <button onClick={() => handleDeleteEducation(edu.id!)} style={{ backgroundColor: '#fef2f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Trash2 style={{ width: '16px', height: '16px' }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5. PROJETS */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>5. Projets</h3>
+                <button onClick={() => { setProjForm({ name: '', industry: 'Informatique', beneficiary: '', link_url: '', description: '' }); setShowProjModal(true); }} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus style={{ width: '16px', height: '16px' }} /> Ajouter un projet
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {projects.map(proj => (
+                  <div key={proj.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{proj.name} ({proj.industry})</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{proj.description}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => { setProjForm(proj); setShowProjModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
+                      <button onClick={() => handleDeleteProject(proj.id!)} style={{ backgroundColor: '#fef2f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Trash2 style={{ width: '16px', height: '16px' }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODALS */}
+        {showExpModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ margin: 0, fontWeight: '900' }}>Expérience Professionnelle</h3>
+              <input type="text" placeholder="Poste occupé *" value={expForm.title} onChange={e => setExpForm({...expForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Structure *" value={expForm.company} onChange={e => setExpForm({...expForm, company: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Secteur d'activité *" value={expForm.industry} onChange={e => setExpForm({...expForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="date" value={expForm.start_date} onChange={e => setExpForm({...expForm, start_date: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input type="checkbox" checked={expForm.is_current} onChange={e => setExpForm({...expForm, is_current: e.target.checked})} />
+                <label style={{ fontSize: '12px', fontWeight: '800' }}>Jusqu'à présent</label>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <button onClick={() => setShowExpModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
+                <button onClick={handleSaveExperience} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCertModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ margin: 0, fontWeight: '900' }}>Certificat & Attestation</h3>
+              <input type="text" placeholder="Libellé du certificat *" value={certForm.title} onChange={e => setCertForm({...certForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="number" placeholder="Année *" value={certForm.year} onChange={e => setCertForm({...certForm, year: parseInt(e.target.value) || 2025})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Institution *" value={certForm.institution} onChange={e => setCertForm({...certForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Certificat PDF (Optionnel - Upload Google Drive)</label>
+                <input type="file" accept="application/pdf" onChange={e => setCertFile(e.target.files ? e.target.files[0] : null)} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <button onClick={() => setShowCertModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
+                <button onClick={handleSaveCertification} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEduModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ margin: 0, fontWeight: '900' }}>Diplôme</h3>
+              <input type="text" placeholder="Libellé du diplôme *" value={eduForm.title} onChange={e => setEduForm({...eduForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="number" placeholder="Année *" value={eduForm.year} onChange={e => setEduForm({...eduForm, year: parseInt(e.target.value) || 2024})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Institution *" value={eduForm.institution} onChange={e => setEduForm({...eduForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Niveau d'étude (Bac, Licence, Master) *" value={eduForm.degree_level} onChange={e => setEduForm({...eduForm, degree_level: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Diplôme PDF (Optionnel - Upload Google Drive)</label>
+                <input type="file" accept="application/pdf" onChange={e => setEduFile(e.target.files ? e.target.files[0] : null)} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <button onClick={() => setShowEduModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
+                <button onClick={handleSaveEducation} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showProjModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ margin: 0, fontWeight: '900' }}>Projet</h3>
+              <input type="text" placeholder="Nom du projet *" value={projForm.name} onChange={e => setProjForm({...projForm, name: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <input type="text" placeholder="Secteur d'activité *" value={projForm.industry} onChange={e => setProjForm({...projForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+              <textarea placeholder="Description" value={projForm.description} onChange={e => setProjForm({...projForm, description: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }}></textarea>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <button onClick={() => setShowProjModal(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
+                <button onClick={handleSaveProject} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* OTHER TABS */}
         {activeTab === 'dashboard' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -319,10 +724,7 @@ export default function App() {
                 <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Tableau de Bord des Candidatures</h2>
                 <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '4px' }}>Gérez vos dossiers de candidature sur mesure prêts à être envoyés.</p>
               </div>
-              <button
-                onClick={() => setActiveTab('create')}
-                style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '14px', padding: '12px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
+              <button onClick={() => setActiveTab('create')} style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '14px', padding: '12px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Sparkles style={{ width: '18px', height: '18px' }} />
                 <span>Nouvelle Candidature</span>
               </button>
@@ -332,33 +734,28 @@ export default function App() {
               <div style={{ backgroundColor: '#ffffff', padding: '48px', borderRadius: '16px', border: '1px solid #cbd5e1', textAlign: 'center' }}>
                 <FileText style={{ width: '48px', height: '48px', color: '#94a3b8', margin: '0 auto 16px' }} />
                 <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A' }}>Aucune candidature générée pour le moment</h3>
-                <p style={{ color: '#444441', fontSize: '14px', marginTop: '8px' }}>Importez une offre d'emploi pour créer votre premier dossier sur mesure.</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
                 {packages.map((pkg) => (
-                  <div key={pkg.id} style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                          {pkg.job_offer.site_category || 'ACPE'}
-                        </span>
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A', marginTop: '8px', margin: '8px 0 2px' }}>{pkg.job_offer.title}</h3>
-                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#444441', margin: 0 }}>{pkg.job_offer.company || 'Organisme Recruteur'}</p>
-                      </div>
+                  <div key={pkg.id} style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                        {pkg.job_offer.site_category || 'ACPE'}
+                      </span>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A', margin: '8px 0 2px' }}>{pkg.job_offer.title}</h3>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#444441', margin: 0 }}>{pkg.job_offer.company}</p>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
                       <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          <Download style={{ width: '14px', height: '14px' }} />
-                          <span>CV (1 Page)</span>
+                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
+                          CV (1 Page)
                         </button>
                       </a>
                       <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          <Download style={{ width: '14px', height: '14px' }} />
-                          <span>LM (1 Page)</span>
+                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
+                          LM (1 Page)
                         </button>
                       </a>
                     </div>
@@ -370,92 +767,24 @@ export default function App() {
         )}
 
         {activeTab === 'create' && (
-          <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
             <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0B1F3A', margin: '0 0 8px' }}>Générer un Dossier Sur Mesure</h2>
-            <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginBottom: '24px' }}>Entrez le texte brut ou l'URL de l'offre d'emploi. L'agent IA créera instantanément un CV (1P) et une Lettre de Motivation (1P) ciblés.</p>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Option A : Lien URL de l'offre</label>
-                <input
-                  type="url"
-                  placeholder="https://acpe.cg/emplois/developpeur-fullstack"
-                  value={sourceUrl}
-                  onChange={e => setSourceUrl(e.target.value)}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
-                />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Lien URL de l'offre</label>
+                <input type="url" placeholder="https://acpe.cg/emplois/developpeur-fullstack" value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }} />
               </div>
 
               <div style={{ textAlign: 'center', fontWeight: '800', fontSize: '12px', color: '#94a3b8' }}>OU</div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Option B : Texte brut de l'offre</label>
-                <textarea
-                  rows={6}
-                  placeholder="Collez ici l'intitulé du poste, la description et les exigences de l'offre d'emploi..."
-                  value={jobText}
-                  onChange={e => setJobText(e.target.value)}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
-                ></textarea>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Texte brut de l'offre</label>
+                <textarea rows={6} placeholder="Collez ici l'offre..." value={jobText} onChange={e => setJobText(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }}></textarea>
               </div>
 
-              <button
-                onClick={handleGenerateApplication}
-                disabled={isGenerating}
-                style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
-                    <span>Génération de votre dossier en cours...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles style={{ width: '20px', height: '20px' }} />
-                    <span>Générer CV (1 Page), LM (1 Page) & Email TXT</span>
-                  </>
-                )}
+              <button onClick={handleGenerateApplication} disabled={isGenerating} style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
+                {isGenerating ? 'Génération en cours...' : 'Générer CV (1P), LM (1P) & Email'}
               </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'profile' && (
-          <div style={{ maxWidth: '896px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Gestion de Profil & README de Référence</h2>
-              <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '6px' }}>Vos données de référence utilisées par le moteur IA pour rédiger vos candidatures.</p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Titre Principal</label>
-                <input
-                  type="text"
-                  value={profile.title}
-                  onChange={e => setProfile({...profile, title: e.target.value})}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Téléphone</label>
-                <input
-                  type="text"
-                  value={profile.phone}
-                  onChange={e => setProfile({...profile, phone: e.target.value})}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Profil README / Markdown</label>
-              <textarea
-                rows={10}
-                value={profile.readme_content}
-                onChange={e => setProfile({...profile, readme_content: e.target.value})}
-                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontFamily: 'monospace', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
-              ></textarea>
             </div>
           </div>
         )}
@@ -463,94 +792,18 @@ export default function App() {
         {activeTab === 'plans' && (
           <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement & Crédits</h2>
-              <p style={{ color: '#444441', fontWeight: '600', marginTop: '8px' }}>Choisissez votre formule et payez instantanément via Mobile Money (Airtel, MTN, PayDunya).</p>
+              <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement</h2>
             </div>
-
             {paymentSuccessMsg && (
-              <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #6ee7b7', padding: '16px', borderRadius: '12px', color: '#065f46', fontWeight: '800', fontSize: '14px', textAlign: 'center' }}>
+              <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #6ee7b7', padding: '16px', borderRadius: '12px', color: '#065f46', fontWeight: '800', textAlign: 'center' }}>
                 {paymentSuccessMsg}
               </div>
             )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 1 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#f1f5f9', color: '#0B1F3A', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Découverte</span>
-                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Gratuit</h3>
-                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>0 FCFA</p>
-                </div>
-                <button onClick={() => setSelectedPlan(1)} style={{ marginTop: '24px', width: '100%', border: '2px solid #185FA5', backgroundColor: 'transparent', color: '#185FA5', fontWeight: '800', padding: '12px', borderRadius: '10px', cursor: 'pointer' }}>
-                  Sélectionner
-                </button>
-              </div>
-
-              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 2 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Pack 5</span>
-                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Pack 5 Candidatures</h3>
-                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>2 000 FCFA</p>
-                </div>
-                <button onClick={() => setSelectedPlan(2)} style={{ marginTop: '24px', width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
-                  Sélectionner
-                </button>
-              </div>
-
-              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 3 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#f3e8ff', color: '#7e22ce', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Illimité</span>
-                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Illimité Mensuel</h3>
-                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>5 000 FCFA</p>
-                </div>
-                <button onClick={() => setSelectedPlan(3)} style={{ marginTop: '24px', width: '100%', border: '2px solid #185FA5', backgroundColor: 'transparent', color: '#185FA5', fontWeight: '800', padding: '12px', borderRadius: '10px', cursor: 'pointer' }}>
-                  Sélectionner
-                </button>
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', maxWidth: '512px', margin: '0 auto', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Procéder au paiement Fintech Mobile Money</h3>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '14px', fontWeight: '800', color: '#0B1F3A' }}>Mode de paiement</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  <button
-                    onClick={() => setPaymentMethod('AIRTEL_MONEY')}
-                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #ef4444', backgroundColor: paymentMethod === 'AIRTEL_MONEY' ? '#fef2f2' : '#ffffff', color: '#b91c1c', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    Airtel Money
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod('MTN_MOMO')}
-                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #eab308', backgroundColor: paymentMethod === 'MTN_MOMO' ? '#fefce8' : '#ffffff', color: '#a16207', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    MTN MoMo
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod('PAYDUNYA')}
-                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #185FA5', backgroundColor: paymentMethod === 'PAYDUNYA' ? '#e0f2fe' : '#ffffff', color: '#185FA5', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    PayDunya
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Numéro Mobile Money (+242...)</label>
-                <input
-                  type="text"
-                  value={phoneNumber}
-                  onChange={e => setPhoneNumber(e.target.value)}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <button
-                onClick={handlePayment}
-                style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                <Lock style={{ width: '18px', height: '18px' }} />
-                <span>Payer et recharger mes crédits</span>
+            <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', maxWidth: '512px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Mobile Money (Airtel / MTN)</h3>
+              <input type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }} />
+              <button onClick={handlePayment} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
+                Payer et recharger
               </button>
             </div>
           </div>

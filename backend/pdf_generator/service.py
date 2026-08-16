@@ -1,219 +1,203 @@
 import os
+from pathlib import Path
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_JUSTIFY
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable
+)
 from pypdf import PdfReader
 
 class PDFService:
     @staticmethod
     def generate_cv_pdf(data, output_path):
+        """
+        Generates a modern 2-column strictly 1-page CV PDF using ReportLab.
+        Columns:
+        - Left Sidebar (navy blue background): Contact, Skills, Education / Certifications (with clickable PDF links), Projects
+        - Right Content: Header, Summary, Professional Experiences
+        """
         doc = SimpleDocTemplate(
             output_path,
             pagesize=A4,
-            leftMargin=0.8*cm,
-            rightMargin=0.8*cm,
-            topMargin=0.8*cm,
-            bottomMargin=0.8*cm
+            leftMargin=0.5 * cm,
+            rightMargin=0.5 * cm,
+            topMargin=0.5 * cm,
+            bottomMargin=0.5 * cm
         )
 
         styles = getSampleStyleSheet()
-        PRIMARY_COLOR = colors.HexColor('#1E3A8A')
-        SECONDARY_COLOR = colors.HexColor('#0284C7')
-        TEXT_DARK = colors.HexColor('#1F2937')
-        TEXT_MUTED = colors.HexColor('#4B5563')
 
-        title_style = ParagraphStyle(
-            'CVTitle',
-            parent=styles['Heading1'],
-            fontName='Helvetica-Bold',
-            fontSize=16,
-            leading=18,
-            textColor=PRIMARY_COLOR,
-            alignment=TA_LEFT
-        )
-
-        subtitle_style = ParagraphStyle(
-            'CVSubtitle',
+        # Styles definition
+        left_header_style = ParagraphStyle(
+            'LeftHeader',
             parent=styles['Normal'],
             fontName='Helvetica-Bold',
             fontSize=10,
             leading=12,
-            textColor=SECONDARY_COLOR,
-            alignment=TA_LEFT
+            textColor=colors.HexColor('#FFFFFF'),
+            spaceAfter=4
         )
 
-        contact_style = ParagraphStyle(
-            'CVContact',
+        left_text_style = ParagraphStyle(
+            'LeftText',
             parent=styles['Normal'],
             fontName='Helvetica',
             fontSize=8,
             leading=10,
-            textColor=TEXT_MUTED
+            textColor=colors.HexColor('#E2E8F0')
         )
 
-        section_heading = ParagraphStyle(
-            'CVSectionHeading',
-            parent=styles['Heading2'],
+        left_link_style = ParagraphStyle(
+            'LeftLink',
+            parent=styles['Normal'],
+            fontName='Helvetica-Oblique',
+            fontSize=7,
+            leading=9,
+            textColor=colors.HexColor('#93C5FD')
+        )
+
+        right_title_style = ParagraphStyle(
+            'RightTitle',
+            parent=styles['Normal'],
             fontName='Helvetica-Bold',
-            fontSize=10,
-            leading=12,
-            textColor=PRIMARY_COLOR,
-            spaceAfter=3
+            fontSize=18,
+            leading=20,
+            textColor=colors.HexColor('#0B1F3A')
         )
 
-        body_style = ParagraphStyle(
-            'CVBody',
+        right_subtitle_style = ParagraphStyle(
+            'RightSubtitle',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=11,
+            leading=13,
+            textColor=colors.HexColor('#185FA5')
+        )
+
+        right_section_style = ParagraphStyle(
+            'RightSection',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=12,
+            leading=14,
+            textColor=colors.HexColor('#0B1F3A'),
+            spaceAfter=4
+        )
+
+        right_body_style = ParagraphStyle(
+            'RightBody',
             parent=styles['Normal'],
             fontName='Helvetica',
-            fontSize=8,
-            leading=10,
-            textColor=TEXT_DARK
+            fontSize=8.5,
+            leading=11,
+            textColor=colors.HexColor('#334155')
         )
 
-        body_bold = ParagraphStyle(
-            'CVBodyBold',
-            parent=body_style,
-            fontName='Helvetica-Bold'
+        right_bold_style = ParagraphStyle(
+            'RightBold',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=9.5,
+            leading=12,
+            textColor=colors.HexColor('#0B1F3A')
         )
 
-        left_header = [
-            Paragraph(f"<b>{data.get('name', 'CHRIST DANY OBIEY').upper()}</b>", title_style),
-            Paragraph(data.get('title', 'Consultant IT & Expert Fullstack'), subtitle_style),
-            Spacer(1, 0.15*cm),
-            Paragraph(f"📍 {data.get('location', 'Brazzaville & Pointe-Noire, Congo')} | 📞 {data.get('phone', '+242 06 613 01 18')} | ✉️ {data.get('email', 'obieydany@gmail.com')}", contact_style),
-        ]
+        # 1. Left Sidebar Content
+        left_elements = []
 
-        if data.get('photo_path') and os.path.exists(data.get('photo_path')):
+        if data.get('photo_path') and os.path.exists(data['photo_path']):
             try:
-                img = Image(data['photo_path'], width=2.4*cm, height=2.4*cm)
-                header_table_data = [[left_header, img]]
+                img = Image(data['photo_path'], width=3.8*cm, height=3.8*cm)
+                left_elements.append(img)
+                left_elements.append(Spacer(1, 0.3*cm))
             except Exception:
-                header_table_data = [[left_header, ""]]
-        else:
-            header_table_data = [[left_header, ""]]
+                pass
 
-        header_table = Table(header_table_data, colWidths=[16*cm, 3*cm])
-        header_table.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('ALIGN', (1,0), (1,0), 'RIGHT'),
-        ]))
+        left_elements.append(Paragraph("CONTACT", left_header_style))
+        left_elements.append(Paragraph(f"📍 {data.get('location', 'Brazzaville, Congo')}", left_text_style))
+        left_elements.append(Paragraph(f"📞 {data.get('phone', '+242 06 613 01 18')}", left_text_style))
+        left_elements.append(Paragraph(f"✉️ {data.get('email', 'obieydany@gmail.com')}", left_text_style))
+        left_elements.append(Spacer(1, 0.4*cm))
 
-        col_left = []
-        col_right = []
+        left_elements.append(Paragraph("COMPÉTENCES CLÉS", left_header_style))
+        skills_dict = data.get('skills', {})
+        for cat, items in skills_dict.items():
+            left_elements.append(Paragraph(f"<b>{cat}:</b>", left_text_style))
+            left_elements.append(Paragraph(", ".join(items), left_text_style))
+            left_elements.append(Spacer(1, 0.15*cm))
+        left_elements.append(Spacer(1, 0.2*cm))
 
-        col_left.append(Paragraph("PROFIL PROFESSIONNEL", section_heading))
-        col_left.append(HRFlowable(width="100%", thickness=1, color=SECONDARY_COLOR, spaceAfter=4))
-        col_left.append(Paragraph(data.get('summary', ''), body_style))
-        col_left.append(Spacer(1, 0.2*cm))
-
-        col_left.append(Paragraph("EXPÉRIENCES PROFESSIONNELLES", section_heading))
-        col_left.append(HRFlowable(width="100%", thickness=1, color=SECONDARY_COLOR, spaceAfter=4))
-        for exp in data.get('experiences', []):
-            col_left.append(Paragraph(f"<b>{exp.get('role')}</b> | {exp.get('company')} ({exp.get('dates')})", body_bold))
-            for bullet in exp.get('bullets', []):
-                col_left.append(Paragraph(f"• {bullet}", body_style))
-            col_left.append(Spacer(1, 0.15*cm))
-
-        col_left.append(Paragraph("PROJETS PHARES", section_heading))
-        col_left.append(HRFlowable(width="100%", thickness=1, color=SECONDARY_COLOR, spaceAfter=4))
-        for proj in data.get('projects', []):
-            col_left.append(Paragraph(f"<b>{proj.get('title')}</b>", body_bold))
-            col_left.append(Paragraph(proj.get('desc'), body_style))
-            col_left.append(Spacer(1, 0.1*cm))
-
-        col_right.append(Paragraph("COMPÉTENCES CLÉS", section_heading))
-        col_right.append(HRFlowable(width="100%", thickness=1, color=SECONDARY_COLOR, spaceAfter=4))
-        for category, skills_list in data.get('skills', {}).items():
-            col_right.append(Paragraph(f"<b>{category} :</b>", body_bold))
-            col_right.append(Paragraph(", ".join(skills_list), body_style))
-            col_right.append(Spacer(1, 0.15*cm))
-
-        col_right.append(Paragraph("FORMATIONS & DIPLÔMES", section_heading))
-        col_right.append(HRFlowable(width="100%", thickness=1, color=SECONDARY_COLOR, spaceAfter=4))
+        left_elements.append(Paragraph("FORMATIONS & CERTIFS", left_header_style))
         for edu in data.get('education', []):
-            col_right.append(Paragraph(f"<b>{edu.get('degree')}</b>", body_bold))
-            col_right.append(Paragraph(f"{edu.get('school')} ({edu.get('dates')})", body_style))
-            col_right.append(Spacer(1, 0.15*cm))
+            pdf_link = edu.get('pdf_url', '')
+            link_html = f" - <a href='{pdf_link}'><u>[Voir PDF]</u></a>" if pdf_link else ""
+            left_elements.append(Paragraph(f"<b>{edu['degree']}</b>{link_html}", left_text_style))
+            left_elements.append(Paragraph(f"{edu['school']} ({edu['dates']})", left_text_style))
+            left_elements.append(Spacer(1, 0.15*cm))
+        left_elements.append(Spacer(1, 0.2*cm))
 
-        main_table = Table([[col_left, col_right]], colWidths=[12.2*cm, 6.8*cm])
-        main_table.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('RIGHTPADDING', (0,0), (0,0), 8),
-            ('LEFTPADDING', (1,0), (1,0), 8),
-        ]))
+        if data.get('projects'):
+            left_elements.append(Paragraph("PROJETS MAJEURS", left_header_style))
+            for proj in data.get('projects', []):
+                left_elements.append(Paragraph(f"<b>{proj['title']}</b>", left_text_style))
+                left_elements.append(Paragraph(proj['desc'], left_text_style))
+                left_elements.append(Spacer(1, 0.15*cm))
 
-        elements = [
-            header_table,
-            Spacer(1, 0.2*cm),
-            HRFlowable(width="100%", thickness=1.5, color=PRIMARY_COLOR, spaceAfter=6),
-            main_table
+        # 2. Right Column Content
+        right_elements = [
+            Paragraph(data.get('name', 'CHRIST DANY OBIEY'), right_title_style),
+            Paragraph(data.get('title', 'Consultant IT & Expert Fullstack'), right_subtitle_style),
+            Spacer(1, 0.25*cm),
+            HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#185FA5'), spaceAfter=8),
+            Paragraph("RÉSUMÉ PROFESSIONNEL", right_section_style),
+            Paragraph(data.get('summary', ''), right_body_style),
+            Spacer(1, 0.3*cm),
+            Paragraph("PARCOURS PROFESSIONNEL", right_section_style),
+            HRFlowable(width="100%", thickness=1, color=colors.HexColor('#CBD5E1'), spaceAfter=6),
         ]
 
-        doc.build(elements)
+        for exp in data.get('experiences', []):
+            right_elements.append(Paragraph(f"<b>{exp['role']}</b> — <font color='#185FA5'><b>{exp['company']}</b></font> ({exp['dates']})", right_bold_style))
+            for bullet in exp.get('bullets', []):
+                right_elements.append(Paragraph(f"• {bullet}", right_body_style))
+            right_elements.append(Spacer(1, 0.2*cm))
+
+        # Combine into 2-column Layout Table
+        layout_table = Table([[left_elements, right_elements]], colWidths=[5.5*cm, 14.0*cm])
+        layout_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (0,0), colors.HexColor('#0B1F3A')),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('PADDING', (0,0), (0,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ]))
+
+        doc.build([layout_table])
         return output_path
 
     @staticmethod
     def generate_cover_letter_pdf(data, output_path):
+        """Generates a strictly 1-page targeted cover letter PDF."""
         doc = SimpleDocTemplate(
             output_path,
             pagesize=A4,
-            leftMargin=1.5*cm,
-            rightMargin=1.5*cm,
-            topMargin=1.5*cm,
-            bottomMargin=1.5*cm
+            leftMargin=1.5 * cm,
+            rightMargin=1.5 * cm,
+            topMargin=1.5 * cm,
+            bottomMargin=1.5 * cm
         )
 
         styles = getSampleStyleSheet()
-        PRIMARY_COLOR = colors.HexColor('#1E3A8A')
-        TEXT_DARK = colors.HexColor('#1F2937')
 
-        sender_style = ParagraphStyle(
-            'LMSender',
-            parent=styles['Normal'],
-            fontName='Helvetica-Bold',
-            fontSize=10,
-            leading=13,
-            textColor=PRIMARY_COLOR
-        )
-
-        recipient_style = ParagraphStyle(
-            'LMRecipient',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=9.5,
-            leading=13,
-            textColor=TEXT_DARK,
-            alignment=TA_RIGHT
-        )
-
-        subject_style = ParagraphStyle(
-            'LMSubject',
-            parent=styles['Normal'],
-            fontName='Helvetica-Bold',
-            fontSize=10,
-            leading=13,
-            textColor=PRIMARY_COLOR,
-            spaceBefore=10,
-            spaceAfter=10
-        )
-
-        body_style = ParagraphStyle(
-            'LMBody',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=9.5,
-            leading=13.5,
-            textColor=TEXT_DARK,
-            alignment=TA_JUSTIFY,
-            spaceAfter=8
-        )
+        sender_style = ParagraphStyle('Sender', fontName='Helvetica-Bold', fontSize=10, leading=13, textColor=colors.HexColor('#0B1F3A'))
+        recipient_style = ParagraphStyle('Recipient', fontName='Helvetica', fontSize=10, leading=13, textColor=colors.HexColor('#334155'))
+        subject_style = ParagraphStyle('Subject', fontName='Helvetica-Bold', fontSize=12, leading=15, textColor=colors.HexColor('#185FA5'))
+        body_style = ParagraphStyle('Body', fontName='Helvetica', fontSize=10, leading=14, textColor=colors.HexColor('#1E293B'))
 
         sender_text = [
             Paragraph(f"<b>{data.get('name', 'CHRIST DANY OBIEY')}</b>", sender_style),
-            Paragraph(f"📍 {data.get('location', 'Brazzaville & Pointe-Noire, Congo')}", styles['Normal']),
+            Paragraph(f"{data.get('location', 'Brazzaville, Congo')}", styles['Normal']),
             Paragraph(f"📞 {data.get('phone', '+242 06 613 01 18')}", styles['Normal']),
             Paragraph(f"✉️ {data.get('email', 'obieydany@gmail.com')}", styles['Normal']),
         ]

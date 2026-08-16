@@ -28,7 +28,6 @@ class ApiService {
         authToken = data['access'];
         return true;
       } else {
-        // Try auto register
         final regResponse = await http.post(
           Uri.parse('$baseUrl/api/auth/register/'),
           headers: {'Content-Type': 'application/json'},
@@ -116,6 +115,44 @@ class ApiService {
       debugPrint('Payment error: $e');
     }
     return false;
+  }
+
+  // Structured Profile Endpoints
+  static Future<Map<String, dynamic>?> fetchProfileInfo() async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/api/profile/info/'), headers: headers);
+      if (res.statusCode == 200) return jsonDecode(res.body);
+    } catch (e) { debugPrint('Error profile info: $e'); }
+    return null;
+  }
+
+  static Future<bool> saveProfileInfo(Map<String, dynamic> data) async {
+    try {
+      final res = await http.patch(Uri.parse('$baseUrl/api/profile/info/'), headers: headers, body: jsonEncode(data));
+      return res.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<List<dynamic>> fetchSection(String section) async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/api/profile/$section/'), headers: headers);
+      if (res.statusCode == 200) return jsonDecode(res.body);
+    } catch (e) { debugPrint('Error section $section: $e'); }
+    return [];
+  }
+
+  static Future<bool> addSectionItem(String section, Map<String, dynamic> data) async {
+    try {
+      final res = await http.post(Uri.parse('$baseUrl/api/profile/$section/'), headers: headers, body: jsonEncode(data));
+      return res.statusCode == 201;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> deleteSectionItem(String section, int id) async {
+    try {
+      final res = await http.delete(Uri.parse('$baseUrl/api/profile/$section/$id/'), headers: headers);
+      return res.statusCode == 204;
+    } catch (e) { return false; }
   }
 }
 
@@ -312,7 +349,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
     final List<Widget> tabs = [
       DashboardTab(onRefresh: _loadSubscription),
       CreateApplicationTab(onGenerated: _loadSubscription),
-      const ProfileTab(),
+      const StructuredProfileTab(),
       PaymentsTab(onPaid: _loadSubscription),
     ];
 
@@ -353,8 +390,146 @@ class _MainTabScreenState extends State<MainTabScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Candidatures'),
           BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'Générer'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+          BottomNavigationBarItem(icon: Icon(Icons.badge), label: 'Profil'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Abonnement'),
+        ],
+      ),
+    );
+  }
+}
+
+class StructuredProfileTab extends StatefulWidget {
+  const StructuredProfileTab({super.key});
+
+  @override
+  State<StructuredProfileTab> createState() => _StructuredProfileTabState();
+}
+
+class _StructuredProfileTabState extends State<StructuredProfileTab> {
+  Map<String, dynamic> _info = {};
+  List<dynamic> _experiences = [];
+  List<dynamic> _certifications = [];
+  List<dynamic> _educations = [];
+  List<dynamic> _projects = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAll();
+  }
+
+  void _loadAll() async {
+    setState(() => _isLoading = true);
+    final info = await ApiService.fetchProfileInfo();
+    final exps = await ApiService.fetchSection('experiences');
+    final certs = await ApiService.fetchSection('certifications');
+    final edus = await ApiService.fetchSection('educations');
+    final projs = await ApiService.fetchSection('projects');
+
+    setState(() {
+      _info = info ?? {};
+      _experiences = exps;
+      _certifications = certs;
+      _educations = edus;
+      _projects = projs;
+      _isLoading = false;
+    });
+  }
+
+  void _addExpDialog() {
+    final titleCtrl = TextEditingController();
+    final companyCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ajouter une expérience'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Poste *')),
+            TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Structure *')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleCtrl.text.isNotEmpty && companyCtrl.text.isNotEmpty) {
+                await ApiService.addSectionItem('experiences', {
+                  'title': titleCtrl.text,
+                  'company': companyCtrl.text,
+                  'industry': 'Informatique',
+                  'start_date': '2024-01-01',
+                  'is_current': true,
+                });
+                Navigator.pop(ctx);
+                _loadAll();
+              }
+            },
+            child: const Text('Ajouter'),
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Profil Structuré', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+                  const SizedBox(height: 6),
+                  Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildSectionHeader('Expériences Professionnelles', _addExpDialog),
+          ..._experiences.map((exp) => Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              title: Text(exp['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('${exp['company'] ?? ''} (${exp['start_date'] ?? ''})'),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  await ApiService.deleteSectionItem('experiences', exp['id']);
+                  _loadAll();
+                },
+              ),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, VoidCallback onAdd) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+          IconButton(onPressed: onAdd, icon: const Icon(Icons.add_circle, color: Color(0xFF185FA5))),
         ],
       ),
     );
@@ -545,38 +720,6 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
                 icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.auto_awesome),
                 label: Text(_isGenerating ? 'Génération en cours...' : 'Lancer la Génération IA'),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ProfileTab extends StatelessWidget {
-  const ProfileTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
-      child: Card(
-        color: Colors.white,
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Mon Profil README / Markdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-              SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(labelText: 'Titre Principal', border: OutlineInputBorder()),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                maxLines: 6,
-                decoration: InputDecoration(labelText: 'Markdown CV Source', border: OutlineInputBorder()),
               )
             ],
           ),
