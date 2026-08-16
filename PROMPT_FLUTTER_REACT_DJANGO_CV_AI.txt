@@ -388,3 +388,38 @@ Les PR Previews (Pull Request Previews) étant automatiquement activées sur Ren
    - Le backend Django doit autoriser dynamiquement les domaines `*.onrender.com` (notamment `*.onrender.com` et les patterns PR preview) dans `ALLOWED_HOSTS` et `CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://.*\.onrender\.com$"]` afin de ne jamais bloquer une PR Preview.
 3. **Contrôle Qualité Visuel sur les PR Previews :**
    - Avant de valider ou fusionner une PR, l'agent IA doit inspecter la PR Preview active sur Render, vérifier le rendu complet (boutons, formulaires, textes) et capturer une preuve visuelle dans `/images_test`.
+
+
+================================================================================
+# PROMPT IA — REPRISE ET CORRECTION DESIGN & RENDU D'INTERFACE (FULL-STACK)
+================================================================================
+
+---
+
+## 1. DIAGNOSTIC ET CORRECTION OBLIGATOIRE DES ANOMALIES DE RENDU DEPLOYÉES
+
+L'inspection visuelle des déploiements Render actuels révèle plusieurs défauts majeurs d'affichage et de configuration qu'il convient de corriger immédiatement :
+
+1. **Backend Django REST Framework (`/` -> 404 & Swagger) :**
+   - La racine `/` renvoie une erreur 404 standard Django. Il est exigé de configurer une redirection automatique de la racine `/` vers `/api/docs/swagger/` ou `/api/docs/redoc/`.
+   - Tous les endpoints Backend (Authentification, Profil, Offres, Abonnements) doivent comporter la décoration Swagger exhaustive (`@extend_schema` / `@swagger_auto_schema`) avec descriptions, paramètres, corps de requête et exemples de réponses HTTP.
+
+2. **Interface Web React (`https://luka-mosala-web.onrender.com/`) :**
+   - **Problème identifié :** Formulaire brut non stylisé HTML basique (champs de texte collés, boutons HTML natifs sans CSS, typographie par défaut Times/Serif).
+   - **Correction requise :** Appliquer le système de design PostulIA (Palette de couleurs `#0B1F3A`, `#185FA5`, `#0F6E56`, `#444441`, `#F1EFE8`), utiliser Tailwind CSS ou des composants stylisés modernes, ajouter un layout structuré avec Header, Hero Section, cartes Ombragées, et boutons CTA professionnels (`.btn-primary`).
+
+3. **Interface Mobile Flutter (`https://luka-mosala-mobile.onrender.com/`) :**
+   - **Problème identifié :** Écran quasi-vide ne contenant qu'un titre texte brut sans barre de navigation, ni boutons, ni composants applicatifs.
+   - **Correction requise :** Intégrer l'App Bar supérieure aux couleurs de la marque (`#0B1F3A`), la Bottom Navigation Bar, la liste des candidatures sous forme de cartes d'action, et le bouton d'action flottant (+ Nouveau dossier).
+
+---
+
+## 2. DOSSIER DE PREUVE VISUELLE (`images_test/`) & PR PREVIEWS
+
+1. **Dossier de Captures :**
+   - S'assurer que le dossier `images_test/` existe à la racine du projet (`/images_test`).
+   - Après chaque correction de style ou de layout, capturer l'écran de l'application et enregistrer le fichier image PNG/JPG dans `/images_test/` (ex: `images_test/web_app_corrected.png`, `images_test/mobile_app_corrected.png`, `images_test/swagger_docs.png`).
+
+2. **Validation Automatique des PR Previews :**
+   - Pour chaque Pull Request soumise sur GitHub, vérifier les 3 liens de PR Previews générés automatiquement sur Render (`*-pr-X.onrender.com`).
+   - S'assurer que le backend autorise CORS pour toutes les PR Previews sans erreur de blocage d'origine.
