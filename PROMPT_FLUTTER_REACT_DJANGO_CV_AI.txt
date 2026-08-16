@@ -317,3 +317,74 @@ La plateforme adopte une identité visuelle moderne, professionnelle, rassurante
 2. **Responsivité & Performance :**
    - CSS Grid & Flexbox, Breakpoints Tailwind/Bootstrap pour Mobile (<768px), Tablette (768-1024px), Desktop (>1024px).
    - Chargement asynchrone des PDFs et Skeleton Loaders pendant la génération IA.
+
+
+================================================================================
+# PROMPT IA — DOCUMENTATION SWAGGER & VERIFICATION DES RENDUS WEB/MOBILE
+================================================================================
+
+---
+
+## 1. DOCUMENTATION SWAGGER / OPENAPI DU BACKEND DJANGO REST FRAMEWORK
+
+Pour garantir une intégration parfaite entre le Backend Django DRF, le Frontend Web React, l'Admin Angular et l'Application Mobile Flutter, l'agent IA doit obligatoirement générer une documentation Swagger / OpenAPI interactive et exhaustive.
+
+### Exigences Techniques Swagger / OpenAPI :
+- **Bibliothèque utilisée :** `drf-spectacular` (ou `drf-yasg`).
+- **Décoration systématique de TOUS les endpoints :**
+  - Utilisation des décorateurs `@extend_schema` (ou `@swagger_auto_schema`) sur chaque vue API (`APIView`, `ViewSet`, `api_view`).
+  - Spécification explicite du `summary`, de la `description`, des `parameters` (query, path, header), du `request_body` et des `responses` (codes HTTP 200, 201, 400, 401, 403, 404, 500) avec schémas de sérialiseurs appropriés.
+  - Exemples de payloads JSON d'entrée et de sortie pour chaque endpoint (authentification JWT, génération CV, abonnements Mobile Money, etc.).
+- **URLs Swagger accessibles :**
+  - Interface Swagger UI : `/api/docs/swagger/`
+  - Interface ReDoc : `/api/docs/redoc/`
+  - Schéma OpenAPI JSON/YAML : `/api/docs/schema/`
+
+---
+
+## 2. INSPECTION DES DÉPLOIEMENTS ET CORRECTION DES RENDUS VISUELS (WEB & MOBILE)
+
+L'agent IA doit obligatoirement se connecter à Render pour surveiller les services et vérifier visuellement le rendu des applications déployées aux adresses suivantes :
+- **Web App React / Front-End :** `https://luka-mosala-web.onrender.com/`
+- **Mobile App Flutter / Web-Mobile :** `https://luka-mosala-mobile.onrender.com/`
+
+### Procédure de Test et Correction Visuelle des Interfaces :
+1. **Inspection en Direct :**
+   - Se connecter aux URLs de déploiement `https://luka-mosala-web.onrender.com/` et `https://luka-mosala-mobile.onrender.com/`.
+   - Effectuer un contrôle visuel minutieux de la mise en page, de la typographie, des couleurs de la charte, de la responsivité et des éléments interactifs.
+
+2. **Correction des Anomalies d'Affichage :**
+   - Vérifier et corriger les boutons manquants ou non cliquables.
+   - Corriger les textes invisibles, tronqués ou chevauchés (problèmes de contraste, z-index, overflow, ou flexbox/grid CSS).
+   - S'assurer que tous les formulaires, modales, loaders et boutons CTA s'affichent correctement sur écran Desktop et Mobile.
+
+3. **Validation par Captures d'Écran (`images_test/`) :**
+   - Créer un dossier dédié `images_test/` à la racine du projet (`/images_test`).
+   - Effectuer des captures d'écran (screenshots) automatisées de chaque interface corrigée (Landing page, Dashboard, Générateur IA, Visualiseur PDF, App Mobile Flutter).
+   - Enregistrer ces captures dans `/images_test/` (ex: `images_test/web_landing_corrected.png`, `images_test/mobile_dashboard_corrected.png`, `images_test/pdf_preview_corrected.png`) pour valider visuellement le bon affichage avant toute soumission.
+
+
+================================================================================
+# PROMPT IA — HARMONISATION FULL-STACK & RENDER PR PREVIEWS
+================================================================================
+
+---
+
+## 1. SYNCHRONISATION HARMONIEUSE EN PROD & PREVIEW (BACKEND, FRONTEND, MOBILE)
+
+L'agent IA doit appliquer une cohérence stricte et continue à travers toutes les couches de l'application :
+- **Backend (Django REST Framework) :** Endpoints REST sécurisés, schémas CORS configurés pour accepter les URLs de production et de Preview PR, sérialiseurs synchronisés avec les modèles du frontend et mobile.
+- **Frontend (React / Web) :** Composants UI responsifs, gestion d'état centralisée, intégration complète des APIs Swagger et gestion dynamique des URLs d'API en fonction de l'environnement.
+- **Mobile (Flutter / App Web & Native) :** Interfaces adaptatives web/mobile, synchronisation des tokens d'authentification JWT, gestion hors-ligne et réutilisation des composants visuels.
+
+---
+
+## 2. GESTION DES PREVIEWS DE PULL REQUESTS (PR PREVIEWS) SUR RENDER
+
+Les PR Previews (Pull Request Previews) étant automatiquement activées sur Render pour les 3 services (Backend DRF, Frontend React, App Mobile Flutter) :
+1. **Détection des URLs de Preview PR :**
+   - L'agent IA doit prendre en compte les URLs générées automatiquement par Render pour chaque PR (ex: `https://luka-mosala-web-pr-X.onrender.com`, `https://luka-mosala-mobile-pr-X.onrender.com`, `https://luka-mosala-backend-pr-X.onrender.com`).
+2. **CORS & `ALLOWED_HOSTS` Dynamiques :**
+   - Le backend Django doit autoriser dynamiquement les domaines `*.onrender.com` (notamment `*.onrender.com` et les patterns PR preview) dans `ALLOWED_HOSTS` et `CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://.*\.onrender\.com$"]` afin de ne jamais bloquer une PR Preview.
+3. **Contrôle Qualité Visuel sur les PR Previews :**
+   - Avant de valider ou fusionner une PR, l'agent IA doit inspecter la PR Preview active sur Render, vérifier le rendu complet (boutons, formulaires, textes) et capturer une preuve visuelle dans `/images_test`.
