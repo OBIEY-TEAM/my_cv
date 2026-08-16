@@ -1,0 +1,42 @@
+services:
+  # 1. Backend API Service (Django REST Framework / Python)
+  - type: web
+    name: ai-jobapply-backend
+    env: python
+    plan: free
+    region: frankfurt
+    buildCommand: "pip install -r backend/requirements.txt && python backend/manage.py migrate"
+    startCommand: "cd backend && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: USE_SQLITE
+        value: "True"
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://ai-jobapply-web.onrender.com,https://ai-jobapply-mobile.onrender.com"
+
+  # 2. Web Client Service (React.js / Vite)
+  - type: web
+    name: ai-jobapply-web
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npx vite preview --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://ai-jobapply-backend.onrender.com/api"
+
+  # 3. Mobile Web App Service (Flutter Web)
+  - type: web
+    name: ai-jobapply-mobile
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "git clone https://github.com/flutter/flutter.git -b stable --depth 1 && export PATH=\"$PATH:`pwd`/flutter/bin\" && cd mobile && flutter create . --platforms web && flutter build web --release"
+    startCommand: "npx serve -s mobile/build/web -p $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://ai-jobapply-backend.onrender.com/api"

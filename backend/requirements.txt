@@ -1,0 +1,11 @@
+django>=5.0
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+reportlab
+pillow
+requests
+beautifulsoup4
+pypdf
+python-dotenv
+gunicorn
