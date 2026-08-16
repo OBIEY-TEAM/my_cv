@@ -150,33 +150,36 @@ export default function App() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border border-slate-200">
-          <div className="flex items-center space-x-3 mb-6">
-            <Sparkles className="w-8 h-8 text-blue-700" />
-            <h1 className="text-2xl font-black text-slate-900">AI JobApply SaaS</h1>
+      <div style={{ minHeight: '100vh', backgroundColor: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)', maxWidth: '420px', width: '100%', border: '1px solid #cbd5e1' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <Sparkles style={{ width: '32px', height: '32px', color: '#185FA5' }} />
+            <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Luka Mosala SaaS</h1>
           </div>
-          <p className="text-sm font-medium text-slate-700 mb-6">Connectez-vous pour générer vos candidatures sur mesure en 1-clic.</p>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginBottom: '24px' }}>Connectez-vous pour générer vos candidatures sur mesure en 1-clic.</p>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-1">Nom d'utilisateur</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', marginBottom: '6px' }}>Nom d'utilisateur</label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                className="w-full p-3 border-2 border-slate-300 rounded-xl text-slate-900 font-bold focus:border-blue-700 focus:outline-none"
+                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '15px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-1">Mot de passe</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#0B1F3A', marginBottom: '6px' }}>Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full p-3 border-2 border-slate-300 rounded-xl text-slate-900 font-bold focus:border-blue-700 focus:outline-none"
+                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '15px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
               />
             </div>
-            <button type="submit" className="w-full bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-base p-3.5 rounded-xl shadow-lg transition">
+            <button
+              type="submit"
+              style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '16px', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(24, 95, 165, 0.4)', marginTop: '8px' }}
+            >
               Se connecter / S'inscrire
             </button>
           </form>
@@ -186,36 +189,36 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
-      <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Sparkles className="w-7 h-7 text-sky-400" />
-            <span className="font-extrabold text-xl tracking-tight text-white">AI JobApply <span className="text-sky-400">SaaS</span></span>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F1EFE8', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif' }}>
+      <header style={{ backgroundColor: '#0B1F3A', color: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles style={{ width: '28px', height: '28px', color: '#38bdf8' }} />
+            <span style={{ fontWeight: '900', fontSize: '20px', letterSpacing: '-0.5px', color: '#ffffff' }}>Luka Mosala <span style={{ color: '#38bdf8' }}>SaaS</span></span>
           </div>
 
-          <nav className="flex space-x-2 sm:space-x-4">
+          <nav style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-xl text-sm font-extrabold transition ${activeTab === 'dashboard' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-200 hover:bg-slate-800'}`}
+              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'dashboard' ? '#185FA5' : 'transparent', color: '#ffffff' }}
             >
               Tableau de bord
             </button>
             <button
               onClick={() => setActiveTab('create')}
-              className={`px-4 py-2 rounded-xl text-sm font-extrabold transition ${activeTab === 'create' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-200 hover:bg-slate-800'}`}
+              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'create' ? '#185FA5' : 'transparent', color: '#ffffff' }}
             >
               Nouvelle Candidature
             </button>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`px-4 py-2 rounded-xl text-sm font-extrabold transition ${activeTab === 'profile' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-200 hover:bg-slate-800'}`}
+              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'profile' ? '#185FA5' : 'transparent', color: '#ffffff' }}
             >
               Mon Profil
             </button>
             <button
               onClick={() => setActiveTab('plans')}
-              className={`px-4 py-2 rounded-xl text-sm font-extrabold transition ${activeTab === 'plans' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-200 hover:bg-slate-800'}`}
+              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', border: 'none', backgroundColor: activeTab === 'plans' ? '#185FA5' : 'transparent', color: '#ffffff' }}
             >
               Abonnements ({subscription.credits_remaining})
             </button>
@@ -223,62 +226,60 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+      <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '32px 16px', boxSizing: 'border-box' }}>
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-300 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
               <div>
-                <h2 className="text-2xl font-black text-slate-900">Bienvenue, Christ Dany OBIEY 👋</h2>
-                <p className="text-slate-700 font-medium mt-1">Générez des dossiers de candidature sur mesure (CV 1-Page & LM 1-Page) en quelques secondes.</p>
+                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Bienvenue, Christ Dany OBIEY 👋</h2>
+                <p style={{ color: '#444441', fontWeight: '600', marginTop: '6px', fontSize: '15px' }}>Générez des dossiers de candidature sur mesure (CV 1-Page & LM 1-Page) en quelques secondes.</p>
               </div>
-              <div className="flex items-center space-x-3 bg-blue-50 border-2 border-blue-200 px-5 py-3 rounded-2xl">
-                <ShieldCheck className="w-7 h-7 text-blue-700" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#e0f2fe', border: '2px solid #bae6fd', padding: '12px 20px', borderRadius: '12px' }}>
+                <ShieldCheck style={{ width: '28px', height: '28px', color: '#0284c7' }} />
                 <div>
-                  <p className="text-xs text-blue-800 font-extrabold uppercase">Solde Actuel</p>
-                  <p className="text-xl font-black text-blue-900">{subscription.credits_remaining} Crédit(s)</p>
+                  <p style={{ fontSize: '11px', color: '#0369a1', fontWeight: '800', textTransform: 'uppercase', margin: 0 }}>Solde Actuel</p>
+                  <p style={{ fontSize: '18px', fontWeight: '900', color: '#0c4a6e', margin: 0 }}>{subscription.credits_remaining} Crédit(s)</p>
                 </div>
               </div>
             </div>
 
-            <h3 className="text-xl font-extrabold text-slate-900 mt-8">Historique des candidatures générées</h3>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px', marginBottom: '8px' }}>Historique des candidatures générées</h3>
 
             {packages.length === 0 ? (
-              <div className="bg-white p-12 text-center rounded-2xl border-2 border-dashed border-slate-300">
-                <Briefcase className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-                <p className="text-slate-700 font-extrabold text-lg">Aucune candidature générée pour le moment.</p>
+              <div style={{ backgroundColor: '#ffffff', padding: '48px', textAlign: 'center', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
+                <Briefcase style={{ width: '48px', height: '48px', color: '#94a3b8', margin: '0 auto 12px' }} />
+                <p style={{ color: '#444441', fontWeight: '700', fontSize: '16px' }}>Aucune candidature générée pour le moment.</p>
                 <button
                   onClick={() => setActiveTab('create')}
-                  className="mt-4 inline-flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold shadow-md transition"
+                  style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#185FA5', color: '#ffffff', padding: '12px 24px', borderRadius: '10px', fontWeight: '800', border: 'none', cursor: 'pointer' }}
                 >
-                  <Sparkles className="w-5 h-5 text-sky-300" />
+                  <Sparkles style={{ width: '18px', height: '18px' }} />
                   <span>Créer ma première candidature</span>
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
                 {packages.map(pkg => (
-                  <div key={pkg.id} className="bg-white p-5 rounded-2xl border border-slate-300 shadow-sm space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-xs font-black bg-blue-100 text-blue-900 px-3 py-1 rounded-full uppercase">
-                          {pkg.job_offer.site_category}
-                        </span>
-                        <h4 className="font-extrabold text-slate-900 text-lg mt-2">{pkg.job_offer.title}</h4>
-                        <p className="text-sm font-bold text-slate-600">{pkg.job_offer.company}</p>
-                      </div>
+                  <div key={pkg.id} style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', fontWeight: '800', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '12px', textTransform: 'uppercase' }}>
+                        {pkg.job_offer.site_category}
+                      </span>
+                      <h4 style={{ fontWeight: '800', color: '#0B1F3A', fontSize: '18px', marginTop: '8px', marginBottom: '4px' }}>{pkg.job_offer.title}</h4>
+                      <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', margin: 0 }}>{pkg.job_offer.company}</p>
                     </div>
-                    <div className="border-t border-slate-200 pt-3 flex flex-wrap gap-2">
-                      <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" className="text-xs bg-slate-800 hover:bg-slate-900 text-white font-extrabold px-3 py-2 rounded-xl flex items-center space-x-1">
-                        <FileText className="w-4 h-4 text-sky-400" />
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" style={{ fontSize: '12px', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <FileText style={{ width: '14px', height: '14px', color: '#38bdf8' }} />
                         <span>CV (1 Page)</span>
                       </a>
-                      <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" className="text-xs bg-slate-800 hover:bg-slate-900 text-white font-extrabold px-3 py-2 rounded-xl flex items-center space-x-1">
-                        <FileText className="w-4 h-4 text-sky-400" />
+                      <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" style={{ fontSize: '12px', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <FileText style={{ width: '14px', height: '14px', color: '#38bdf8' }} />
                         <span>LM (1 Page)</span>
                       </a>
-                      <a href={pkg.zip_package} download className="text-xs bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-3 py-2 rounded-xl flex items-center space-x-1 ml-auto">
-                        <Download className="w-4 h-4" />
-                        <span>Télécharger ZIP</span>
+                      <a href={pkg.zip_package} download style={{ fontSize: '12px', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
+                        <Download style={{ width: '14px', height: '14px' }} />
+                        <span>ZIP</span>
                       </a>
                     </div>
                   </div>
@@ -289,54 +290,48 @@ export default function App() {
         )}
 
         {activeTab === 'create' && (
-          <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl border border-slate-300 shadow-md space-y-6">
+          <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Générer un dossier de candidature sur mesure</h2>
-              <p className="text-sm font-medium text-slate-700 mt-1">Collez l'URL de l'offre d'emploi ou son texte brut. L'IA adaptera automatiquement votre profil README.</p>
+              <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Générer un dossier de candidature sur mesure</h2>
+              <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '6px' }}>Collez l'URL de l'offre d'emploi ou son texte brut. L'IA adaptera automatiquement votre profil README.</p>
             </div>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="block text-sm font-extrabold text-slate-900 mb-1">Lien de l'offre d'emploi (URL)</label>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Lien de l'offre d'emploi (URL)</label>
                 <input
                   type="url"
                   placeholder="https://www.acpe.cg/details-offre-emplois/4200"
                   value={sourceUrl}
                   onChange={e => setSourceUrl(e.target.value)}
-                  className="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-slate-900 focus:border-blue-700 outline-none text-sm"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div className="relative flex py-1 items-center">
-                <div className="flex-grow border-t border-slate-300"></div>
-                <span className="flex-shrink mx-4 text-xs font-black text-slate-500 uppercase">OU</span>
-                <div className="flex-grow border-t border-slate-300"></div>
-              </div>
-
               <div>
-                <label className="block text-sm font-extrabold text-slate-900 mb-1">Texte brut de l'offre d'emploi</label>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Texte brut de l'offre d'emploi</label>
                 <textarea
                   rows={6}
                   placeholder="Collez ici l'intitulé du poste, le nom de l'entreprise, les missions et compétences requises..."
                   value={jobText}
                   onChange={e => setJobText(e.target.value)}
-                  className="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-slate-900 focus:border-blue-700 outline-none text-sm"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
                 ></textarea>
               </div>
 
               <button
                 onClick={handleGenerateApplication}
                 disabled={isGenerating}
-                className="w-full bg-blue-700 hover:bg-blue-800 text-white font-black p-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-base"
+                style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 {isGenerating ? (
                   <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>Génération de votre dossier en cours (IA & PDF Engine)...</span>
+                    <RefreshCw style={{ width: '20px', height: '20px' }} />
+                    <span>Génération de votre dossier en cours...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 text-sky-300" />
+                    <Sparkles style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                     <span>Générer CV (1 Page), LM (1 Page) & Email TXT</span>
                   </>
                 )}
@@ -346,142 +341,129 @@ export default function App() {
         )}
 
         {activeTab === 'profile' && (
-          <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl border border-slate-300 shadow-md space-y-6">
+          <div style={{ maxWidth: '896px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Gestion de Profil & README de Référence</h2>
-              <p className="text-sm font-medium text-slate-700 mt-1">Vos données de référence utilisées par le moteur IA pour rédiger vos candidatures.</p>
+              <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Gestion de Profil & README de Référence</h2>
+              <p style={{ fontSize: '14px', fontWeight: '600', color: '#444441', marginTop: '6px' }}>Vos données de référence utilisées par le moteur IA pour rédiger vos candidatures.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
-                <label className="block text-sm font-extrabold text-slate-900 mb-1">Titre Principal</label>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Titre Principal</label>
                 <input
                   type="text"
                   value={profile.title}
                   onChange={e => setProfile({...profile, title: e.target.value})}
-                  className="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-slate-900 text-sm"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-extrabold text-slate-900 mb-1">Téléphone</label>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Téléphone</label>
                 <input
                   type="text"
                   value={profile.phone}
                   onChange={e => setProfile({...profile, phone: e.target.value})}
-                  className="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-slate-900 text-sm"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-extrabold text-slate-900 mb-1">Profil README / Markdown</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Profil README / Markdown</label>
               <textarea
                 rows={10}
                 value={profile.readme_content}
                 onChange={e => setProfile({...profile, readme_content: e.target.value})}
-                className="w-full p-3 border-2 border-slate-300 rounded-xl font-mono text-slate-900 font-bold text-sm"
+                style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontFamily: 'monospace', fontSize: '14px', fontWeight: '600', color: '#0B1F3A', boxSizing: 'border-box' }}
               ></textarea>
             </div>
           </div>
         )}
 
         {activeTab === 'plans' && (
-          <div className="max-w-5xl mx-auto space-y-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-black text-slate-900">Formules d'Abonnement & Crédits</h2>
-              <p className="text-slate-700 font-medium mt-2">Choisissez votre formule et payez instantanément via Mobile Money (Airtel, MTN, PayDunya).</p>
+          <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement & Crédits</h2>
+              <p style={{ color: '#444441', fontWeight: '600', marginTop: '8px' }}>Choisissez votre formule et payez instantanément via Mobile Money (Airtel, MTN, PayDunya).</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className={`bg-white p-6 rounded-2xl border-2 ${selectedPlan === 1 ? 'border-blue-700 ring-2 ring-blue-700' : 'border-slate-300'} shadow-sm flex flex-col justify-between`}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 1 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="text-xs font-black bg-slate-200 text-slate-900 px-3 py-1 rounded-full uppercase">Découverte</span>
-                  <h3 className="text-2xl font-extrabold text-slate-900 mt-4">Gratuit</h3>
-                  <p className="text-3xl font-black text-blue-900 mt-2">0 FCFA</p>
-                  <ul className="mt-6 space-y-3 text-sm font-bold text-slate-700">
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>1 Candidature offerte</span></li>
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>CV & LM 1-Page stricts</span></li>
-                  </ul>
+                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#f1f5f9', color: '#0B1F3A', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Découverte</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Gratuit</h3>
+                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>0 FCFA</p>
                 </div>
-                <button onClick={() => setSelectedPlan(1)} className="mt-8 w-full border-2 border-blue-700 text-blue-700 font-extrabold p-3 rounded-xl hover:bg-blue-50 transition">
+                <button onClick={() => setSelectedPlan(1)} style={{ marginTop: '24px', width: '100%', border: '2px solid #185FA5', backgroundColor: 'transparent', color: '#185FA5', fontWeight: '800', padding: '12px', borderRadius: '10px', cursor: 'pointer' }}>
                   Sélectionner
                 </button>
               </div>
 
-              <div className={`bg-white p-6 rounded-2xl border-2 ${selectedPlan === 2 ? 'border-blue-700 ring-2 ring-blue-700' : 'border-slate-300'} shadow-sm flex flex-col justify-between relative`}>
-                <span className="absolute -top-3 right-6 bg-blue-700 text-white text-xs font-black px-3 py-1 rounded-full uppercase">Recommandé</span>
+              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 2 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="text-xs font-black bg-blue-100 text-blue-900 px-3 py-1 rounded-full uppercase">Pack 5</span>
-                  <h3 className="text-2xl font-extrabold text-slate-900 mt-4">Pack 5 Candidatures</h3>
-                  <p className="text-3xl font-black text-blue-900 mt-2">2 000 FCFA</p>
-                  <ul className="mt-6 space-y-3 text-sm font-bold text-slate-700">
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>5 Candidatures complètes</span></li>
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>Archive PDF de l'offre</span></li>
-                  </ul>
+                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Pack 5</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Pack 5 Candidatures</h3>
+                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>2 000 FCFA</p>
                 </div>
-                <button onClick={() => setSelectedPlan(2)} className="mt-8 w-full bg-blue-700 text-white font-extrabold p-3.5 rounded-xl hover:bg-blue-800 transition">
+                <button onClick={() => setSelectedPlan(2)} style={{ marginTop: '24px', width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
                   Sélectionner
                 </button>
               </div>
 
-              <div className={`bg-white p-6 rounded-2xl border-2 ${selectedPlan === 3 ? 'border-blue-700 ring-2 ring-blue-700' : 'border-slate-300'} shadow-sm flex flex-col justify-between`}>
+              <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: selectedPlan === 3 ? '3px solid #185FA5' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="text-xs font-black bg-purple-100 text-purple-900 px-3 py-1 rounded-full uppercase">Illimité</span>
-                  <h3 className="text-2xl font-extrabold text-slate-900 mt-4">Illimité Mensuel</h3>
-                  <p className="text-3xl font-black text-blue-900 mt-2">5 000 FCFA <span className="text-xs font-bold text-slate-600">/ mois</span></p>
-                  <ul className="mt-6 space-y-3 text-sm font-bold text-slate-700">
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>Candidatures illimitées</span></li>
-                    <li className="flex items-center space-x-2"><CheckCircle className="w-5 h-5 text-green-600" /><span>Support prioritaire</span></li>
-                  </ul>
+                  <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#f3e8ff', color: '#7e22ce', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>Illimité</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0B1F3A', marginTop: '16px' }}>Illimité Mensuel</h3>
+                  <p style={{ fontSize: '28px', fontWeight: '900', color: '#185FA5', marginTop: '8px' }}>5 000 FCFA</p>
                 </div>
-                <button onClick={() => setSelectedPlan(3)} className="mt-8 w-full border-2 border-blue-700 text-blue-700 font-extrabold p-3 rounded-xl hover:bg-blue-50 transition">
+                <button onClick={() => setSelectedPlan(3)} style={{ marginTop: '24px', width: '100%', border: '2px solid #185FA5', backgroundColor: 'transparent', color: '#185FA5', fontWeight: '800', padding: '12px', borderRadius: '10px', cursor: 'pointer' }}>
                   Sélectionner
                 </button>
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-300 shadow-md max-w-xl mx-auto space-y-6">
-              <h3 className="text-xl font-black text-slate-900">Procéder au paiement Fintech Mobile Money</h3>
+            <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', maxWidth: '512px', margin: '0 auto', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Procéder au paiement Fintech Mobile Money</h3>
 
-              <div className="space-y-3">
-                <label className="block text-sm font-extrabold text-slate-900">Sélectionner le mode de paiement</label>
-                <div className="grid grid-cols-3 gap-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '800', color: '#0B1F3A' }}>Mode de paiement</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   <button
                     onClick={() => setPaymentMethod('AIRTEL_MONEY')}
-                    className={`p-3 border-2 rounded-xl font-extrabold text-xs flex flex-col items-center space-y-1 ${paymentMethod === 'AIRTEL_MONEY' ? 'border-red-600 bg-red-50 text-red-800' : 'border-slate-300 text-slate-900'}`}
+                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #ef4444', backgroundColor: paymentMethod === 'AIRTEL_MONEY' ? '#fef2f2' : '#ffffff', color: '#b91c1c', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    <span>Airtel Money</span>
+                    Airtel Money
                   </button>
                   <button
                     onClick={() => setPaymentMethod('MTN_MOMO')}
-                    className={`p-3 border-2 rounded-xl font-extrabold text-xs flex flex-col items-center space-y-1 ${paymentMethod === 'MTN_MOMO' ? 'border-yellow-600 bg-yellow-50 text-yellow-900' : 'border-slate-300 text-slate-900'}`}
+                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #eab308', backgroundColor: paymentMethod === 'MTN_MOMO' ? '#fefce8' : '#ffffff', color: '#a16207', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    <span>MTN MoMo</span>
+                    MTN MoMo
                   </button>
                   <button
                     onClick={() => setPaymentMethod('PAYDUNYA')}
-                    className={`p-3 border-2 rounded-xl font-extrabold text-xs flex flex-col items-center space-y-1 ${paymentMethod === 'PAYDUNYA' ? 'border-blue-700 bg-blue-50 text-blue-900' : 'border-slate-300 text-slate-900'}`}
+                    style={{ padding: '12px', borderRadius: '10px', border: '2px solid #185FA5', backgroundColor: paymentMethod === 'PAYDUNYA' ? '#e0f2fe' : '#ffffff', color: '#185FA5', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    <span>PayDunya / Carte</span>
+                    PayDunya
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-extrabold text-slate-900 mb-1">Numéro Mobile Money (+242...)</label>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', marginBottom: '6px' }}>Numéro Mobile Money (+242...)</label>
                 <input
                   type="text"
                   value={phoneNumber}
                   onChange={e => setPhoneNumber(e.target.value)}
-                  className="w-full p-3 border-2 border-slate-300 rounded-xl font-black text-slate-900 text-sm"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '800', color: '#0B1F3A', boxSizing: 'border-box' }}
                 />
               </div>
 
               <button
                 onClick={handlePayment}
-                className="w-full bg-green-700 hover:bg-green-800 text-white font-black p-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-base"
+                style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <Lock className="w-5 h-5 text-white" />
+                <Lock style={{ width: '18px', height: '18px' }} />
                 <span>Payer et recharger mes crédits</span>
               </button>
             </div>
