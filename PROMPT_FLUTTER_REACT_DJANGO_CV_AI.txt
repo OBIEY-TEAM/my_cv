@@ -611,3 +611,33 @@ Pour la section Info :
 - Composants frontend web pour chaque section (formulaires + affichage)
 - Composants mobile équivalents
 - Mise à jour du module de génération de CV pour inclure les liens PDF
+
+
+================================================================================
+# PROMPT IA — RECAPITULATIF ET VALIDATION EXHAUSTIVE DES CHAMPS PROFIL
+================================================================================
+
+---
+
+## SYNTHÈSE DES CHAMPS STRUCTURÉS EXIGÉS PAR SECTION (BACKEND, FRONTEND & MOBILE)
+
+L'agent IA doit obligatoirement s'assurer que TOUS les champs ci-dessous sont modélisés en base de données, gérés par les sérialiseurs Django REST Framework, et intégrés dans les formulaires de saisie et fiches d'affichage du Frontend Web et de l'App Mobile :
+
+1. **Info Générale (Info) :**
+   - Nom, Prénom, Genre, Date de naissance, Numéro principal, Numéro secondaire, Résumé professionnel, Adresse (adressepay), Arrondissement, Quartier.
+
+2. **Expérience Professionnelle (Expérience) :**
+   - Action : Bouton "+ Ajouter une expérience".
+   - Champs : Poste occupé, Structure, Secteur d'activité, Lieu, Date de début, Date de fin, Jusqu'à présent (case à cocher), Compétences acquises.
+
+3. **Certifications et Attestations :**
+   - Action : Bouton "+ Ajouter un certificat".
+   - Champs : Libellé du certificat, Année, Institution, Lieu, Date de début, Date de fin, Description, Certificat en PDF (upload optionnel).
+
+4. **Diplômes :**
+   - Action : Bouton "+ Ajouter un diplôme".
+   - Champs : Libellé du diplôme, Année, Institution, Niveau d'étude, Spécialité, Lieu, Date de début, Date de fin, Diplôme en PDF (upload optionnel), Compétences acquises.
+
+5. **Projets :**
+   - Action : Bouton "+ Ajouter un projet".
+   - Champs : Nom du projet, Secteur d'activité, Bénéficiaire, Lien d'hébergement, Description.
