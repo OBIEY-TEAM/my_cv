@@ -1,11 +1,11 @@
 # PROMPT SPÉCIFICATION ARCHITECTURALE & DÉVELOPPEMENT D'APPLICATION
-# NOM DU PROJET : "AI JobApply SaaS" - Générateur Automatisé de Candidatures Sur Mesure
+# NOM DU PROJET : "Luka Mosala SaaS" - Générateur Automatisé de Candidatures Sur Mesure
 # DESTINATAIRE IA : Jules AI / Agent IA Autonome de Développement
 
 ---
 
 ## 1. VISION DU PROJET & OBJECTIF GÉNÉRAL
-Construire une plateforme SaaS complète (Mobile Flutter + Web React + Backend Django REST Framework) connectée aux API d'Intelligence Artificielle (Jules / OpenAI / Claude) et aux passerelles de paiement Mobile Money (Airtel Money, MTN Mobile Money, PayDunya).
+Construire la plateforme SaaS complète **Luka Mosala** (Mobile Flutter + Web React Client + Dashboard Admin Angular + Backend Django REST Framework) connectée aux API d'Intelligence Artificielle (Jules / OpenAI / Claude) et aux passerelles de paiement Mobile Money (Airtel Money, MTN Mobile Money, PayDunya).
 
 L'application permet à tout utilisateur d'importer une offre d'emploi (via un lien URL, un fichier PDF ou un texte brut), une photo de profil et son profil/CV de référence (style README/markdown), puis de générer instantanément un dossier de candidature complet et sur mesure :
 1. **CV Professionnel sur mesure (PDF - Strictement 1 page)** avec photo recadrée professionnellement.
@@ -19,33 +19,33 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
 ## 2. ARCHITECTURE TECHNIQUE GLOBALE DU SYSTÈME
 
 ```
- [ APPLICATION MOBILE FLUTTER ]     [ APPLICATION WEB REACT / NEXT.JS ]
-     (iOS / Android Cross-Platform)             (Desktop / Tablet Responsive)
-                    │                                    │
-                    └───────────────┬────────────────────┘
-                                    │ (APIs REST / JSON / JWT)
-                                    ▼
-                    [ BACKEND DJANGO REST FRAMEWORK ]
-                    (Authentification, Métier, ORM, Celery)
-                      │             │               │
-      ┌───────────────┘             │               └───────────────┐
-      ▼                             ▼                               ▼
-[ BASE POSTGRESQL / REDIS ]   [ AGENT IA / JULES API ]   [ PAYMENTS FINTECH ]
- (Données Users, Subscriptions) (Génération CV/LM/Email)   (Airtel Money, MTN MoMo)
+ [ APPLICATION MOBILE FLUTTER WEB ]    [ WEB CLIENT REACT ]    [ DASHBOARD ADMIN ANGULAR ]
+ (mobile-luka-mosala.onrender.com)   (client-luka-mosala.onrender.com) (admin-luka-mosala.onrender.com)
+                 │                             │                              │
+                 └─────────────────────────────┼──────────────────────────────┘
+                                               │ (APIs REST / JSON / JWT)
+                                               ▼
+                           [ BACKEND DJANGO REST FRAMEWORK / PYTHON ]
+                             (backend-luka-mosala.onrender.com)
+                                 │             │               │
+                 ┌───────────────┘             │               └───────────────┐
+                 ▼                             ▼                               ▼
+   [ BASE POSTGRESQL / REDIS ]   [ AGENT IA / JULES API ]   [ PAYMENTS FINTECH ]
+    (Données Users, Subscriptions) (Génération CV/LM/Email)   (Airtel Money, MTN MoMo)
 ```
 
 ### A. Backend : Django REST Framework (DRF) + Python
-- **API RESTful securisée :** Authentification JWT (SimpleJWT), CORS, throttled endpoints.
-- **ORM & Base de données :** PostgreSQL (Production) / SQLite (Dev), Redis pour le caching.
-- **Tâches Asynchrones & queues :** Celery / Redis pour le scraping des offres web et la génération de PDF lourds sans bloquer l'API.
+- **API RESTful sécurisée :** Authentification JWT (SimpleJWT), CORS, throttled endpoints.
+- **ORM & Base de données :** SQLite / PostgreSQL, Redis pour le caching.
+- **Tâches Asynchrones & Queues :** Celery / Redis pour le scraping des offres web et la génération de PDF lourds sans bloquer l'API.
 - **Intégration GitHub / Jules AI API :**
   * Service de synchronisation avec GitHub via Octokit / Git Python API.
   * Webhooks & appels API vers l'agent IA (Jules API / LLM) pour analyser l'offre et générer le contenu du CV, de la Lettre de Motivation et de l'Email.
 - **Génération de PDF :** Moteur Python ReportLab / WeasyPrint pour générer des PDFs au design moderne respectant strictement la limite d'1 page.
 - **Paiements Mobile Money :** Module d'intégration Webhook / REST avec les API Fintech (Airtel Money Congo, MTN Mobile Money Congo, PayDunya, SankMoney).
 
-### B. Application Mobile : Flutter (Dart)
-- **Multiplateforme :** iOS et Android avec Material Design 3 / Cupertinoui.
+### B. Application Mobile : Flutter / Flutter Web
+- **Multiplateforme :** iOS, Android et Flutter Web (déployé sur Render).
 - **Gestion d'État :** BLoC / Provider / Riverpod.
 - **Fonctionnalités Clés :**
   * Appareil photo intégré (Camera Plugin / Image Picker) pour capturer la photo de profil en direct ou choisir depuis la galerie.
@@ -54,7 +54,7 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
   * Lecteur PDF natif pour prévisualiser le CV et la Lettre de Motivation générés.
   * Téléchargement & Partage direct (Share Plus, File Saver).
 
-### C. Application Web : React.js / TypeScript (ou Next.js)
+### C. Application Web Client : React.js / Vite / TypeScript
 - **UI/UX Moderne :** Tailwind CSS, Shadcn/UI, Lucide Icons, Framer Motion.
 - **Dashboard Réactif :**
   * Glisser-déposer (Drag & Drop) pour les fichiers d'offres et photos.
@@ -62,9 +62,77 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
   * Prévisualisation en direct (Live PDF Preview) du CV et de la Lettre de Motivation.
   * Historique des candidatures et statut des paiements.
 
+### D. Web Admin & Dashboard Organisateur : Angular 17+
+- **Gestion Administrative :**
+  * Supervision des utilisateurs, gestion des abonnements, validation des transactions Mobile Money.
+  * Monitoring de la consommation des API IA et statistiques de génération de CV/Lettres.
+
 ---
 
-## 3. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
+## 3. CONFIGURATION RENDER BLUEPRINT (`render.yaml`)
+
+Demande à l'IA de générer le fichier `render.yaml` à la racine du projet pour permettre le déploiement gratuit et automatisé de l'ensemble des 4 services sur Render :
+
+```yaml
+services:
+  # 1. Backend API Service (Django REST Framework / Python)
+  - type: web
+    name: backend-luka-mosala
+    env: python
+    plan: free
+    region: frankfurt
+    buildCommand: "pip install -r backend/requirements.txt && python backend/manage.py migrate"
+    startCommand: "cd backend && PYTHONPATH=. gunicorn luka_mosala.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: USE_SQLITE
+        value: "True"
+      - key: DJANGO_SETTINGS_MODULE
+        value: luka_mosala.settings
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://client-luka-mosala.onrender.com,https://admin-luka-mosala.onrender.com,https://mobile-luka-mosala.onrender.com"
+
+  # 2. Web Client Service (React.js / Vite)
+  - type: web
+    name: client-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "cd site_client_react && npm install --include=dev && npx vite build"
+    startCommand: "cd site_client_react && npx vite preview --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+
+  # 3. Web Admin & Dashboard Service (Angular 17+)
+  - type: web
+    name: admin-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "cd site_admin_angular && npm install --include=dev && npm run build"
+    startCommand: "npx serve -s site_admin_angular/dist/site_admin_angular/browser -p $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+
+  # 4. Mobile Web App Service (Flutter Web)
+  - type: web
+    name: mobile-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "git clone https://github.com/flutter/flutter.git -b stable --depth 1 && export PATH=\"$PATH:`pwd`/flutter/bin\" && cd site_client_mobile && flutter create . --platforms web && flutter build web --release"
+    startCommand: "npx serve -s site_client_mobile/build/web -p $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+```
+
+---
+
+## 4. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
 
 ### 1. Gestion de Compte & Authentification Utilisateur
 - **Inscription & Connexion :** Email/Mot de passe, OAuth2 (Google, GitHub).
@@ -103,22 +171,25 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
 
 ---
 
-## 4. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
+## 5. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
 
-1. **Initialiser le Backend Django REST Framework :**
+1. **Créer le Fichier `render.yaml` :**
+   - Générer à la racine du projet la configuration Render Blueprint contenant les 4 services avec le nom de projet **luka-mosala**.
+
+2. **Initialiser le Backend Django REST Framework :**
    - Créer les applications Django : `users`, `profile_manager`, `jobs`, `subscriptions`, `ai_engine`, `pdf_generator`.
    - Configurer les modèles de données (User, Profile, JobOffer, ApplicationPackage, Subscription, Transaction).
 
-2. **Mettre en place l'intégration Agent IA & Engine PDF :**
+3. **Mettre en place l'intégration Agent IA & Engine PDF :**
    - Implémenter le service Python ReportLab pour générer des PDFs ultra-pros au format 1 page stricte.
    - Intégrer l'API Jules / OpenAI pour la rédaction personnalisée selon le prompt maître validé.
 
-3. **Développer le Frontend Web React & l'Application Mobile Flutter :**
+4. **Développer le Frontend Web React, l'Admin Angular & l'App Mobile Flutter Web :**
    - Développer les écrans de création de compte, d'upload de photo/README et de sélection de formule d'abonnement.
    - Implémenter les flux de paiement Airtel Money & MTN MoMo.
    - Ajouter le visualiseur PDF et le bouton d'export ZIP des candidatures.
 
-4. **Tests & Vérifications :**
+5. **Tests & Vérifications :**
    - Valider que chaque CV et Lettre de Motivation générés font **exactement 1 page**.
    - Vérifier la conformité des données générées avec les informations du profil utilisateur.
    - Tester le flux d'achat par Mobile Money et la livraison immédiate des fichiers.
