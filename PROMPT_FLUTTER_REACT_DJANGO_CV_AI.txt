@@ -423,3 +423,30 @@ L'inspection visuelle des déploiements Render actuels révèle plusieurs défau
 2. **Validation Automatique des PR Previews :**
    - Pour chaque Pull Request soumise sur GitHub, vérifier les 3 liens de PR Previews générés automatiquement sur Render (`*-pr-X.onrender.com`).
    - S'assurer que le backend autorise CORS pour toutes les PR Previews sans erreur de blocage d'origine.
+
+
+================================================================================
+# PROMPT IA — RESOLUTION ERREURS AUTHENTIFICATION & COMPTE TEST PAR DÉFAUT
+================================================================================
+
+---
+
+## 1. CORRECTION DES ERREURS 500 D'AUTHENTIFICATION & CONFORMITÉ DES APIS BACKEND
+
+1. **Résolution de l'erreur 500 sur `POST /api/auth/login/` :**
+   - **Problème identifié :** La requête d'authentification `https://luka-mosala-web.onrender.com/api/auth/login/` renvoie un statut `500 Internal Server Error` (politique de provenance `strict-origin-when-cross-origin`).
+   - **Action exigée :** Diagnostiquer les logs Django DRF, corriger les handlers de connexion JWT / Session, s'assurer que les modèles `User` et `Profile` s'initialisent sans planter lors du login, et que les en-têtes CORS (`django-cors-headers`) gèrent correctement les origines frontend `https://luka-mosala-web.onrender.com` et mobile `https://luka-mosala-mobile.onrender.com`.
+
+2. **Intégration et Conformité des APIs (Frontend React & Mobile Flutter) :**
+   - Rendre l'ensemble des endpoints d'authentification, de gestion des profils, de téléchargement de documents et de paiement 100% conformes aux spécifications OpenAPI Swagger.
+   - Connecter de manière fluide le Frontend React et l'App Mobile Flutter à ces APIs avec une gestion propre des erreurs HTTP (badges, notifications toast, messages explicitants).
+
+---
+
+## 2. DÉPLOIEMENT D'UN COMPTE DE TEST PAR DÉFAUT (`admin` / `admin1234`)
+
+Pour permettre un test instantané sans blocage lors de l'évaluation :
+- Configurer une commande de seeding/migration (`python manage.py seed_data` ou signal Django `post_migrate`) qui crée ou met à jour automatiquement un utilisateur administrateur de démonstration :
+  - **Nom d'utilisateur :** `admin` (ou `obieydany`)
+  - **Mot de passe :** `admin1234`
+  - **Rôle :** Superutilisateur / Administrateur PRO avec profil complet et abonnement actif.
