@@ -1,7 +1,7 @@
 services:
   # 1. Backend API Service (Django REST Framework / Python)
   - type: web
-    name: ai-jobapply-backend
+    name: luka-mosala-backend
     env: python
     plan: free
     region: frankfurt
@@ -15,11 +15,11 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://ai-jobapply-web.onrender.com,https://ai-jobapply-mobile.onrender.com"
+        value: "https://luka-mosala-web.onrender.com,https://luka-mosala-mobile.onrender.com"
 
   # 2. Web Client Service (React.js / Vite)
   - type: web
-    name: ai-jobapply-web
+    name: luka-mosala-web
     env: node
     plan: free
     region: frankfurt
@@ -27,11 +27,11 @@ services:
     startCommand: "cd frontend && npx vite preview --host 0.0.0.0 --port $PORT"
     envVars:
       - key: VITE_API_BASE_URL
-        value: "https://ai-jobapply-backend.onrender.com/api"
+        value: "https://luka-mosala-backend.onrender.com/api"
 
   # 3. Mobile Web App Service (Flutter Web)
   - type: web
-    name: ai-jobapply-mobile
+    name: luka-mosala-mobile
     env: node
     plan: free
     region: frankfurt
@@ -39,4 +39,4 @@ services:
     startCommand: "npx serve -s mobile/build/web -p $PORT"
     envVars:
       - key: VITE_API_BASE_URL
-        value: "https://ai-jobapply-backend.onrender.com/api"
+        value: "https://luka-mosala-backend.onrender.com/api"
