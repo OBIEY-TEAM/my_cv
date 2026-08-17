@@ -20,6 +20,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
 
     'users',
     'profile_manager',
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     'subscriptions',
     'ai_engine',
     'pdf_generator',
+    'jules_integration',
 ]
 
 MIDDLEWARE = [
@@ -91,6 +93,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Luka Mosala SaaS API',
+    'DESCRIPTION': 'Générateur Automatisé de Candidatures Sur Mesure (CV 1 Page, Lettre de Motivation 1 Page, Email)',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 SIMPLE_JWT = {

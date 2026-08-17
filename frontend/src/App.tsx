@@ -103,6 +103,15 @@ interface ApplicationPackage {
   created_at: string;
 }
 
+interface SubscriptionPlan {
+  id: number;
+  name: string;
+  price_fcfa: number;
+  applications_limit: number;
+  duration_days: number;
+  description: string;
+}
+
 interface SubscriptionData {
   credits_remaining: number;
   plan: {
@@ -146,6 +155,7 @@ export default function App() {
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
 
   // Selected Package Modal State
   const [activePkgModal, setActivePkgModal] = useState<{ pkg: ApplicationPackage; type: 'CV' | 'LM' | 'EMAIL' | 'Paiement' } | null>(null);
@@ -199,7 +209,7 @@ export default function App() {
 
   const fetchData = async () => {
     try {
-      const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
+      const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes, plansRes] = await Promise.all([
         axios.get('/api/profile/'),
         axios.get('/api/profile/info/'),
         axios.get('/api/subscriptions/me/'),
@@ -207,7 +217,8 @@ export default function App() {
         axios.get('/api/profile/experiences/'),
         axios.get('/api/profile/certifications/'),
         axios.get('/api/profile/educations/'),
-        axios.get('/api/profile/projects/')
+        axios.get('/api/profile/projects/'),
+        axios.get('/api/subscriptions/plans/')
       ]);
       setProfile(profRes.data);
       if (infoRes.data) setUserInfo(infoRes.data);
@@ -217,6 +228,10 @@ export default function App() {
       setCertifications(certRes.data);
       setEducations(eduRes.data);
       setProjects(projRes.data);
+      if (plansRes.data && plansRes.data.length > 0) {
+        setAvailablePlans(plansRes.data);
+        setSelectedPlan(plansRes.data[0].id);
+      }
     } catch (e) {
       console.error("Error fetching data:", e);
     }
@@ -756,7 +771,7 @@ export default function App() {
                 <button onClick={() => window.open(activePkgModal.type === 'CV' ? activePkgModal.pkg.cv_pdf : activePkgModal.pkg.cover_letter_pdf, '_blank')} style={{ width: '100%', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <Eye style={{ width: '16px', height: '16px' }} /> Voir le document
                 </button>
-                <button onClick={() => window.open(activePkgModal.type === 'CV' ? activePkgModal.pkg.cv_pdf : activePkgModal.pkg.cover_letter_pdf, '_blank')} style={{ width: '100%', border: '2px solid #0B1F3A', backgroundColor: 'transparent', color: '#0B1F3A', fontWeight: '800', padding: '12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button onClick={() => window.open(activePkgModal.type === 'CV' ? activePkgModal.pkg.cv_pdf : activePkgModal.pkg.cover_letter_pdf, '_blank')} style={{ width: '100%', border: '2px solid #0B1F3A', backgroundColor: 'transparent', color: '#0B1F3A', fontWeight: '800', padding: '12px', borderRadius: '8px', cursor: 'pointer', display: 'center', justifyContent: 'center', gap: '8px' }}>
                   <Download style={{ width: '16px', height: '16px' }} /> Télécharger le document
                 </button>
                 <button onClick={() => { setActivePkgModal(null); setActiveTab('plans'); }} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -946,8 +961,39 @@ export default function App() {
                 {paymentSuccessMsg}
               </div>
             )}
+
+            {/* DYNAMIC SUBSCRIPTION PLANS LIST */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+              {availablePlans.map((planItem) => (
+                <div
+                  key={planItem.id}
+                  onClick={() => setSelectedPlan(planItem.id)}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    padding: '24px',
+                    borderRadius: '16px',
+                    border: selectedPlan === planItem.id ? '3px solid #185FA5' : '1px solid #cbd5e1',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}
+                >
+                  <h3 style={{ margin: 0, fontWeight: '900', fontSize: '18px', color: '#0B1F3A' }}>{planItem.name}</h3>
+                  <div style={{ fontSize: '24px', fontWeight: '900', color: '#185FA5' }}>{planItem.price_fcfa} FCFA</div>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{planItem.description}</p>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F6E56' }}>Crédits: {planItem.applications_limit} candidature(s)</div>
+                </div>
+              ))}
+            </div>
+
             <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', maxWidth: '512px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Mobile Money (Airtel / MTN)</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Mobile Money (Airtel / MTN / PayDunya)</h3>
+              <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value as any)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }}>
+                <option value="AIRTEL_MONEY">Airtel Money Congo</option>
+                <option value="MTN_MOMO">MTN Mobile Money Congo</option>
+                <option value="PAYDUNYA">PayDunya / Carte</option>
+              </select>
               <input type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }} />
               <button onClick={handlePayment} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
                 Payer et recharger

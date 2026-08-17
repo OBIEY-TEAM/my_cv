@@ -13,6 +13,7 @@ from .serializers import (
     EducationSerializer, ProjectSerializer
 )
 from .gdrive_service import GoogleDriveService
+from .commandes_service import CommandesSyncService
 
 
 class ProfileDetailView(generics.RetrieveUpdateAPIView):
@@ -21,6 +22,7 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         profile, created = Profile.objects.get_or_create(user=self.request.user)
+        CommandesSyncService.sync_user_commandes(self.request.user)
         return profile
 
 
@@ -59,6 +61,7 @@ class PhotoCropView(APIView):
         file_name = f"profile_cropped_{request.user.id}.png"
 
         profile.cropped_photo.save(file_name, ContentFile(buffer.getvalue()), save=True)
+        CommandesSyncService.sync_user_commandes(request.user)
 
         return Response(ProfileSerializer(profile).data, status=status.HTTP_200_OK)
 
@@ -80,6 +83,10 @@ class UserProfileInfoView(generics.RetrieveUpdateAPIView):
         )
         return info
 
+    def perform_update(self, serializer):
+        serializer.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
+
 
 class ExperienceViewSet(viewsets.ModelViewSet):
     serializer_class = ExperienceSerializer
@@ -90,6 +97,11 @@ class ExperienceViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        CommandesSyncService.sync_user_commandes(self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
 
 
 class CertificationViewSet(viewsets.ModelViewSet):
@@ -108,6 +120,7 @@ class CertificationViewSet(viewsets.ModelViewSet):
             if drive_url:
                 cert.pdf_url = drive_url
                 cert.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
 
     def perform_update(self, serializer):
         cert = serializer.save()
@@ -117,6 +130,7 @@ class CertificationViewSet(viewsets.ModelViewSet):
             if drive_url:
                 cert.pdf_url = drive_url
                 cert.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
 
 
 class EducationViewSet(viewsets.ModelViewSet):
@@ -135,6 +149,7 @@ class EducationViewSet(viewsets.ModelViewSet):
             if drive_url:
                 edu.pdf_url = drive_url
                 edu.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
 
     def perform_update(self, serializer):
         edu = serializer.save()
@@ -144,6 +159,7 @@ class EducationViewSet(viewsets.ModelViewSet):
             if drive_url:
                 edu.pdf_url = drive_url
                 edu.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -155,3 +171,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        CommandesSyncService.sync_user_commandes(self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        CommandesSyncService.sync_user_commandes(self.request.user)

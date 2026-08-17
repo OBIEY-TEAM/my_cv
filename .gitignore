@@ -1,6 +1,7 @@
 # Python / Django
 *.pyc
 __pycache__/
+**/__pycache__/
 *.sqlite3
 media/
 static/
@@ -9,9 +10,15 @@ static/
 env/
 venv/
 
+# Commandes and Resultat directories
+commandes/
+resultat/
+
 # Node / Web Frontend
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
 .build/
 
 # Flutter / Mobile
