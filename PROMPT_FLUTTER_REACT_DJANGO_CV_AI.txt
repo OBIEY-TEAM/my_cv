@@ -641,3 +641,38 @@ L'agent IA doit obligatoirement s'assurer que TOUS les champs ci-dessous sont mo
 5. **Projets :**
    - Action : Bouton "+ Ajouter un projet".
    - Champs : Nom du projet, Secteur d'activité, Bénéficiaire, Lien d'hébergement, Description.
+
+
+================================================================================
+# PROMPT IA — ENRICHISSEMENT MOBILE & ACTIONS CANDIDATURES (CV, LM, EMAIL, PAYER)
+================================================================================
+
+---
+
+## 1. GESTION DE LA PHOTO DE PROFIL (MOBILE & FRONTEND WEB)
+
+- **Composant Photo de Profil :**
+  - Dans la section **Info** du profil (Mobile & Frontend), ajouter la fonctionnalité de gestion de la photo de profil avec options :
+    - **Upload de fichier image :** Sélection d'une image depuis la galerie/fichiers.
+    - **Capture photo (Mobile) :** Prise de photo directe via l'appareil photo du téléphone.
+  - Recadrage et optimisation automatique de l'image (format carré/rond ultra-pro).
+  - Bouton **"Modifier profil"** global bien visible pour basculer en mode édition.
+
+---
+
+## 2. BOUTONS D'ACTION PAR CANDIDATURE & MODALE DÉTAILLÉE
+
+Dans la liste des candidatures (Mobile & Frontend), chaque carte d'offre d'emploi doit comporter les boutons d'action d'accès rapide :
+- **Bouton CV :** Accès direct au CV généré.
+- **Bouton LM :** Accès direct à la Lettre de Motivation générée.
+- **Bouton EMAIL :** Accès direct au texte du message email d'accompagnement.
+- **Bouton PAYER :** Lancement du flux de paiement (Airtel Money / MTN MoMo).
+
+### Interface / Modale d'Action (au clic sur CV, LM, EMAIL ou PAYER) :
+Le clic sur l'un de ces boutons doit ouvrir un écran / bottom-sheet / modale dédié contenant :
+1. **Actions Rapides :**
+   - **Voir :** Prévisualisation en direct du document (PDF ou texte email).
+   - **Télécharger :** Téléchargement direct du fichier PDF / copie du texte email dans le presse-papier.
+2. **Indicateurs de Statut en Temps Réel :**
+   - **Statut de Paiement (`payment_status`) :** `pending` (En attente), `failed` (Échoué), `approved` (Approuvé / Validé).
+   - **Statut de Traitement IA (`processing_status`) :** `pending` (En attente), `inprocess` (En cours de génération), `finalized` (Finalisé / Prêt).
