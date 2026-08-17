@@ -660,7 +660,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final birthCtrl = TextEditingController(text: _info['birth_date'] ?? '1995-05-10');
     final phoneCtrl = TextEditingController(text: _info['primary_phone'] ?? '');
     final secPhoneCtrl = TextEditingController(text: _info['secondary_phone'] ?? '');
-    final addressCtrl = TextEditingController(text: _info['address'] ?? _info['adressepay'] ?? '');
+    final addressCtrl = TextEditingController(text: _info['address'] ?? '');
+    final countryCtrl = TextEditingController(text: _info['country'] ?? 'Congo');
     final districtCtrl = TextEditingController(text: _info['district'] ?? '');
     final neighborhoodCtrl = TextEditingController(text: _info['neighborhood'] ?? '');
     final summaryCtrl = TextEditingController(text: _info['professional_summary'] ?? '');
@@ -689,7 +690,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                 TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance (AAAA-MM-JJ) *')),
                 TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
                 TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
-                TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse / Adressepay')),
+                TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse')),
+                TextField(controller: countryCtrl, decoration: const InputDecoration(labelText: 'Pays')),
                 TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
                 TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
                 TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
@@ -708,7 +710,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   'primary_phone': phoneCtrl.text,
                   'secondary_phone': secPhoneCtrl.text,
                   'address': addressCtrl.text,
-                  'adressepay': addressCtrl.text,
+                  'country': countryCtrl.text,
                   'district': districtCtrl.text,
                   'neighborhood': neighborhoodCtrl.text,
                   'professional_summary': summaryCtrl.text,
@@ -913,18 +915,37 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                         backgroundColor: Color(0xFF185FA5),
                         child: Icon(Icons.person, color: Colors.white, size: 32),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: _editInfoDialog,
-                        icon: const Icon(Icons.edit, size: 16),
-                        label: const Text('Modifier Profil'),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
+                      TextButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saisie photo disponible.')));
+                        },
+                        icon: const Icon(Icons.camera_alt, size: 16),
+                        label: const Text('Photo'),
                       )
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  // 4 EXPLICIT PHOTO ACTION BUTTONS ON MOBILE
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.edit, size: 14), label: const Text('Modifier', style: TextStyle(fontSize: 11))),
+                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.upload, size: 14), label: const Text('Uploader', style: TextStyle(fontSize: 11))),
+                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.camera, size: 14), label: const Text('Caméra', style: TextStyle(fontSize: 11))),
+                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.visibility, size: 14), label: const Text('Voir', style: TextStyle(fontSize: 11))),
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      IconButton(onPressed: _editInfoDialog, icon: const Icon(Icons.edit, color: Color(0xFF185FA5))),
+                    ],
+                  ),
                   Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                  Text('Adresse: ${_info['address'] ?? _info['adressepay'] ?? 'Avenue de l\'Indépendance'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('Adresse: ${_info['address'] ?? 'Avenue de l\'Indépendance'} | Pays: ${_info['country'] ?? 'Congo'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   Text('Arrondissement: ${_info['district'] ?? 'Poto-Poto'} | Quartier: ${_info['neighborhood'] ?? 'Centre'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),

@@ -21,6 +21,7 @@ interface ProfileData {
   cities: string;
   readme_content: string;
   cropped_photo: string | null;
+  original_photo: string | null;
 }
 
 interface UserInfo {
@@ -32,7 +33,7 @@ interface UserInfo {
   secondary_phone: string;
   professional_summary: string;
   address: string;
-  adressepay: string;
+  country: string;
   district: string;
   neighborhood: string;
 }
@@ -123,7 +124,8 @@ export default function App() {
     phone: '+242 06 613 01 18',
     cities: 'Brazzaville & Pointe-Noire, Congo',
     readme_content: '',
-    cropped_photo: null
+    cropped_photo: null,
+    original_photo: null
   });
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -135,7 +137,7 @@ export default function App() {
     secondary_phone: '',
     professional_summary: 'Consultant IT & Expert Fullstack.',
     address: 'Avenue de l\'Indépendance',
-    adressepay: 'Avenue de l\'Indépendance',
+    country: 'Congo',
     district: 'Poto-Poto',
     neighborhood: 'Centre'
   });
@@ -147,6 +149,9 @@ export default function App() {
 
   // Selected Package Modal State
   const [activePkgModal, setActivePkgModal] = useState<{ pkg: ApplicationPackage; type: 'CV' | 'LM' | 'EMAIL' | 'Paiement' } | null>(null);
+
+  // Photo view modal
+  const [showPhotoView, setShowPhotoView] = useState(false);
 
   // Modals / Form States
   const [showExpModal, setShowExpModal] = useState(false);
@@ -190,7 +195,7 @@ export default function App() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchData();
     }
-  }, [token]);
+  }, [token, activeTab]);
 
   const fetchData = async () => {
     try {
@@ -258,7 +263,7 @@ export default function App() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProfile(res.data);
-      alert("Photo de profil mise à jour et recadrée professionnellement !");
+      alert("Photo de profil mise à jour !");
     } catch (e) {
       alert("Erreur lors du téléchargement de la photo.");
     }
@@ -498,7 +503,7 @@ export default function App() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => { setActiveTab(tab.id as any); fetchData(); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px', padding: '16px 0', border: 'none',
                 borderBottom: activeTab === tab.id ? '3px solid #185FA5' : '3px solid transparent',
@@ -516,7 +521,7 @@ export default function App() {
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
         {activeTab === 'profile' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {/* PHOTO DE PROFIL UPLOAD */}
+            {/* PHOTO DE PROFIL UPLOAD WITH 4 EXPLICIT BUTTONS */}
             <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ width: '96px', height: '96px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #185FA5' }}>
                 {profile.cropped_photo ? (
@@ -525,13 +530,24 @@ export default function App() {
                   <Camera style={{ width: '36px', height: '36px', color: '#64748b' }} />
                 )}
               </div>
-              <div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: '900', margin: 0 }}>Photo de Profil Professionnelle</h3>
-                <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 12px' }}>Chargez une photo pour le recadrage automatique 1:1 du CV.</p>
                 <input type="file" accept="image/*" id="photo-input" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhotoUpload(e.target.files[0]); }} />
-                <label htmlFor="photo-input" style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Camera style={{ width: '14px', height: '14px' }} /> Charger / Prendre une photo
-                </label>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <label htmlFor="photo-input" style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Edit style={{ width: '14px', height: '14px' }} /> Modifier
+                  </label>
+                  <label htmlFor="photo-input" style={{ backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Upload style={{ width: '14px', height: '14px' }} /> Uploader
+                  </label>
+                  <label htmlFor="photo-input" style={{ backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Camera style={{ width: '14px', height: '14px' }} /> Caméra
+                  </label>
+                  <button onClick={() => setShowPhotoView(true)} style={{ backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', color: '#0B1F3A', fontWeight: '800', fontSize: '12px', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Eye style={{ width: '14px', height: '14px' }} /> Voir
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -574,8 +590,12 @@ export default function App() {
                   <input type="text" value={userInfo.secondary_phone} onChange={e => setUserInfo({...userInfo, secondary_phone: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Adresse / Adressepay</label>
-                  <input type="text" value={userInfo.address} onChange={e => setUserInfo({...userInfo, address: e.target.value, adressepay: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Adresse</label>
+                  <input type="text" value={userInfo.address} onChange={e => setUserInfo({...userInfo, address: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Pays</label>
+                  <input type="text" value={userInfo.country} onChange={e => setUserInfo({...userInfo, country: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Arrondissement</label>
@@ -691,6 +711,23 @@ export default function App() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* PHOTO VIEW MODAL */}
+        {showPhotoView && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '400px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontWeight: '900' }}>Aperçu Photo Profil</h3>
+                <button onClick={() => setShowPhotoView(false)} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X style={{ width: '20px', height: '20px' }} /></button>
+              </div>
+              {profile.cropped_photo ? (
+                <img src={profile.cropped_photo} alt="Photo" style={{ width: '100%', borderRadius: '12px', objectFit: 'cover' }} />
+              ) : (
+                <p>Aucune photo téléchargée</p>
+              )}
             </div>
           </div>
         )}

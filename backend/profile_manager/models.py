@@ -36,8 +36,8 @@ class UserProfileInfo(models.Model):
     primary_phone = models.CharField(max_length=30)  # Numéro principal
     secondary_phone = models.CharField(max_length=30, blank=True, default='')  # Numéro secondaire
     professional_summary = models.TextField(blank=True, default='')  # Résumé professionnel
-    address = models.CharField(max_length=255, blank=True, default='')  # Adresse / adressepay
-    adressepay = models.CharField(max_length=255, blank=True, default='')  # Champ alias adressepay
+    address = models.CharField(max_length=255, blank=True, default='')  # Adresse
+    country = models.CharField(max_length=100, blank=True, default='Congo')  # Pays
     district = models.CharField(max_length=100, blank=True, default='')  # Arrondissement
     neighborhood = models.CharField(max_length=100, blank=True, default='')  # Quartier
 
