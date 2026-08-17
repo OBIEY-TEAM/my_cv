@@ -676,3 +676,32 @@ Le clic sur l'un de ces boutons doit ouvrir un écran / bottom-sheet / modale d�
 2. **Indicateurs de Statut en Temps Réel :**
    - **Statut de Paiement (`payment_status`) :** `pending` (En attente), `failed` (Échoué), `approved` (Approuvé / Validé).
    - **Statut de Traitement IA (`processing_status`) :** `pending` (En attente), `inprocess` (En cours de génération), `finalized` (Finalisé / Prêt).
+
+
+================================================================================
+# PROMPT IA — RECAPITULATIF DES ACTIONS FRONTEND & FORMULAIRE INFO MOBILE
+================================================================================
+
+---
+
+## 1. SYNTHÈSE DES BOUTONS D'ACTION (FRONTEND WEB & MOBILE FLUTTER)
+
+L'agent IA doit obligatoirement intégrer sur le Frontend Web et l'App Mobile :
+- **Sur le Profil :** Le bouton global **"Modifier profil"** permettant de basculer instantanément en mode édition des formulaires.
+- **Sur chaque carte de Candidature :** Les boutons d'accès rapide **CV**, **LM**, **EMAIL** et **PAYER**.
+
+---
+
+## 2. FORMULAIRE D'INFORMATION GÉNÉRALE (MOBILE FLUTTER)
+
+L'application Mobile Flutter doit comporter la fiche de saisie complète pour l'Information Générale (Info) comprenant les champs dédiés suivants :
+1. **Nom** (Texte)
+2. **Prénom** (Texte)
+3. **Genre** (Choix : Homme / Femme / Autre)
+4. **Date de naissance** (Sélecteur de date)
+5. **Numéro principal** (Téléphone)
+6. **Numéro secondaire** (Téléphone)
+7. **Résumé professionnel** (Zone de texte multi-lignes)
+8. **Adresse (adressepay)** (Texte)
+9. **Arrondissement** (Texte / Liste déroulante)
+10. **Quartier** (Texte)
