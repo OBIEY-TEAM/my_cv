@@ -1,0 +1,104 @@
+# PROMPT GÉNÉRIQUE D'AUTOMATISATION DE CANDIDATURES SUR MESURE
+# À utiliser avec une IA agentique (ex: Jules) dans votre dépôt Git / projet.
+
+---
+
+## CONTEXTE & PRÉREQUIS DANS LE DÉPÔT
+1. Mon profil professionnel complet et mes compétences se trouvent dans le fichier `README.md` (ou `read.me`) à la racine du projet.
+2. Ma photo de profil se trouve dans le dossier `/image` (ex: `/image/profile.jpg` ou `/image/OBIEY-CHRIST-DANY.jfif`).
+
+---
+
+## OFFRES D'EMPLOI À TRAITER
+Voici les liens des offres d'emploi auxquelles je souhaite postuler (veuillez remplacer ou compléter les crochets `[...]`) :
+
+- Offre 1 : [INSÉRER LE LIEN DE L'OFFRE 1 ICI - Ex: https://www.acpe.cg/details-offre-emplois/4200]
+- Offre 2 : [INSÉRER LE LIEN DE L'OFFRE 2 ICI - Ex: https://www.bluecollarcongo.com/en/jobs/charge-e-it-developpement-web-717]
+- Offre 3 : [INSÉRER LE LIEN DE L'OFFRE 3 ICI - Ex: https://www.acpe.cg/details-offre-emplois/4191]
+# (Ajouter d'autres liens si nécessaire)
+
+---
+
+## CONSIGNES & INSTRUCTIONS DE RÉALISATION
+
+### ÉTAPE 1 — Exploration des offres & Création de l'arborescence
+1. Ouvre et analyse en détail le contenu de chaque lien d'offre d'emploi (intitulé du poste, nom de l'entreprise, ville/pays, missions, compétences requises, hard & soft skills, adresse contact).
+2. Pour chaque offre, crée une arborescence de dossiers basée sur le nom du site / organisme et le nom du poste visé :
+   - Exemple : `/nom_site/Intitulé du Poste`
+   - Exemples concrets :
+     * `/acpe/Développeur Full Stack Mobile`
+     * `/bluecollarcongo/Chargé(e) IT & Développement Web`
+     * `/acpe/Ingénieur Réseaux, Systèmes et Télécoms (H-F)`
+
+### ÉTAPE 2 — Récupération de l'offre en PDF
+1. Dans chaque sous-dossier respectif, génère un fichier PDF contenant le texte intégral de l'offre d'emploi originale (mise en page propre, lisible).
+2. Convention de nommage du fichier PDF d'offre :
+   - `NOM_UTILISATEUR-[ABRÉVIATION-POSTE]-OFFRE.pdf`
+   - Exemple : `OBIEY-DEV-FULLSTACK-MOBILE-OFFRE.pdf`
+
+### ÉTAPE 3 — Traitement professionnel de la photo de profil
+1. Récupère l'image présente dans le dossier `/image`.
+2. Effectue un recadrage professionnel centré sur le visage et le haut du buste, en conservant un espace au-dessus de la tête, au format carré ou portrait CV standard.
+3. Enregistre cette photo traitée sous `image/profile_cropped.png`.
+
+### ÉTAPE 4 — Génération des livrables de candidature (Pour CHAQUE offre)
+
+Dans chaque sous-dossier, génère les 3 fichiers suivants :
+
+#### 1. Le Curriculum Vitae (CV) en PDF — **STRICTEMENT 1 PAGE**
+- **Contenu :** Extrais et adapte fidèlement mon profil à partir du fichier `README.md`. Oriente le résumé, la hiérarchisation des compétences, la formulation des expériences et les projets phares spécifiquement selon les mots-clés et prérequis de l'offre visée.
+- **Photo :** Intègre la photo recadrée (`image/profile_cropped.png`).
+- **Mise en page :** Structure moderne à deux colonnes (ex: colonne latérale foncée à gauche avec photo, contact, compétences, formation, langues ; colonne principale à droite avec nom, rôle visé, profil, expériences détaillées, projets).
+- **Nom du fichier :** `NOM_UTILISATEUR-[ABRÉVIATION-POSTE]-CV.pdf`
+  * Exemple : `OBIEY-DEV-FULLSTACK-MOBILE-CV.pdf`
+
+#### 2. La Lettre de Motivation (LM) en PDF — **STRICTEMENT 1 PAGE**
+- **Langue :** Français.
+- **Structure :**
+  - En-tête : Mes coordonnées complètes à gauche (Nom, Titre, Tél, Email, Lieu, LinkedIn) / Coordonnées de l'entreprise et destinataire à droite avec Date et Lieu.
+  - Ligne de séparation et Objet explicite (ex: "OBJET : Candidature au poste de [Poste] (Réf: [Numéro])").
+  - Corps du texte en 3 à 4 paragraphes percutants :
+    * Paragraphe 1 : Accroche et présentation de la candidature.
+    * Paragraphe 2 : Adéquation des compétences techniques et réalisations avec les besoins de l'entreprise.
+    * Paragraphe 3 : Soft skills, capacité d'adaptation et valeur ajoutée apportée à l'équipe.
+    * Paragraphe 4 : Conclusion enthousiaste et demande d'entretien.
+  - Formule de politesse professionnelle et signature.
+- **Nom du fichier :** `NOM_UTILISATEUR-[ABRÉVIATION-POSTE]-LM.pdf`
+  * Exemple : `OBIEY-DEV-FULLSTACK-MOBILE-LM.pdf`
+
+#### 3. L'Email de Candidature en TXT
+- Un fichier texte `.txt` contenant :
+  - La ligne d'objet recommandée pour le mail.
+  - Un corps de mail synthétique, professionnel et poli indiquant le poste visé, les pièces jointes transmises (CV et LM), mes disponibilités pour un entretien et mes coordonnées directes.
+- **Nom du fichier :** `NOM_UTILISATEUR-[ABRÉVIATION-POSTE]-EMAIL.txt`
+  * Exemple : `OBIEY-DEV-FULLSTACK-MOBILE-EMAIL.txt`
+
+---
+
+## EXEMPLE DE LIVRABLE FINAL ATTENDU
+```
+/acpe
+  /Développeur Full Stack Mobile
+    OBIEY-DEV-FULLSTACK-MOBILE-OFFRE.pdf
+    OBIEY-DEV-FULLSTACK-MOBILE-CV.pdf
+    OBIEY-DEV-FULLSTACK-MOBILE-LM.pdf
+    OBIEY-DEV-FULLSTACK-MOBILE-EMAIL.txt
+  /Ingénieur Réseaux, Systèmes et Télécoms (H-F)
+    OBIEY-ING-RESEAUX-SYS-TELECOM-OFFRE.pdf
+    OBIEY-ING-RESEAUX-SYS-TELECOM-CV.pdf
+    OBIEY-ING-RESEAUX-SYS-TELECOM-LM.pdf
+    OBIEY-ING-RESEAUX-SYS-TELECOM-EMAIL.txt
+/bluecollarcongo
+  /Chargé(e) IT & Développement Web
+    OBIEY-CHARGE-IT-DEV-WEB-OFFRE.pdf
+    OBIEY-CHARGE-IT-DEV-WEB-CV.pdf
+    OBIEY-CHARGE-IT-DEV-WEB-LM.pdf
+    OBIEY-CHARGE-IT-DEV-WEB-EMAIL.txt
+```
+
+---
+
+## CONTRAINTES DE QUALITÉ
+- Langue : **Français** irréprochable.
+- Respect strict de la limite de **1 page unique** pour chaque CV et chaque Lettre de Motivation.
+- Adaptabilité maximale des termes, compétences et projets pour correspondre exactement au poste visé.

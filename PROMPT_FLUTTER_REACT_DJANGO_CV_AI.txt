@@ -902,3 +902,74 @@ API réelle ne doit pas être exposée.
 - Écran(s) Admin Angular minimal(aux) pour déclencher/suivre une session Jules (liste des
   sessions, statut, bouton "Approuver le plan", bouton "Envoyer un message").
 - Suite de tests utilisant SQLite et mocks réseau, exécutable sur Render sans clé API réelle.
+
+
+================================================================================
+# PROMPT IA — PIPELINE D'AUTOMATISATION VIA COMMANDES, PHOTOS & DOSSIER RESULTAT
+================================================================================
+
+---
+
+## 1. TRAITEMENT CENTRALISÉ EN SESSION UNIQUE JULES IA SUR GITHUB
+
+- **Toutes les requêtes d'une exécution doivent être envoyées dans une SEULE et MÊME SESSION Jules IA**.
+- Le code source du backend réside directement sur GitHub (pas de passage par une API externe pour le code source).
+- L'administrateur de la plateforme déclenche l'exécution manuellement en connectant Jules au dépôt GitHub et en configurant l'automatisation des Pull Requests (PRs).
+
+---
+
+## 2. DOSSIER `COMMANDES` & ARBORESCENCE DE SYNCHRONISATION EN BASE DE DONNÉES
+
+Le backend Django doit synchroniser automatiquement les données saisies par les utilisateurs en base de données vers le dossier `/COMMANDES` à la racine du projet :
+
+```
+/COMMANDES
+├── INFO/               # Fichiers texte TXT des profils utilisateurs
+│   ├── <ID_UNIQUE_1>.txt
+│   ├── <ID_UNIQUE_2>.txt
+│   └── ...
+└── PHOTO/              # Photos de profil PNG des utilisateurs
+    ├── <ID_UNIQUE_1>.png
+    ├── <ID_UNIQUE_2>.png
+    └── ...
+```
+
+### Règle d'association et nommage :
+- **ID Unique :** Chaque utilisateur possède un `<ID_UNIQUE>` généré par le backend.
+- Le fichier profil texte `COMMANDES/INFO/<ID_UNIQUE>.txt` contient la totalité des données structurées de l'utilisateur (Info avec Nom, Prénom, Genre, Date de naissance, Numéro principal, Numéro secondaire, Résumé pro, Adresse, Pays, Arrondissement, Quartier ; Expériences ; Certifications ; Diplômes ; Projets).
+- La photo `COMMANDES/PHOTO/<ID_UNIQUE>.png` porte exactement le même `<ID_UNIQUE>` que le fichier textuel correspondant.
+
+---
+
+## 3. DOSSIER `RESULTAT` & DÉLIVRABILITÉ AUX CLIENTSS PAYANTS
+
+- L'agent Jules lit les fichiers `COMMANDES/INFO/<ID_UNIQUE>.txt` et `COMMANDES/PHOTO/<ID_UNIQUE>.png`.
+- Jules génère l'ensemble des livrables de candidature sur mesure et enregistre les résultats dans le dossier `/RESULTAT` à la racine du projet :
+
+```
+/RESULTAT
+└── <ID_UNIQUE>/
+    ├── <NOM_SITE_1>/
+    │   └── <INTITULE_POSTE_1>/
+    │       ├── CV.pdf
+    │       ├── LETTRE_DE_MOTIVATION.pdf
+    │       ├── OFFRE_EMPLOI.pdf
+    │       └── EMAIL.txt
+    └── <NOM_SITE_2>/
+        └── <INTITULE_POSTE_2>/
+            ├── CV.pdf
+            ├── LETTRE_DE_MOTIVATION.pdf
+            ├── OFFRE_EMPLOI.pdf
+            └── EMAIL.txt
+```
+
+### Service des fichiers par le Backend Django :
+- Le backend Django récupère les fichiers générés dans `/RESULTAT/<ID_UNIQUE>/`.
+- **Accès restreint :** Le backend sert ces fichiers (téléchargement PDF / texte Email) **EXCLUSIVEMENT aux utilisateurs qui ont réglé leur facture / abonnement** (`payment_status = approved`).
+
+---
+
+## 4. DÉPLOIEMENT AUTOMATISÉ (RENDER / VPS) & SCRIPT `git_pull_auto.sh`
+
+- Le backend est déployé sur Render / VPS avec support SQLite pour les tests rapides et PostgreSQL/SQLite en production.
+- Un script d'automatisation `git_pull_auto.sh` est disponible à la racine du projet pour automatiser la récupération des mises à jour du dépôt Git (`git fetch` / `git checkout`).
