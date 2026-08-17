@@ -656,6 +656,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
   void _editInfoDialog() {
     final lastNameCtrl = TextEditingController(text: _info['last_name'] ?? '');
     final firstNameCtrl = TextEditingController(text: _info['first_name'] ?? '');
+    String genderVal = _info['gender'] ?? 'MALE';
+    final birthCtrl = TextEditingController(text: _info['birth_date'] ?? '1995-05-10');
     final phoneCtrl = TextEditingController(text: _info['primary_phone'] ?? '');
     final secPhoneCtrl = TextEditingController(text: _info['secondary_phone'] ?? '');
     final addressCtrl = TextEditingController(text: _info['address'] ?? _info['adressepay'] ?? '');
@@ -665,44 +667,59 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Informations Générales'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *')),
-              TextField(controller: firstNameCtrl, decoration: const InputDecoration(labelText: 'Prénom *')),
-              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
-              TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
-              TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse / Adressepay')),
-              TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
-              TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
-              TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          title: const Text('Modifier Profil (Info)'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *')),
+                TextField(controller: firstNameCtrl, decoration: const InputDecoration(labelText: 'Prénom *')),
+                DropdownButtonFormField<String>(
+                  value: genderVal,
+                  decoration: const InputDecoration(labelText: 'Genre *'),
+                  items: const [
+                    DropdownMenuItem(value: 'MALE', child: Text('Homme')),
+                    DropdownMenuItem(value: 'FEMALE', child: Text('Femme')),
+                    DropdownMenuItem(value: 'OTHER', child: Text('Autre')),
+                  ],
+                  onChanged: (v) { if (v != null) setModalState(() => genderVal = v); },
+                ),
+                TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance (AAAA-MM-JJ) *')),
+                TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
+                TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
+                TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse / Adressepay')),
+                TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
+                TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
+                TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: () async {
+                await ApiService.saveProfileInfo({
+                  'last_name': lastNameCtrl.text,
+                  'first_name': firstNameCtrl.text,
+                  'gender': genderVal,
+                  'birth_date': birthCtrl.text,
+                  'primary_phone': phoneCtrl.text,
+                  'secondary_phone': secPhoneCtrl.text,
+                  'address': addressCtrl.text,
+                  'adressepay': addressCtrl.text,
+                  'district': districtCtrl.text,
+                  'neighborhood': neighborhoodCtrl.text,
+                  'professional_summary': summaryCtrl.text,
+                });
+                Navigator.pop(ctx);
+                _loadAll();
+              },
+              child: const Text('Enregistrer'),
+            )
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              await ApiService.saveProfileInfo({
-                'last_name': lastNameCtrl.text,
-                'first_name': firstNameCtrl.text,
-                'primary_phone': phoneCtrl.text,
-                'secondary_phone': secPhoneCtrl.text,
-                'address': addressCtrl.text,
-                'adressepay': addressCtrl.text,
-                'district': districtCtrl.text,
-                'neighborhood': neighborhoodCtrl.text,
-                'professional_summary': summaryCtrl.text,
-              });
-              Navigator.pop(ctx);
-              _loadAll();
-            },
-            child: const Text('Enregistrer'),
-          )
-        ],
       ),
     );
   }
@@ -908,6 +925,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   Text('Adresse: ${_info['address'] ?? _info['adressepay'] ?? 'Avenue de l\'Indépendance'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('Arrondissement: ${_info['district'] ?? 'Poto-Poto'} | Quartier: ${_info['neighborhood'] ?? 'Centre'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),

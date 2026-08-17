@@ -4,7 +4,7 @@ import {
   Briefcase, FileText, User, CreditCard, Upload, Download,
   Sparkles, CheckCircle, ShieldCheck, Phone, Mail, MapPin,
   Eye, RefreshCw, Scissors, ChevronRight, Lock, LogOut, AlertCircle,
-  Plus, Trash2, Edit, Award, GraduationCap, FolderGit2, Check, Camera
+  Plus, Trash2, Edit, Award, GraduationCap, FolderGit2, Check, Camera, X
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
@@ -145,7 +145,8 @@ export default function App() {
   const [educations, setEducations] = useState<Education[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
 
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  // Selected Package Modal State
+  const [activePkgModal, setActivePkgModal] = useState<{ pkg: ApplicationPackage; type: 'CV' | 'LM' | 'EMAIL' | 'Paiement' } | null>(null);
 
   // Modals / Form States
   const [showExpModal, setShowExpModal] = useState(false);
@@ -694,7 +695,42 @@ export default function App() {
           </div>
         )}
 
-        {/* MODALS */}
+        {/* PACKAGE ACTION DETAIL MODAL */}
+        {activePkgModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '480px', width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontWeight: '900', color: '#0B1F3A' }}>{activePkgModal.type} - {activePkgModal.pkg.job_offer.title}</h3>
+                <button onClick={() => setActivePkgModal(null)} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X style={{ width: '20px', height: '20px' }} /></button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800' }}>Status Paiement:</span>
+                <span style={{ fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', backgroundColor: activePkgModal.pkg.payment_status === 'approuved' ? '#dcfce7' : '#fef3c7', color: activePkgModal.pkg.payment_status === 'approuved' ? '#166534' : '#92400e' }}>
+                  {activePkgModal.pkg.payment_status}
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: '800', marginLeft: 'auto' }}>Status Traitement:</span>
+                <span style={{ fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', backgroundColor: activePkgModal.pkg.processing_status === 'finalized' ? '#e0f2fe' : '#fef3c7', color: activePkgModal.pkg.processing_status === 'finalized' ? '#075985' : '#92400e' }}>
+                  {activePkgModal.pkg.processing_status}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+                <button onClick={() => window.open(activePkgModal.type === 'CV' ? activePkgModal.pkg.cv_pdf : activePkgModal.pkg.cover_letter_pdf, '_blank')} style={{ width: '100%', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Eye style={{ width: '16px', height: '16px' }} /> Voir le document
+                </button>
+                <button onClick={() => window.open(activePkgModal.type === 'CV' ? activePkgModal.pkg.cv_pdf : activePkgModal.pkg.cover_letter_pdf, '_blank')} style={{ width: '100%', border: '2px solid #0B1F3A', backgroundColor: 'transparent', color: '#0B1F3A', fontWeight: '800', padding: '12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Download style={{ width: '16px', height: '16px' }} /> Télécharger le document
+                </button>
+                <button onClick={() => { setActivePkgModal(null); setActiveTab('plans'); }} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <CreditCard style={{ width: '16px', height: '16px' }} /> Payer / Recharger Crédits
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODALS FOR PROFILE */}
         {showExpModal && (
           <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
             <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -819,17 +855,19 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
-                      <a href={pkg.cv_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
-                          CV (1 Page)
-                        </button>
-                      </a>
-                      <a href={pkg.cover_letter_pdf} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                        <button style={{ width: '100%', border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
-                          LM (1 Page)
-                        </button>
-                      </a>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
+                      <button onClick={() => setActivePkgModal({ pkg, type: 'CV' })} style={{ border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '11px', padding: '8px 4px', borderRadius: '6px', cursor: 'pointer' }}>
+                        CV
+                      </button>
+                      <button onClick={() => setActivePkgModal({ pkg, type: 'LM' })} style={{ border: '1px solid #0B1F3A', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', fontSize: '11px', padding: '8px 4px', borderRadius: '6px', cursor: 'pointer' }}>
+                        LM
+                      </button>
+                      <button onClick={() => setActivePkgModal({ pkg, type: 'EMAIL' })} style={{ border: '1px solid #185FA5', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '11px', padding: '8px 4px', borderRadius: '6px', cursor: 'pointer' }}>
+                        EMAIL
+                      </button>
+                      <button onClick={() => setActivePkgModal({ pkg, type: 'Paiement' })} style={{ border: '1px solid #0F6E56', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', fontSize: '11px', padding: '8px 4px', borderRadius: '6px', cursor: 'pointer' }}>
+                        Payer
+                      </button>
                     </div>
                   </div>
                 ))}
