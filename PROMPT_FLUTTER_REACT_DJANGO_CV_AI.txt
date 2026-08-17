@@ -705,3 +705,34 @@ L'application Mobile Flutter doit comporter la fiche de saisie complète pour l'
 8. **Adresse (adressepay)** (Texte)
 9. **Arrondissement** (Texte / Liste déroulante)
 10. **Quartier** (Texte)
+
+
+================================================================================
+# PROMPT IA — RAFRAÎCHISSEMENT PAR ONGLET, PHOTO 4 BOUTONS & CHAMP PAYS
+================================================================================
+
+---
+
+## 1. RAFRAÎCHISSEMENT AUTOMATIQUE DES DONNÉES PAR CHANGEMENT D'ONGLET (FRONTEND WEB)
+
+- Sur le Frontend Web React / Angular, forcer un rafraîchissement/rechargement des données depuis l'API dès que l'utilisateur clique sur un autre onglet (Tab Change).
+- Cela garantit que les données affichées (profil, candidatures, abonnements, statut de paiement) sont toujours 100% à jour sans nécessiter de rafraîchissement manuel de la page.
+
+---
+
+## 2. GESTION DE LA PHOTO DE PROFIL À 4 BOUTONS (FRONTEND WEB & MOBILE FLUTTER)
+
+Dans le module Profil (Section Info), la gestion de la photo de profil doit intégrer exactement 4 boutons d'action :
+1. **Modifier :** Editer / recadrer l'image existante.
+2. **Uploader :** Choisir une image depuis la galerie ou les fichiers locaux.
+3. **Caméra :** Prise de vue directe avec l'appareil photo du téléphone/webcam.
+4. **Voir :** Ouvrir la photo de profil en plein écran / modale de prévisualisation.
+
+---
+
+## 3. CORRECTION DES CHAMPS D'ADRESSE (SUPPRESSION ADRESSEPAY -> ADRESSE + PAYS)
+
+Sur le Mobile et le Frontend Web, mettre à jour la section **Info** :
+- **Supprimer définitivement le champ `adressepay`**.
+- **Conserver le champ `Adresse`** (champ texte standard pour l'adresse physique).
+- **Ajouter obligatoirement le champ `Pays`** (ex: Congo-Brazzaville, etc.) sous forme de champ texte ou liste déroulante.
