@@ -4,7 +4,7 @@ import {
   Briefcase, FileText, User, CreditCard, Upload, Download,
   Sparkles, CheckCircle, ShieldCheck, Phone, Mail, MapPin,
   Eye, RefreshCw, Scissors, ChevronRight, Lock, LogOut, AlertCircle,
-  Plus, Trash2, Edit, Award, GraduationCap, FolderGit2, Check
+  Plus, Trash2, Edit, Award, GraduationCap, FolderGit2, Check, Camera
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
@@ -14,6 +14,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (
 );
 
 axios.defaults.baseURL = API_BASE_URL;
+
+interface ProfileData {
+  title: string;
+  phone: string;
+  cities: string;
+  readme_content: string;
+  cropped_photo: string | null;
+}
 
 interface UserInfo {
   first_name: string;
@@ -89,6 +97,8 @@ interface ApplicationPackage {
   cover_letter_pdf: string;
   email_txt: string;
   zip_package: string;
+  payment_status: 'approuved' | 'pending' | 'failed';
+  processing_status: 'finalized' | 'pending' | 'inprocess';
   created_at: string;
 }
 
@@ -108,6 +118,14 @@ export default function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
+  const [profile, setProfile] = useState<ProfileData>({
+    title: 'Consultant IT & Expert Fullstack',
+    phone: '+242 06 613 01 18',
+    cities: 'Brazzaville & Pointe-Noire, Congo',
+    readme_content: '',
+    cropped_photo: null
+  });
+
   const [userInfo, setUserInfo] = useState<UserInfo>({
     first_name: 'Christ Dany',
     last_name: 'Obiey',
@@ -126,6 +144,8 @@ export default function App() {
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   // Modals / Form States
   const [showExpModal, setShowExpModal] = useState(false);
@@ -173,7 +193,8 @@ export default function App() {
 
   const fetchData = async () => {
     try {
-      const [infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
+      const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes] = await Promise.all([
+        axios.get('/api/profile/'),
         axios.get('/api/profile/info/'),
         axios.get('/api/subscriptions/me/'),
         axios.get('/api/jobs/packages/'),
@@ -182,6 +203,7 @@ export default function App() {
         axios.get('/api/profile/educations/'),
         axios.get('/api/profile/projects/')
       ]);
+      setProfile(profRes.data);
       if (infoRes.data) setUserInfo(infoRes.data);
       setSubscription(subRes.data);
       setPackages(pkgsRes.data);
@@ -224,6 +246,20 @@ export default function App() {
       }
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+      const res = await axios.post('/api/profile/crop-photo/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setProfile(res.data);
+      alert("Photo de profil mise à jour et recadrée professionnellement !");
+    } catch (e) {
+      alert("Erreur lors du téléchargement de la photo.");
     }
   };
 
@@ -479,6 +515,25 @@ export default function App() {
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
         {activeTab === 'profile' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            {/* PHOTO DE PROFIL UPLOAD */}
+            <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div style={{ width: '96px', height: '96px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #185FA5' }}>
+                {profile.cropped_photo ? (
+                  <img src={profile.cropped_photo} alt="Photo profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Camera style={{ width: '36px', height: '36px', color: '#64748b' }} />
+                )}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', margin: 0 }}>Photo de Profil Professionnelle</h3>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 12px' }}>Chargez une photo pour le recadrage automatique 1:1 du CV.</p>
+                <input type="file" accept="image/*" id="photo-input" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhotoUpload(e.target.files[0]); }} />
+                <label htmlFor="photo-input" style={{ backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '800', fontSize: '12px', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Camera style={{ width: '14px', height: '14px' }} /> Charger / Prendre une photo
+                </label>
+              </div>
+            </div>
+
             {/* 1. INFO GENERALE */}
             <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -552,7 +607,6 @@ export default function App() {
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{exp.title} - <span style={{ color: '#185FA5' }}>{exp.company}</span></h4>
                       <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{exp.industry} | {exp.location} | {exp.start_date} à {exp.is_current ? 'Présent' : exp.end_date}</p>
-                      {exp.skills_acquired && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#0F6E56', fontWeight: '700' }}>Compétences: {exp.skills_acquired}</p>}
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setExpForm(exp); setShowExpModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -602,7 +656,7 @@ export default function App() {
                   <div key={edu.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{edu.title} - {edu.degree_level} ({edu.year})</h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{edu.institution} | Spécialité: {edu.field_of_study} {edu.pdf_url && <a href={edu.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{edu.institution} {edu.pdf_url && <a href={edu.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontWeight: '800' }}>[Voir PDF Google Drive]</a>}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setEduForm(edu); setShowEduModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -627,7 +681,7 @@ export default function App() {
                   <div key={proj.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>{proj.name} ({proj.industry})</h4>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>Bénéficiaire: {proj.beneficiary} | {proj.description}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{proj.description}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => { setProjForm(proj); setShowProjModal(true); }} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }}><Edit style={{ width: '16px', height: '16px' }} /></button>
@@ -747,12 +801,22 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
                 {packages.map((pkg) => (
                   <div key={pkg.id} style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div>
-                      <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                        {pkg.job_offer.site_category || 'ACPE'}
-                      </span>
-                      <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A', margin: '8px 0 2px' }}>{pkg.job_offer.title}</h3>
-                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#444441', margin: 0 }}>{pkg.job_offer.company}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                          {pkg.job_offer.site_category || 'ACPE'}
+                        </span>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0B1F3A', margin: '8px 0 2px' }}>{pkg.job_offer.title}</h3>
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#444441', margin: 0 }}>{pkg.job_offer.company}</p>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '4px', backgroundColor: pkg.payment_status === 'approuved' ? '#dcfce7' : '#fef3c7', color: pkg.payment_status === 'approuved' ? '#166534' : '#92400e' }}>
+                          Paiement: {pkg.payment_status}
+                        </span>
+                        <span style={{ fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '4px', backgroundColor: pkg.processing_status === 'finalized' ? '#e0f2fe' : '#fef3c7', color: pkg.processing_status === 'finalized' ? '#075985' : '#92400e' }}>
+                          Traitement: {pkg.processing_status}
+                        </span>
+                      </div>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>

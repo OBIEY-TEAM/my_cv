@@ -27,6 +27,17 @@ class JobOffer(models.Model):
         return f"{self.title} @ {self.company}" if self.title else f"JobOffer #{self.id}"
 
 class ApplicationPackage(models.Model):
+    PAYMENT_STATUS_CHOICES = (
+        ('approuved', 'Approuvé'),
+        ('pending', 'En attente'),
+        ('failed', 'Échoué'),
+    )
+    PROCESSING_STATUS_CHOICES = (
+        ('finalized', 'Finalisé'),
+        ('pending', 'En attente'),
+        ('inprocess', 'En traitement'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='application_packages')
     job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE, related_name='packages')
 
@@ -38,6 +49,9 @@ class ApplicationPackage(models.Model):
 
     email_subject = models.CharField(max_length=255, blank=True, default='')
     email_body = models.TextField(blank=True, default='')
+
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='approuved')
+    processing_status = models.CharField(max_length=20, choices=PROCESSING_STATUS_CHOICES, default='finalized')
 
     folder_path = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
