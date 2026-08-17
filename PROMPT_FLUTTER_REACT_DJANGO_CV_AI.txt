@@ -736,3 +736,169 @@ Sur le Mobile et le Frontend Web, mettre à jour la section **Info** :
 - **Supprimer définitivement le champ `adressepay`**.
 - **Conserver le champ `Adresse`** (champ texte standard pour l'adresse physique).
 - **Ajouter obligatoirement le champ `Pays`** (ex: Congo-Brazzaville, etc.) sous forme de champ texte ou liste déroulante.
+
+
+================================================================================
+# PROMPT IA — INTÉGRATION DE L'API JULES AU BACKEND DJANGO (luka-mosala / PostulIA)
+# COMPLÉMENT AU PROMPT MAÎTRE "Luka Mosala SaaS" DÉJÀ FOURNI
+================================================================================
+
+## CONTEXTE
+
+Ce prompt est un **additif** au prompt de spécification architecturale complet déjà transmis
+(projet **Luka Mosala / PostulIA** — Backend Django REST Framework, Frontend React, Admin
+Angular, Mobile Flutter, déploiement Render). Il ne remplace aucune section précédente ; il
+détaille spécifiquement la **connexion du backend Django à l'API Jules** (agent IA de
+génération de code, distincte de l'usage de Jules comme moteur de rédaction CV/LM déjà décrit
+dans le prompt maître), conformément à la documentation officielle :
+https://developers.google.com/jules/api
+
+Jules IA doit lire ce prompt en cohérence totale avec les sections 1 à 6 du prompt principal
+(architecture, render.yaml, apps Django, module Profil, etc.) et ne rien contredire de ce qui
+a déjà été spécifié.
+
+---
+
+## 1. RAPPEL DES CONCEPTS DE L'API JULES
+
+L'API Jules (alpha) est construite autour de 3 ressources REST, authentifiées via le header
+`X-Goog-Api-Key`, à la base URL `https://jules.googleapis.com/v1alpha` :
+
+- **Source** : le dépôt GitHub connecté (ex: `sources/github/<owner>/<repo>`).
+- **Session** : une unité de travail asynchrone confiée à l'agent (équivalent d'une conversation
+  de tâche continue), créée via `POST /v1alpha/sessions`.
+- **Activity** : chaque événement à l'intérieur d'une session (plan généré, message, résultat),
+  consultable via `GET /v1alpha/sessions/{session}/activities`.
+
+Endpoints clés à utiliser :
+- `GET /v1alpha/sources` — lister les dépôts connectés
+- `POST /v1alpha/sessions` — créer une session de travail (champs : `prompt`, `sourceContext`,
+  `title`, `automationMode` optionnel — ex: `AUTO_CREATE_PR`, `requirePlanApproval` optionnel)
+- `GET /v1alpha/sessions` — lister/paginer les sessions (`pageSize`)
+- `POST /v1alpha/sessions/{session}:approvePlan` — approuver un plan si `requirePlanApproval=true`
+- `POST /v1alpha/sessions/{session}:sendMessage` — envoyer un message dans une session existante
+- `GET /v1alpha/sessions/{session}/activities` — suivre la progression
+
+⚠️ L'API est en alpha : Jules IA doit prévoir une gestion d'erreurs tolérante (schémas et champs
+susceptibles d'évoluer), journaliser les réponses brutes en cas d'échec de parsing, et ne jamais
+bloquer le flux applicatif principal si l'API Jules est indisponible (dégradation gracieuse).
+
+---
+
+## 2. NOUVELLE APP DJANGO DÉDIÉE : `jules_integration`
+
+En complément des apps déjà listées dans le prompt maître (`users`, `profile_manager`, `jobs`,
+`subscriptions`, `ai_engine`, `pdf_generator`), créer une app dédiée :
+
+```
+backend/jules_integration/
+├── clients.py        # Client HTTP encapsulant les appels à jules.googleapis.com
+├── models.py          # JulesSession, JulesActivity (traçabilité locale)
+├── serializers.py
+├── services.py        # Logique métier : create_session, send_message, approve_plan, poll_activities
+├── views.py            # Endpoints internes exposés au Frontend/Admin (proxy sécurisé, jamais la clé API côté client)
+├── urls.py
+└── tests.py
+```
+
+### Modèles à prévoir
+- `JulesSession` : `session_id` (id distant), `source`, `title`, `prompt`, `status`,
+  `automation_mode`, `require_plan_approval`, `created_at`, `updated_at`, lien vers l'utilisateur
+  admin/dev à l'origine de la session.
+- `JulesActivity` : `session` (FK), `activity_id`, `type`, `payload` (JSON brut), `created_at`.
+
+### Client HTTP (`clients.py`)
+- Utiliser `requests` (ou `httpx`) avec timeout explicite, retry limité (ex: 3 tentatives,
+  backoff exponentiel) et gestion des codes 401/403/429/5xx.
+- Header d'authentification : `X-Goog-Api-Key: <valeur lue depuis la variable d'environnement>`.
+- Ne jamais logger la clé API en clair dans les logs Django.
+
+### Endpoints internes exposés (réservés au rôle Admin/Superutilisateur du Dashboard Angular)
+- `POST /api/jules/sessions/` → crée une session Jules (proxy vers `POST /v1alpha/sessions`)
+- `GET /api/jules/sessions/` → liste les sessions locales + statut synchronisé
+- `POST /api/jules/sessions/{id}/approve-plan/` → proxy `:approvePlan`
+- `POST /api/jules/sessions/{id}/send-message/` → proxy `:sendMessage`
+- `GET /api/jules/sessions/{id}/activities/` → proxy + persistance locale des activités
+- Documenter chacun de ces endpoints avec `@extend_schema` (drf-spectacular), conformément à la
+  section Swagger déjà définie dans le prompt maître.
+
+### Sécurité
+- Ces endpoints ne doivent jamais être accessibles à un utilisateur candidat standard : restreindre
+  via une permission DRF dédiée (`IsAdminOrSuperUser`).
+- La clé API Jules ne transite jamais vers le Frontend React ni vers l'App Mobile Flutter : tous
+  les appels passent exclusivement par le backend Django (pattern proxy).
+
+---
+
+## 3. VARIABLE D'ENVIRONNEMENT — AJOUT DANS `env.example`
+
+Ajouter au fichier `env.example` (racine `backend/` ou racine projet selon l'organisation
+existante) la variable suivante, sans jamais renseigner de valeur réelle dans ce fichier
+d'exemple :
+
+```env
+# --- Intégration Jules API (agent IA de développement — https://developers.google.com/jules/api) ---
+JULES_API_KEY=your_jules_api_key_here
+JULES_API_BASE_URL=https://jules.googleapis.com/v1alpha
+JULES_DEFAULT_SOURCE=sources/github/<owner>/<repo>
+JULES_AUTOMATION_MODE=AUTO_CREATE_PR
+JULES_REQUIRE_PLAN_APPROVAL=False
+```
+
+Dans `settings.py`, lire ces valeurs via variables d'environnement (`os.environ.get(...)` ou
+`django-environ`, cohérent avec le reste du projet) — ne jamais coder la clé en dur.
+
+---
+
+## 4. CONFIGURATION SQLITE POUR LES TESTS SUR RENDER
+
+Le prompt maître prévoit déjà `USE_SQLITE=True` comme variable d'environnement du service
+`backend-luka-mosala` sur Render (voir `render.yaml`, section 3). Pour les tests liés à
+l'intégration Jules :
+
+1. **Environnement de test dédié** : dans `settings.py`, si `USE_SQLITE=True` (ou si
+   `DJANGO_SETTINGS_MODULE` pointe vers un module de test), forcer la base de données sur
+   SQLite (`django.db.backends.sqlite3`, fichier `db_test.sqlite3`) plutôt que PostgreSQL, afin
+   de permettre l'exécution rapide des tests CI sur Render sans dépendance à une base managée.
+2. **Tests unitaires `jules_integration`** :
+   - Mocker systématiquement les appels réseau vers `jules.googleapis.com` (via `responses`,
+     `unittest.mock.patch`, ou un client HTTP factice) — ne jamais appeler l'API Jules réelle
+     pendant les tests automatisés.
+   - Couvrir : création de session (succès/échec), approbation de plan, envoi de message,
+     pagination des activités, gestion des erreurs 401/429/5xx, absence de clé API configurée.
+3. Ajouter dans `env.example` la variable de test suivante pour permettre de basculer explicitement
+   les tests en mode mock :
+
+```env
+JULES_API_MOCK_MODE=True
+```
+
+Quand `JULES_API_MOCK_MODE=True`, le client `clients.py` doit retourner des réponses simulées
+(fixtures JSON) au lieu d'appeler le réseau — utile pour les previews PR sur Render où la clé
+API réelle ne doit pas être exposée.
+
+---
+
+## 5. COHÉRENCE AVEC LE RESTE DU PROJET
+
+- Documenter tous les nouveaux endpoints dans Swagger/OpenAPI (`/api/docs/swagger/`), comme
+  exigé dans le prompt maître (section documentation Swagger).
+- Ajouter `jules.googleapis.com` à la liste des hôtes externes autorisés si un contrôle sortant
+  existe déjà dans la configuration réseau du projet.
+- N'introduire aucune régression sur les modules déjà spécifiés (`ai_engine` pour la génération
+  CV/LM, `pdf_generator`, module Profil structuré, paiements Mobile Money).
+- Toute capture d'écran de validation liée à ce module (ex: dashboard Admin Angular affichant les
+  sessions Jules) doit suivre la même convention que le reste du projet : dossier `/images_test/`
+  (ex: `images_test/admin_jules_sessions.png`).
+
+---
+
+## 6. LIVRABLES ATTENDUS POUR CE COMPLÉMENT
+
+- App Django `jules_integration` complète (modèles, migrations, serializers, services, vues,
+  permissions, tests avec mocks).
+- Mise à jour de `env.example` avec les variables listées en section 3 et 4.
+- Documentation Swagger des nouveaux endpoints.
+- Écran(s) Admin Angular minimal(aux) pour déclencher/suivre une session Jules (liste des
+  sessions, statut, bouton "Approuver le plan", bouton "Envoyer un message").
+- Suite de tests utilisant SQLite et mocks réseau, exécutable sur Render sans clé API réelle.
