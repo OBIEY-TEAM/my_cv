@@ -215,7 +215,16 @@ export default function App() {
     }
   }, [token, activeTab]);
 
-  const fetchData = async () => {
+  // Smart Client-side Cache Management to prevent redundant API calls
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+
+  const fetchData = async (forceRefresh = false) => {
+    const now = Date.now();
+    // Use cached state if fetched within last 15 seconds unless forced
+    if (!forceRefresh && lastFetchTime && (now - lastFetchTime < 15000)) {
+      return;
+    }
+
     try {
       const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes, plansRes] = await Promise.all([
         axios.get('/api/profile/'),
@@ -240,6 +249,7 @@ export default function App() {
         setAvailablePlans(plansRes.data);
         setSelectedPlan(plansRes.data[0].id);
       }
+      setLastFetchTime(now);
     } catch (e) {
       console.error("Error fetching data:", e);
     }

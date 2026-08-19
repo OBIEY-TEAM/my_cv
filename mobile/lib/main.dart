@@ -10,10 +10,31 @@ class ApiService {
   static const String baseUrl = 'https://luka-mosala-backend.onrender.com';
   static String? authToken;
 
+  // In-memory cache for API requests with 15-second TTL
+  static final Map<String, dynamic> _cache = {};
+  static final Map<String, DateTime> _cacheExpiry = {};
+
   static Map<String, String> get headers => {
         'Content-Type': 'application/json',
         if (authToken != null) 'Authorization': 'Bearer $authToken',
       };
+
+  static bool _isCacheValid(String key) {
+    if (_cache.containsKey(key) && _cacheExpiry.containsKey(key)) {
+      return DateTime.now().isBefore(_cacheExpiry[key]!);
+    }
+    return false;
+  }
+
+  static void _setCache(String key, dynamic data) {
+    _cache[key] = data;
+    _cacheExpiry[key] = DateTime.now().add(const Duration(seconds: 15));
+  }
+
+  static void invalidateCache() {
+    _cache.clear();
+    _cacheExpiry.clear();
+  }
 
   static Future<bool> login(String username, String password) async {
     try {
@@ -81,14 +102,21 @@ class ApiService {
     return [];
   }
 
-  static Future<List<dynamic>> fetchPackages() async {
+  static Future<List<dynamic>> fetchPackages({bool forceRefresh = false}) async {
+    const cacheKey = 'packages';
+    if (!forceRefresh && _isCacheValid(cacheKey)) {
+      return _cache[cacheKey] as List<dynamic>;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/jobs/packages/'),
         headers: headers,
       );
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body) as List<dynamic>;
+        _setCache(cacheKey, data);
+        return data;
       }
     } catch (e) {
       debugPrint('Fetch packages error: $e');
