@@ -1,108 +1,128 @@
 import re
-import os
-from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
-import pypdf
-from PIL import Image
+from urllib.parse import urlparse
 
-class JobScraper:
+class JobOfferScraper:
     @staticmethod
-    def scrape_job(input_source):
+    def scrape_url(url: str) -> dict:
         """
-        Accepts input_source which can be:
-        - URL string (e.g., https://www.acpe.cg/...)
-        - PDF file path
-        - Image file path (e.g., screenshot)
-        - Text file path or Raw text string
-
-        Returns a dictionary containing:
-        - title: Job Title
-        - company: Organization / Company name
-        - site_name: Name of site / domain (e.g. 'acpe', 'bluecollarcongo')
-        - abbreviation: Normalized abbreviation (e.g. 'DEV-FULLSTACK-MOBILE', 'CHARGE-IT-DEV-WEB', 'ING-RESEAUX-SYS-TELECOM')
-        - full_text: Full raw job offer text
-        - keywords: Extracted technical and ATS keywords
+        Analyse une URL d'offre d'emploi et extrait les détails (poste, entreprise, site_name, mots-clés, etc.)
         """
-        raw_text = ""
-        site_name = "acpe"
-        source_url = None
+        domain = urlparse(url).netloc
+        site_name = domain.replace("www.", "").split(".")[0].lower()
+        if not site_name:
+            site_name = "organisme"
 
-        is_image_file = isinstance(input_source, str) and os.path.exists(input_source) and input_source.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        }
 
-        if isinstance(input_source, str) and (input_source.startswith("http://") or input_source.startswith("https://")):
-            source_url = input_source
-            if "bluecollarcongo" in input_source:
-                site_name = "bluecollarcongo"
-            elif "acpe" in input_source:
-                site_name = "acpe"
-            else:
-                site_name = input_source.split("//")[-1].split("/")[0].replace("www.", "").split(".")[0]
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            html = response.text
+            soup = BeautifulSoup(html, "html.parser")
 
-            try:
-                resp = requests.get(input_source, timeout=10)
-                if resp.status_code == 200:
-                    soup = BeautifulSoup(resp.text, 'html.parser')
-                    for script in soup(["script", "style"]):
-                        script.extract()
-                    raw_text = soup.get_text(separator="\n")
-            except Exception:
-                raw_text = f"Offre d'emploi disponible sur {input_source}"
-        elif isinstance(input_source, str) and os.path.exists(input_source) and input_source.lower().endswith(".pdf"):
-            try:
-                reader = pypdf.PdfReader(input_source)
-                raw_text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-            except Exception:
-                raw_text = "Offre d'emploi issue d'un document PDF."
-        elif is_image_file:
-            raw_text = f"Offre d'emploi fournie sous forme d'image/capture d'écran : {Path(input_source).name}"
-        elif isinstance(input_source, str) and os.path.exists(input_source):
-            with open(input_source, "r", encoding="utf-8", errors="ignore") as f:
-                raw_text = f.read()
-        else:
-            raw_text = str(input_source)
+            # Extraction du titre
+            title = None
+            for h in soup.find_all(["h1", "h2"]):
+                t = h.get_text(strip=True)
+                if t and len(t) > 3 and "ACPE" not in t and "CONNEXION" not in t.upper() and "RECHERCHE" not in t.upper():
+                    title = t
+                    break
 
-        raw_text = raw_text.strip()
-        lines = [line.strip() for line in raw_text.split('\n') if line.strip()]
+            if not title:
+                h_any = soup.find(["h1", "h2"])
+                if h_any:
+                    title = h_any.get_text(strip=True)
 
-        title = "Ingénieur Logiciel / Développeur"
-        company = "Entreprise"
+            if not title and soup.title:
+                title = soup.title.get_text(strip=True)
 
-        if lines:
-            title = lines[0]
-            if len(lines) > 1:
-                company = lines[1]
+            if not title:
+                title = "Poste non spécifié"
 
-        # Generate normalized abbreviation
-        clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title).upper()
-        words = clean_title.split()
+            if "|" in title:
+                title = title.split("|")[0].strip()
 
-        if any(w in words for w in ['DEVELOPPEUR', 'DEV', 'FULLSTACK', 'MOBILE']):
-            abbreviation = "DEV-FULLSTACK-MOBILE"
-        elif any(w in words for w in ['RESEAUX', 'TELECOM', 'SYSTEMES', 'TELECOMS']):
-            abbreviation = "ING-RESEAUX-SYS-TELECOM"
-        elif any(w in words for w in ['CHARGE', 'WEB', 'IT']):
-            abbreviation = "CHARGE-IT-DEV-WEB"
-        else:
-            abbreviation = "-".join(words[:3]) if words else "POSTE"
+            # Extraction du texte complet
+            for script in soup(["script", "style", "nav", "header", "footer"]):
+                script.extract()
 
-        # Extract technical keywords for ATS optimization
-        tech_words = [
-            "Python", "Django", "React", "Flutter", "TypeScript", "Angular", "Dart",
-            "REST", "API", "Docker", "Linux", "SQL", "PostgreSQL", "SEO", "USSD",
-            "Airtel Money", "MTN Mobile Money", "PayDunya", "Réseaux", "Télécoms",
-            "Gestion de projet", "DevOps", "Fullstack", "Mobile", "Web"
-        ]
-        found_keywords = [kw for kw in tech_words if kw.lower() in raw_text.lower()]
-        if not found_keywords:
-            found_keywords = ["Python", "Django", "Flutter", "React", "REST API", "DevOps"]
+            text_content = soup.get_text(separator="\n", strip=True)
+
+        except Exception as e:
+            print(f"[JobScraper] Attention: impossible de Fetch {url} ({e}). Utilisation d'un profil par défaut d'offre.")
+            title = JobOfferScraper._guess_title_from_url(url)
+            text_content = f"Offre d'emploi accessible à l'adresse : {url}\n\nDétails de l'offre non récupérables automatiquement (Erreur réseau/accès)."
+
+        # Extraction des mots-clés techniques
+        keywords = JobOfferScraper.extract_keywords(text_content)
+        abbreviation = JobOfferScraper.generate_abbreviation(title)
 
         return {
-            'title': title,
-            'company': company,
-            'site_name': site_name,
-            'abbreviation': abbreviation,
-            'full_text': raw_text,
-            'keywords': found_keywords,
-            'source_url': source_url
+            "url": url,
+            "site_name": site_name,
+            "title": title,
+            "abbreviation": abbreviation,
+            "keywords": keywords,
+            "full_text": text_content
         }
+
+    @staticmethod
+    def extract_keywords(text: str) -> list:
+        tech_terms = [
+            "Python", "Django", "Angular", "React", "Flutter", "Dart", "TypeScript", "JavaScript",
+            "Fullstack", "Backend", "Frontend", "Mobile", "REST API", "DevOps", "Docker", "Linux",
+            "SQL", "PostgreSQL", "Réseaux", "Télécoms", "Sécurité", "VPN", "SI", "CI/CD", "Git", "Agile"
+        ]
+        found = []
+        for term in tech_terms:
+            if re.search(r"\b" + re.escape(term) + r"\b", text, re.IGNORECASE):
+                found.append(term)
+        if not found:
+            found = ["Développement Web", "Ingénierie Logicielle", "Architecture SI", "Gestion de Projet"]
+        return found
+
+    @staticmethod
+    def _guess_title_from_url(url: str) -> str:
+        path = urlparse(url).path
+        slug = path.strip("/").split("/")[-1]
+        if slug:
+            clean_slug = re.sub(r"[-_]", " ", slug)
+            clean_slug = re.sub(r"\d+", "", clean_slug).strip()
+            if clean_slug:
+                return clean_slug.title()
+        return "Chargé De Mission"
+
+    @staticmethod
+    def generate_abbreviation(title: str) -> str:
+        """
+        Génère une abréviation courte pour le nom du fichier
+        """
+        t = title.upper()
+        t = re.sub(r"[ÉÈÊË]", "E", t)
+        t = re.sub(r"[ÀÂ]", "A", t)
+        t = re.sub(r"[ÎÏ]", "I", t)
+        t = re.sub(r"[ÔÖ]", "O", t)
+        t = re.sub(r"[ÛÜÙ]", "U", t)
+        t = re.sub(r"[Ç]", "C", t)
+
+        if "FULL STACK" in t or "FULLSTACK" in t:
+            if "MOBILE" in t:
+                return "DEV-FULLSTACK-MOBILE"
+            return "DEV-FULLSTACK"
+        if "IT" in t or "DEVELOPPEMENT WEB" in t:
+            return "CHARGE-IT-DEV-WEB"
+        if "RESEAUX" in t or "TELECOM" in t or "SYSTEMES" in t:
+            return "ING-RESEAUX-SYS-TELECOM"
+        if "DEVELOPPEUR" in t or "DEVELOPPER" in t:
+            return "DEV-LOGICIEL"
+
+        words = re.findall(r"\b[A-Z]{3,}\b", t)
+        ignored = {"POUR", "AVEC", "DANS", "DES", "LES", "UNE", "UNE", "CHEZ", "HAUT", "HF", "H-F"}
+        words = [w for w in words if w not in ignored]
+        if words:
+            return "-".join(words[:4])
+        return "POSTE"

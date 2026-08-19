@@ -1,6 +1,3 @@
 """
-AGENT_IA_CV Package
-Automated Tailored Application Generator Agent
+AGENT_IA_CV - Agent d'automatisation de candidatures sur mesure
 """
-
-__version__ = "1.0.0"
