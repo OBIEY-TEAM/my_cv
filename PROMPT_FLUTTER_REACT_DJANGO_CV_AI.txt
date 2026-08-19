@@ -11,12 +11,12 @@ Construire et maintenir une plateforme SaaS complète (Mobile Flutter + Web Reac
 1. **Saisie & Upload Utilisateur (Web ou Mobile) :**
    - L'utilisateur se connecte sur l'application Web (React/TypeScript) ou Mobile (Flutter).
    - Il remplit son profil complet (informations personnelles, expériences, diplômes, compétences, formations, projets).
-   - Il téléverse ou fournit son offre d'emploi sous n'importe quel format : URL, Texte brut, Fichier PDF ou Fichier Image (capture d'écran d'offre).
+   - Il téléverse ou fournit son offre d'emploi sous n'importe quel format : URL, Texte brut, Document PDF ou Fichier Image (capture d'écran d'offre).
    - Il charge sa photo de profil.
 
 2. **Souscription & Paiement Fintech :**
    - L'utilisateur choisit un pack / abonnement de candidatures (ex: Pack 1, Pack 5, Abonnement Mensuel).
-   - Il effectue son paiement via Airtel Money, MTN Mobile Money, PayDunya ou Carte.
+   - Il effectue son paiement via Airtel Money, MTN Mobile Money, PayDunya ou Carte bancaire.
    - Le backend Django vérifie et valide la transaction (`PAYE`).
 
 3. **Exportation vers le dossier `/commandes` :**
@@ -40,11 +40,59 @@ Construire et maintenir une plateforme SaaS complète (Mobile Flutter + Web Reac
 
 ---
 
-## 2. ARCHITECTURE TECHNIQUE ET FLUX INTERNE DU SYSTÈME
+## 2. SPÉCIFICATIONS UI/UX DÉTAILLÉES (APPLICATION WEB & MOBILE)
+
+### A. APPLICATION WEB (REACT / TYPESCRIPT / TAILWIND CSS)
+1. **Tableau de bord (Dashboard) :**
+   - Hiérarchie visuelle améliorée avec polices modernes (Inter, Plus Jakarta Sans) et espacement accru (padding/gap 6-8).
+   - Design totalement réactif (Responsive Design) adapté sur tous les types d'appareils.
+
+2. **Vue 'Générer un Dossier' :**
+   - Option d'upload permettant d'uploader au choix un document (PDF), une image (PNG/JPG), un lien URL ou un texte brut de l'offre d'emploi.
+
+3. **Vue 'Profil' & Gestion Photo :**
+   - Regroupement des options 'Modifier', 'Uploader' et 'Caméra' en un seul **bouton contextuel unique / menu déroulant**.
+   - Conservation stricte de l'orientation d'origine de la photo lors du chargement.
+
+4. **Section 'Informations Générales' & Modales du Profil :**
+   - Champs organisés par **blocs logiques d'information** (Identité, Contact, Localisation, Résumé).
+   - Intégration d'un **sélecteur de date interactif (Datepicker Calendar)** pour toutes les dates.
+   - Dans 'Expériences Professionnelles', présence explicite de champs de saisie pour la **Date de début** et la **Date de fin**.
+   - Cohérence stricte de tous les champs de modale (Expériences, Certifications, Diplômes, Projets).
+
+5. **Abonnements & Modales de Visualisation :**
+   - **Suppression définitive du bouton 'Payer / Recharger Crédits'** des fenêtres modales de prévisualisation (CV, LM et EMAIL).
+   - Dans la section 'Formules d'Abonnement', intégration des **logos officiels d'Airtel Money et MTN Mobile Money**, ainsi qu'une **icône dédiée pour les Cartes bancaires**.
+
+---
+
+### B. APPLICATION MOBILE (FLUTTER / DART)
+1. **Interface Candidatures & Ergonomie :**
+   - Remplacement des formes sombres et boutons génériques par des **icônes explicites**.
+   - Alignement optimisé des éléments et augmentation de l'espacement inter-cartes pour aérer la vue.
+
+2. **Vue 'Générer' Mobile :**
+   - Option d'upload pour téléverser un document (PDF) ou une image de l'offre d'emploi (capture d'écran galerie/caméra).
+
+3. **Vue 'Profil' Mobile :**
+   - Regroupement des options 'Modifier', 'Uploader' et 'Caméra' en un **seul bouton contextuel fonctionnel**.
+   - Remplacement de l'icône générique par l'**affichage réel de la photo de profil chargée**.
+   - **Masquage dynamique des champs vides** sur la vue profil pour n'afficher que les données renseignées.
+
+4. **Fenêtres Modales Mobile (Profil, Expériences, Certifications, Diplômes, Projets) :**
+   - Ajout d'un **bouton en haut de la modale pour passer en affichage plein écran (Full-screen Dialog)**.
+   - Utilisation d'un **sélecteur de date interactif (Calendrier / Datepicker)** pour la sélection des années.
+   - **Correspondance exacte et stricte des champs** des modales de profil mobile avec ceux définis dans l'application web.
+   - **Suppression du bouton 'Payer / Recharger Crédits'** dans les modales de prévisualisation (CV, LM, EMAIL).
+
+---
+
+## 3. ARCHITECTURE TECHNIQUE ET FLUX INTERNE DU SYSTÈME
 
 ```
  [ APPLICATION MOBILE FLUTTER ]     [ APPLICATION WEB REACT / NEXT.JS ]
-     (iOS / Android Cross-Platform)             (Desktop / Tablet Responsive)
+  (Responsive UI, Fullscreen,         (Dashboard moderne, Datepicker,
+   Datepicker, Photo contextuelle)     Logos Airtel/MTN/Cartes)
                     │                                    │
                     └───────────────┬────────────────────┘
                                     │ (APIs REST / JSON / JWT / File Upload)
@@ -71,44 +119,6 @@ Construire et maintenir une plateforme SaaS complète (Mobile Flutter + Web Reac
                ├── NOM_USER-[ABRÉVIATION]-LM.pdf      (1 Page Stricte)
                └── NOM_USER-[ABRÉVIATION]-EMAIL.txt   ([Candidature - Poste - Nom Prénom])
 ```
-
----
-
-## 3. SPÉCIFICATIONS DES COMPOSANTS HARMONISÉS
-
-### A. Agent Python : `AGENT_IA_CV`
-- **Module `AGENT_IA_CV.image_processor` :**
-  - Charge `/commandes/photo/<ID_UTILISATEUR>.png`.
-  - Recadre automatiquement au format carré 1:1 centré sur le visage et haut du buste avec espace au-dessus de la tête.
-  - Enregistre la photo sous `/commandes/photo/<ID_UTILISATEUR>_cropped.png`.
-- **Module `AGENT_IA_CV.job_scraper` :**
-  - Accepte URL d'offre, fichier PDF, texte brut ou image d'offre.
-  - Extrait le titre du poste, l'organisme/site, le texte intégral et les mots-clés techniques pour l'optimisation ATS.
-  - Génère l'abréviation normalisée du poste (ex: `DEV-FULLSTACK-MOBILE`, `CHARGE-IT-DEV-WEB`).
-- **Module `AGENT_IA_CV.pdf_generator` :**
-  - **CV PDF (1 PAGE STRICTE) :** Structure à 2 colonnes (32% Gauche : photo recadrée, contact, Hard/Soft Skills, langues, formations ; 68% Droite : nom, titre du poste, accroche en 3 phrases max, expériences avec réalisations chiffrées/impactantes, projets phares).
-  - **LM PDF (1 PAGE STRICTE) :** Structure en-tête expéditeur/destinataire, objet explicite, corps en 4 paragraphes (Vous / Moi / Nous / Conclusion & Entretien), formule de politesse et signature.
-  - **Email TXT :** Format direct `[Objet : Candidature - Intitulé du poste - Nom Prénom]`.
-- **Point d'entrée `AGENT_IA_CV.main` :**
-  - Orchestre la surveillance des commandes, l'exécution des traitements et l'écriture des livrables dans `/resultat/<ID_UTILISATEUR>/<nom_site>/<Intitulé du Poste>/`.
-
-### B. Backend Django REST Framework
-- **Gestion des Commandes & Synchro :**
-  - `CommandesSyncService` synchronise les données profil dans `/commandes/info/<ID_UTILISATEUR>.txt` et la photo dans `/commandes/photo/<ID_UTILISATEUR>.png`.
-- **Validation du Paiement :**
-  - Les commandes ne sont transmises au traitement `AGENT_IA_CV` et livrées à l'utilisateur que lorsque le paiement du pack (Fintech Airtel Money / MTN MoMo / PayDunya) est validé (`Status: PAID`).
-- **Gestion des Livrables :**
-  - Expose les endpoints REST pour télécharger individuellement chaque fichier PDF/TXT ou télécharger l'archive ZIP complète de la candidature.
-
-### C. Applications Web (React) & Mobile (Flutter)
-- **Saisie Unifiée :**
-  - Formulaire dynamique pour renseigner le profil utilisateur complet (Expériences, Diplômes, Certifications, Projets).
-  - Prise de photo ou téléversement d'image/PDF de l'offre d'emploi.
-- **Paiement Intégré :**
-  - Écran de paiement Mobile Money avec Push USSD (Airtel Money, MTN MoMo).
-- **Suivi & Téléchargement :**
-  - Suivi du statut en temps réel (En attente de paiement -> En cours de traitement par AGENT_IA_CV -> Livré).
-  - Prévisualisation PDF intégrée pour le CV et la Lettre de Motivation.
 
 ---
 
