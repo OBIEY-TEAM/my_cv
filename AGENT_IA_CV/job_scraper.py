@@ -7,7 +7,7 @@ class JobOfferScraper:
     @staticmethod
     def scrape_url(url: str) -> dict:
         """
-        Analyse une URL d'offre d'emploi et extrait les détails (poste, entreprise, site_name, etc.)
+        Analyse une URL d'offre d'emploi et extrait les détails (poste, entreprise, site_name, mots-clés, etc.)
         """
         domain = urlparse(url).netloc
         site_name = domain.replace("www.", "").split(".")[0].lower()
@@ -24,7 +24,7 @@ class JobOfferScraper:
             html = response.text
             soup = BeautifulSoup(html, "html.parser")
 
-            # Extraction du titre : chercher d'abord h1, h2 dans le body, puis title
+            # Extraction du titre
             title = None
             for h in soup.find_all(["h1", "h2"]):
                 t = h.get_text(strip=True)
@@ -43,7 +43,6 @@ class JobOfferScraper:
             if not title:
                 title = "Poste non spécifié"
 
-            # Nettoyage du titre si présence de pipes ou tirets superflus
             if "|" in title:
                 title = title.split("|")[0].strip()
 
@@ -58,7 +57,8 @@ class JobOfferScraper:
             title = JobOfferScraper._guess_title_from_url(url)
             text_content = f"Offre d'emploi accessible à l'adresse : {url}\n\nDétails de l'offre non récupérables automatiquement (Erreur réseau/accès)."
 
-        # Abréviation du poste
+        # Extraction des mots-clés techniques
+        keywords = JobOfferScraper.extract_keywords(text_content)
         abbreviation = JobOfferScraper.generate_abbreviation(title)
 
         return {
@@ -66,8 +66,24 @@ class JobOfferScraper:
             "site_name": site_name,
             "title": title,
             "abbreviation": abbreviation,
+            "keywords": keywords,
             "full_text": text_content
         }
+
+    @staticmethod
+    def extract_keywords(text: str) -> list:
+        tech_terms = [
+            "Python", "Django", "Angular", "React", "Flutter", "Dart", "TypeScript", "JavaScript",
+            "Fullstack", "Backend", "Frontend", "Mobile", "REST API", "DevOps", "Docker", "Linux",
+            "SQL", "PostgreSQL", "Réseaux", "Télécoms", "Sécurité", "VPN", "SI", "CI/CD", "Git", "Agile"
+        ]
+        found = []
+        for term in tech_terms:
+            if re.search(r"\b" + re.escape(term) + r"\b", text, re.IGNORECASE):
+                found.append(term)
+        if not found:
+            found = ["Développement Web", "Ingénierie Logicielle", "Architecture SI", "Gestion de Projet"]
+        return found
 
     @staticmethod
     def _guess_title_from_url(url: str) -> str:
@@ -83,10 +99,9 @@ class JobOfferScraper:
     @staticmethod
     def generate_abbreviation(title: str) -> str:
         """
-        Génère une abréviation courte pour le nom du fichier (ex: DEV-FULLSTACK-MOBILE, CHARGE-IT-DEV-WEB, ING-RESEAUX-SYS-TELECOM)
+        Génère une abréviation courte pour le nom du fichier
         """
         t = title.upper()
-        # Normalisation
         t = re.sub(r"[ÉÈÊË]", "E", t)
         t = re.sub(r"[ÀÂ]", "A", t)
         t = re.sub(r"[ÎÏ]", "I", t)
@@ -105,7 +120,6 @@ class JobOfferScraper:
         if "DEVELOPPEUR" in t or "DEVELOPPER" in t:
             return "DEV-LOGICIEL"
 
-        # Génération automatique par mots clés principaux
         words = re.findall(r"\b[A-Z]{3,}\b", t)
         ignored = {"POUR", "AVEC", "DANS", "DES", "LES", "UNE", "UNE", "CHEZ", "HAUT", "HF", "H-F"}
         words = [w for w in words if w not in ignored]
