@@ -499,7 +499,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 widget.onSwitchTab(3); // Switch to payments tab
               },
               icon: const Icon(Icons.payment),
-              label: const Text('Payer / Recharger Crédits'),
+              label: const Text('Fermer'),
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6E56)),
             ),
           ],
