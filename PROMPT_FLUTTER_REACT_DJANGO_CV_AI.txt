@@ -1,11 +1,11 @@
 # PROMPT SPÉCIFICATION ARCHITECTURALE & DÉVELOPPEMENT D'APPLICATION
-# NOM DU PROJET : "AI JobApply SaaS" - Générateur Automatisé de Candidatures Sur Mesure
+# NOM DU PROJET : "Luka Mosala SaaS" - Générateur Automatisé de Candidatures Sur Mesure
 # DESTINATAIRE IA : Jules AI / Agent IA Autonome de Développement
 
 ---
 
 ## 1. VISION DU PROJET & OBJECTIF GÉNÉRAL
-Construire une plateforme SaaS complète (Mobile Flutter + Web React + Backend Django REST Framework) connectée aux API d'Intelligence Artificielle (Jules / OpenAI / Claude) et aux passerelles de paiement Mobile Money (Airtel Money, MTN Mobile Money, PayDunya).
+Construire la plateforme SaaS complète **Luka Mosala** (Mobile Flutter + Web React Client + Dashboard Admin Angular + Backend Django REST Framework) connectée aux API d'Intelligence Artificielle (Jules / OpenAI / Claude) et aux passerelles de paiement Mobile Money (Airtel Money, MTN Mobile Money, PayDunya).
 
 L'application permet à tout utilisateur d'importer une offre d'emploi (via un lien URL, un fichier PDF ou un texte brut), une photo de profil et son profil/CV de référence (style README/markdown), puis de générer instantanément un dossier de candidature complet et sur mesure :
 1. **CV Professionnel sur mesure (PDF - Strictement 1 page)** avec photo recadrée professionnellement.
@@ -19,33 +19,33 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
 ## 2. ARCHITECTURE TECHNIQUE GLOBALE DU SYSTÈME
 
 ```
- [ APPLICATION MOBILE FLUTTER ]     [ APPLICATION WEB REACT / NEXT.JS ]
-     (iOS / Android Cross-Platform)             (Desktop / Tablet Responsive)
-                    │                                    │
-                    └───────────────┬────────────────────┘
-                                    │ (APIs REST / JSON / JWT)
-                                    ▼
-                    [ BACKEND DJANGO REST FRAMEWORK ]
-                    (Authentification, Métier, ORM, Celery)
-                      │             │               │
-      ┌───────────────┘             │               └───────────────┐
-      ▼                             ▼                               ▼
-[ BASE POSTGRESQL / REDIS ]   [ AGENT IA / JULES API ]   [ PAYMENTS FINTECH ]
- (Données Users, Subscriptions) (Génération CV/LM/Email)   (Airtel Money, MTN MoMo)
+ [ APPLICATION MOBILE FLUTTER WEB ]    [ WEB CLIENT REACT ]    [ DASHBOARD ADMIN ANGULAR ]
+ (mobile-luka-mosala.onrender.com)   (client-luka-mosala.onrender.com) (admin-luka-mosala.onrender.com)
+                 │                             │                              │
+                 └─────────────────────────────┼──────────────────────────────┘
+                                               │ (APIs REST / JSON / JWT)
+                                               ▼
+                           [ BACKEND DJANGO REST FRAMEWORK / PYTHON ]
+                             (backend-luka-mosala.onrender.com)
+                                 │             │               │
+                 ┌───────────────┘             │               └───────────────┐
+                 ▼                             ▼                               ▼
+   [ BASE POSTGRESQL / REDIS ]   [ AGENT IA / JULES API ]   [ PAYMENTS FINTECH ]
+    (Données Users, Subscriptions) (Génération CV/LM/Email)   (Airtel Money, MTN MoMo)
 ```
 
 ### A. Backend : Django REST Framework (DRF) + Python
-- **API RESTful securisée :** Authentification JWT (SimpleJWT), CORS, throttled endpoints.
-- **ORM & Base de données :** PostgreSQL (Production) / SQLite (Dev), Redis pour le caching.
-- **Tâches Asynchrones & queues :** Celery / Redis pour le scraping des offres web et la génération de PDF lourds sans bloquer l'API.
+- **API RESTful sécurisée :** Authentification JWT (SimpleJWT), CORS, throttled endpoints.
+- **ORM & Base de données :** SQLite / PostgreSQL, Redis pour le caching.
+- **Tâches Asynchrones & Queues :** Celery / Redis pour le scraping des offres web et la génération de PDF lourds sans bloquer l'API.
 - **Intégration GitHub / Jules AI API :**
   * Service de synchronisation avec GitHub via Octokit / Git Python API.
   * Webhooks & appels API vers l'agent IA (Jules API / LLM) pour analyser l'offre et générer le contenu du CV, de la Lettre de Motivation et de l'Email.
 - **Génération de PDF :** Moteur Python ReportLab / WeasyPrint pour générer des PDFs au design moderne respectant strictement la limite d'1 page.
 - **Paiements Mobile Money :** Module d'intégration Webhook / REST avec les API Fintech (Airtel Money Congo, MTN Mobile Money Congo, PayDunya, SankMoney).
 
-### B. Application Mobile : Flutter (Dart)
-- **Multiplateforme :** iOS et Android avec Material Design 3 / Cupertinoui.
+### B. Application Mobile : Flutter / Flutter Web
+- **Multiplateforme :** iOS, Android et Flutter Web (déployé sur Render).
 - **Gestion d'État :** BLoC / Provider / Riverpod.
 - **Fonctionnalités Clés :**
   * Appareil photo intégré (Camera Plugin / Image Picker) pour capturer la photo de profil en direct ou choisir depuis la galerie.
@@ -54,7 +54,7 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
   * Lecteur PDF natif pour prévisualiser le CV et la Lettre de Motivation générés.
   * Téléchargement & Partage direct (Share Plus, File Saver).
 
-### C. Application Web : React.js / TypeScript (ou Next.js)
+### C. Application Web Client : React.js / Vite / TypeScript
 - **UI/UX Moderne :** Tailwind CSS, Shadcn/UI, Lucide Icons, Framer Motion.
 - **Dashboard Réactif :**
   * Glisser-déposer (Drag & Drop) pour les fichiers d'offres et photos.
@@ -62,9 +62,120 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
   * Prévisualisation en direct (Live PDF Preview) du CV et de la Lettre de Motivation.
   * Historique des candidatures et statut des paiements.
 
+### D. Web Admin & Dashboard Organisateur : Angular 17+
+- **Gestion Administrative :**
+  * Supervision des utilisateurs, gestion des abonnements, validation des transactions Mobile Money.
+  * Monitoring de la consommation des API IA et statistiques de génération de CV/Lettres.
+
 ---
 
-## 3. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
+## 3. CONFIGURATION RENDER BLUEPRINT (`render.yaml`)
+
+Générer le fichier `render.yaml` à la racine du projet pour permettre le déploiement gratuit et automatisé de l'ensemble des 4 services sur Render :
+
+```yaml
+services:
+  # 1. Backend API Service (Django REST Framework / Python)
+  - type: web
+    name: backend-luka-mosala
+    env: python
+    plan: free
+    region: frankfurt
+    buildCommand: "pip install -r backend/requirements.txt && python backend/manage.py migrate"
+    startCommand: "cd backend && PYTHONPATH=. gunicorn luka_mosala.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: USE_SQLITE
+        value: "True"
+      - key: DJANGO_SETTINGS_MODULE
+        value: luka_mosala.settings
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://client-luka-mosala.onrender.com,https://admin-luka-mosala.onrender.com,https://mobile-luka-mosala.onrender.com,https://luka-mosala-web.onrender.com"
+
+  # 2. Web Client Service (React.js / Vite)
+  - type: web
+    name: client-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "cd site_client_react && npm install --include=dev && npx vite build"
+    startCommand: "cd site_client_react && npx vite preview --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+
+  # 3. Web Admin & Dashboard Service (Angular 17+)
+  - type: web
+    name: admin-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "cd site_admin_angular && npm install --include=dev && npm run build"
+    startCommand: "npx serve -s site_admin_angular/dist/site_admin_angular/browser -p $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+
+  # 4. Mobile Web App Service (Flutter Web)
+  - type: web
+    name: mobile-luka-mosala
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "git clone https://github.com/flutter/flutter.git -b stable --depth 1 && export PATH=\"$PATH:`pwd`/flutter/bin\" && cd site_client_mobile && flutter create . --platforms web && flutter build web --release"
+    startCommand: "npx serve -s site_client_mobile/build/web -p $PORT"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://backend-luka-mosala.onrender.com/api"
+```
+
+---
+
+## 4. INSTRUCTION DECONTRÔLE EN TEMPS RÉEL SUR RENDER & RÉSOLUTIONS DES ERREURS DE DÉPLOIEMENT
+
+### A. Accès API Render & Diagnostic Visuel
+1. **Accès API Render :** L'agent IA utilise son intégration de clé API Render (tools MCP Render) pour contrôler les services en direct, consulter les logs de build/déploiement et suivre les statuts.
+2. **Branche Git rattachée au déploiement en temps réel :**
+   - Utiliser la branche active rattachée aux auto-deploys Render (ex: `jules-8374694265899943435-377d46a8`).
+   - Après chaque modification ou correction de code, effectuer un push sur cette branche pour déclencher immédiatement un nouveau build sur Render.
+
+3. **Vérification du Rendu Visuel sur l'URL de Déploiement :**
+   - Accéder et visiter le site en ligne : `https://luka-mosala-web.onrender.com` (ou l'URL cliente correspondante).
+   - Faire une capture d'écran du résultat visuel (avec les outils de navigation/capture headless de l'agent IA) pour vérifier l'état d'affichage réel.
+
+### B. Gestion des Erreurs Courantes & Auto-Correction
+En cas de page blanche, d'erreur serveur, ou d'erreur spécifique du type :
+> `Blocked request. This host ("luka-mosala-web.onrender.com") is not allowed. To allow this host, add "luka-mosala-web.onrender.com" to preview.allowedHosts in vite.config.js.`
+
+L'agent IA doit exécuter la procédure d'auto-correction suivante :
+1. **Ouvrir et corriger la configuration Vite (`site_client_react/vite.config.js` ou `vite.config.ts`) :**
+   ```javascript
+   export default defineConfig({
+     preview: {
+       allowedHosts: ['luka-mosala-web.onrender.com', 'client-luka-mosala.onrender.com', '.onrender.com', 'all']
+     },
+     server: {
+       allowedHosts: ['luka-mosala-web.onrender.com', 'client-luka-mosala.onrender.com', '.onrender.com', 'all']
+     }
+   })
+   ```
+2. **Corriger la configuration CORS / ALLOWED_HOSTS du backend Django (`settings.py`) :**
+   ```python
+   ALLOWED_HOSTS = ['backend-luka-mosala.onrender.com', 'luka-mosala-web.onrender.com', '.onrender.com', 'localhost']
+   CORS_ALLOWED_ORIGINS = [
+       "https://client-luka-mosala.onrender.com",
+       "https://luka-mosala-web.onrender.com",
+       "https://admin-luka-mosala.onrender.com",
+       "https://mobile-luka-mosala.onrender.com"
+   ]
+   ```
+3. **Commit et Push immédiat** sur la branche de déploiement (`jules-8374694265899943435-377d46a8`).
+4. **Revisiter le site** `https://luka-mosala-web.onrender.com` dès que le déploiement est vert sur Render, prendre une nouvelle capture d'écran et valider le bon fonctionnement jusqu'à l'obtention d'un résultat visuel 100% fonctionnel et conforme.
+
+---
+
+## 5. FONCTIONNALITÉS COMPLÈTES À DÉVELOPPER (SPÉCIFICATIONS DÉTAILLÉES)
 
 ### 1. Gestion de Compte & Authentification Utilisateur
 - **Inscription & Connexion :** Email/Mot de passe, OAuth2 (Google, GitHub).
@@ -103,22 +214,762 @@ L'application permet à tout utilisateur d'importer une offre d'emploi (via un l
 
 ---
 
-## 4. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
+## 6. INSTRUCTIONS D'EXÉCUTION POUR JULES IA
 
-1. **Initialiser le Backend Django REST Framework :**
+1. **Créer le Fichier `render.yaml` :**
+   - Générer à la racine du projet la configuration Render Blueprint contenant les 4 services avec le nom de projet **luka-mosala**.
+
+2. **Initialiser le Backend Django REST Framework :**
    - Créer les applications Django : `users`, `profile_manager`, `jobs`, `subscriptions`, `ai_engine`, `pdf_generator`.
    - Configurer les modèles de données (User, Profile, JobOffer, ApplicationPackage, Subscription, Transaction).
 
-2. **Mettre en place l'intégration Agent IA & Engine PDF :**
+3. **Mettre en place l'intégration Agent IA & Engine PDF :**
    - Implémenter le service Python ReportLab pour générer des PDFs ultra-pros au format 1 page stricte.
    - Intégrer l'API Jules / OpenAI pour la rédaction personnalisée selon le prompt maître validé.
 
-3. **Développer le Frontend Web React & l'Application Mobile Flutter :**
+4. **Développer le Frontend Web React, l'Admin Angular & l'App Mobile Flutter Web :**
    - Développer les écrans de création de compte, d'upload de photo/README et de sélection de formule d'abonnement.
    - Implémenter les flux de paiement Airtel Money & MTN MoMo.
    - Ajouter le visualiseur PDF et le bouton d'export ZIP des candidatures.
 
-4. **Tests & Vérifications :**
-   - Valider que chaque CV et Lettre de Motivation générés font **exactement 1 page**.
-   - Vérifier la conformité des données générées avec les informations du profil utilisateur.
-   - Tester le flux d'achat par Mobile Money et la livraison immédiate des fichiers.
+5. **Déploiement Render, Capture d'Écran Visuelle & Auto-Correction Continu :**
+   - Pousser le code sur la branche de déploiement `jules-8374694265899943435-377d46a8`.
+   - Contrôler le build sur Render via l'API.
+   - Visiter `https://luka-mosala-web.onrender.com` et faire une capture d'écran visuelle.
+   - Si une erreur d'hôte non autorisé ou écran blanc survient (ex: `preview.allowedHosts`), corriger immédiatement, committer, pusher et révisiter le site jusqu'à validation visuelle complète.
+
+
+================================================================================
+# PROMPT IA — CONCEPTION DES INTERFACES WEB & MOBILE (UI/UX)
+================================================================================
+
+Vous êtes l'Expert Principal UI/UX et Designer Front-End de la plateforme **Luka Mosala / PostulIA**.
+Votre mission est de concevoir et d'implémenter le système de design visuel et les interfaces utilisateur (React Web, Angular Admin, Flutter Mobile) en respectant strictement la charte graphique de la marque.
+
+---
+
+## 1. CHARTE GRAPHIQUE & PALETTE DE COULEURS
+
+La plateforme adopte une identité visuelle moderne, professionnelle, rassurante et axée sur la conversion et la clarté.
+
+### Palette de Couleurs Officielles (PostulIA / Luka Mosala) :
+- **Bleu Nuit Profond (`#0B1F3A`) :** Couleur primaire pour le Header, les cartes principales, la typographie des titres et l'identité institutionnelle.
+- **Bleu Royal Dynamique (`#185FA5`) :** Couleur secondaire pour les boutons d'action principale (CTA), les liens, les états actifs et le survol (hover).
+- **Vert Émeraude (`#0F6E56`) :** Couleur d'accentuation, badges de statut "Prêt", "Payé", "Succès", validation de formulaires et indicateurs de performance.
+- **Gris Neutre Chaud (`#444441`) :** Couleur du texte principal, sous-titres, bordures subtiles et éléments secondaires.
+- **Sable / Beige Clair (`#F1EFE8`) :** Couleur de fond globale, conteneurs secondaires, cartes de contenu légères pour un confort visuel optimal.
+- **Blanc Pur (`#FFFFFF`) :** Fond des cartes actives, modales et zones de saisie de texte.
+
+### Typographie & Grille :
+- **Police Principale :** Inter / Plus Jakarta Sans / Roboto (avec fallbacks système modernes sans-serif).
+- **Titres :** Font Weight 700 / 600, couleur `#0B1F3A`.
+- **Corps de texte :** Font Weight 400 / 500, couleur `#444441`.
+- **Bordures & Arrondis :** Border-radius de `12px` (cartes) et `8px` (boutons et champs de saisie). Ombrages doux (`box-shadow: 0 4px 20px rgba(11, 31, 58, 0.08)`).
+
+---
+
+## 2. ÉCRANS ET WIREFRAMES À DÉVELOPPER (WEB & MOBILE)
+
+### Écran 1 : Landing Page & Tarifs Abonnements (Airtel Money & MTN MoMo)
+- **Header Nav :** Logo PostulIA / Luka Mosala, Liens navigation (Accueil, Fonctionnalités, Tarifs), Bouton "Connexion / Espace Candidat".
+- **Hero Section :** Titre percutant *"Générez vos dossiers de candidature sur-mesure en 1 clic grâce à l'IA"*, illustration dynamique, CTA principal "Créer ma candidature".
+- **Grille de Tarifs Abonnements :**
+  - **Offre Découverte (Gratuit / Test) :** 1 candidature offerte.
+  - **Pass PRO 24h (1 000 XAF) :** Génération illimitée pendant 24h.
+  - **Abonnement Mensuel PRO (5 000 XAF) :** Génération illimitée, export ZIP, modèles CV premium.
+  - *Intégration directe des logos Airtel Money & MTN Mobile Money.*
+
+### Écran 2 : Dashboard Candidat & Suivi des Candidatures
+- **Sidebar Navigation :** Tableau de bord, Mes Candidatures, Mon Profil / CV Source, Mes Abonnements, Paramètres.
+- **Statistiques clés :** Nombre de CVs générés, candidatures envoyées, abonnement actif (jours restants).
+- **Liste des candidatures :** Tableau responsive / cartes mobiles récapitulant les offres postulées (ACPE, Blue Collar, etc.) avec accès aux PDFs (CV, Lettre) et au texte Email.
+
+### Écran 3 : Formulaire Intelligent de Génération IA
+- **Étape 1 :** Saisie du lien de l'offre d'emploi ou copier-coller du texte de l'annonce.
+- **Étape 2 :** Sélection ou mise à jour du profil candidat (Photo de profil recadrée, compétences clés, diplômes).
+- **Étape 3 :** Options IA (Ton de la lettre de motivation, mots-clés spécifiques à mettre en avant).
+- **Bouton d'action :** "Lancer la génération IA" avec loader animé et barre de progression.
+
+### Écran 4 : Visualiseur PDF & Export Multi-Formats (1 Page Stricte)
+- **Prévisualisation en direct :** Visualisation split-screen (Gauche: Paramètres & Texte Email / Droite: Aperçu PDF du CV et de la Lettre sur 1 page exacte).
+- **Actions rapides :** Boutons "Télécharger le CV PDF", "Télécharger la Lettre PDF", "Copier le texte de l'email", "Télécharger le Pack ZIP complet".
+
+### Écran 5 : Back-Office Admin (Angular / Dashboard Django)
+- **Gestion des utilisateurs & Abonnements :** Table récapitulative des transactions Airtel/MTN.
+- **Metrics de performance :** Nombre de générations IA par jour, taux de conversion, logs d'utilisation.
+- **Gestion des Modèles ReportLab / Prompt IA :** Éditeur de configurations pour ajuster les prompts et règles de mise en page.
+
+### Écran 6 : Application Mobile Flutter (Responsive Web & Mobile Native)
+- **Layout Adaptatif :** Bottom Navigation Bar (Accueil, Scanner/Nouveau, Historique, Profil).
+- **Capture d'Offre :** Possibilité de coller l'URL d'une offre ou de capturer une image d'annonce via la caméra.
+- **Export direct :** Partage direct des PDFs générés via WhatsApp, Email ou stockage du téléphone.
+
+---
+
+## 3. RÈGLES DE DÉVELOPPEMENT FRONT-END & COMPOSANTS UI
+
+1. **Composants Reutilisables :**
+   - `<Button variant="primary|secondary|emerald" />`
+   - `<Card header="" footer="" />`
+   - `<PdfViewer src="" page={1} />`
+   - `<StatusBadge status="completed|pending|failed" />`
+
+2. **Responsivité & Performance :**
+   - CSS Grid & Flexbox, Breakpoints Tailwind/Bootstrap pour Mobile (<768px), Tablette (768-1024px), Desktop (>1024px).
+   - Chargement asynchrone des PDFs et Skeleton Loaders pendant la génération IA.
+
+
+================================================================================
+# PROMPT IA — DOCUMENTATION SWAGGER & VERIFICATION DES RENDUS WEB/MOBILE
+================================================================================
+
+---
+
+## 1. DOCUMENTATION SWAGGER / OPENAPI DU BACKEND DJANGO REST FRAMEWORK
+
+Pour garantir une intégration parfaite entre le Backend Django DRF, le Frontend Web React, l'Admin Angular et l'Application Mobile Flutter, l'agent IA doit obligatoirement générer une documentation Swagger / OpenAPI interactive et exhaustive.
+
+### Exigences Techniques Swagger / OpenAPI :
+- **Bibliothèque utilisée :** `drf-spectacular` (ou `drf-yasg`).
+- **Décoration systématique de TOUS les endpoints :**
+  - Utilisation des décorateurs `@extend_schema` (ou `@swagger_auto_schema`) sur chaque vue API (`APIView`, `ViewSet`, `api_view`).
+  - Spécification explicite du `summary`, de la `description`, des `parameters` (query, path, header), du `request_body` et des `responses` (codes HTTP 200, 201, 400, 401, 403, 404, 500) avec schémas de sérialiseurs appropriés.
+  - Exemples de payloads JSON d'entrée et de sortie pour chaque endpoint (authentification JWT, génération CV, abonnements Mobile Money, etc.).
+- **URLs Swagger accessibles :**
+  - Interface Swagger UI : `/api/docs/swagger/`
+  - Interface ReDoc : `/api/docs/redoc/`
+  - Schéma OpenAPI JSON/YAML : `/api/docs/schema/`
+
+---
+
+## 2. INSPECTION DES DÉPLOIEMENTS ET CORRECTION DES RENDUS VISUELS (WEB & MOBILE)
+
+L'agent IA doit obligatoirement se connecter à Render pour surveiller les services et vérifier visuellement le rendu des applications déployées aux adresses suivantes :
+- **Web App React / Front-End :** `https://luka-mosala-web.onrender.com/`
+- **Mobile App Flutter / Web-Mobile :** `https://luka-mosala-mobile.onrender.com/`
+
+### Procédure de Test et Correction Visuelle des Interfaces :
+1. **Inspection en Direct :**
+   - Se connecter aux URLs de déploiement `https://luka-mosala-web.onrender.com/` et `https://luka-mosala-mobile.onrender.com/`.
+   - Effectuer un contrôle visuel minutieux de la mise en page, de la typographie, des couleurs de la charte, de la responsivité et des éléments interactifs.
+
+2. **Correction des Anomalies d'Affichage :**
+   - Vérifier et corriger les boutons manquants ou non cliquables.
+   - Corriger les textes invisibles, tronqués ou chevauchés (problèmes de contraste, z-index, overflow, ou flexbox/grid CSS).
+   - S'assurer que tous les formulaires, modales, loaders et boutons CTA s'affichent correctement sur écran Desktop et Mobile.
+
+3. **Validation par Captures d'Écran (`images_test/`) :**
+   - Créer un dossier dédié `images_test/` à la racine du projet (`/images_test`).
+   - Effectuer des captures d'écran (screenshots) automatisées de chaque interface corrigée (Landing page, Dashboard, Générateur IA, Visualiseur PDF, App Mobile Flutter).
+   - Enregistrer ces captures dans `/images_test/` (ex: `images_test/web_landing_corrected.png`, `images_test/mobile_dashboard_corrected.png`, `images_test/pdf_preview_corrected.png`) pour valider visuellement le bon affichage avant toute soumission.
+
+
+================================================================================
+# PROMPT IA — HARMONISATION FULL-STACK & RENDER PR PREVIEWS
+================================================================================
+
+---
+
+## 1. SYNCHRONISATION HARMONIEUSE EN PROD & PREVIEW (BACKEND, FRONTEND, MOBILE)
+
+L'agent IA doit appliquer une cohérence stricte et continue à travers toutes les couches de l'application :
+- **Backend (Django REST Framework) :** Endpoints REST sécurisés, schémas CORS configurés pour accepter les URLs de production et de Preview PR, sérialiseurs synchronisés avec les modèles du frontend et mobile.
+- **Frontend (React / Web) :** Composants UI responsifs, gestion d'état centralisée, intégration complète des APIs Swagger et gestion dynamique des URLs d'API en fonction de l'environnement.
+- **Mobile (Flutter / App Web & Native) :** Interfaces adaptatives web/mobile, synchronisation des tokens d'authentification JWT, gestion hors-ligne et réutilisation des composants visuels.
+
+---
+
+## 2. GESTION DES PREVIEWS DE PULL REQUESTS (PR PREVIEWS) SUR RENDER
+
+Les PR Previews (Pull Request Previews) étant automatiquement activées sur Render pour les 3 services (Backend DRF, Frontend React, App Mobile Flutter) :
+1. **Détection des URLs de Preview PR :**
+   - L'agent IA doit prendre en compte les URLs générées automatiquement par Render pour chaque PR (ex: `https://luka-mosala-web-pr-X.onrender.com`, `https://luka-mosala-mobile-pr-X.onrender.com`, `https://luka-mosala-backend-pr-X.onrender.com`).
+2. **CORS & `ALLOWED_HOSTS` Dynamiques :**
+   - Le backend Django doit autoriser dynamiquement les domaines `*.onrender.com` (notamment `*.onrender.com` et les patterns PR preview) dans `ALLOWED_HOSTS` et `CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://.*\.onrender\.com$"]` afin de ne jamais bloquer une PR Preview.
+3. **Contrôle Qualité Visuel sur les PR Previews :**
+   - Avant de valider ou fusionner une PR, l'agent IA doit inspecter la PR Preview active sur Render, vérifier le rendu complet (boutons, formulaires, textes) et capturer une preuve visuelle dans `/images_test`.
+
+
+================================================================================
+# PROMPT IA — REPRISE ET CORRECTION DESIGN & RENDU D'INTERFACE (FULL-STACK)
+================================================================================
+
+---
+
+## 1. DIAGNOSTIC ET CORRECTION OBLIGATOIRE DES ANOMALIES DE RENDU DEPLOYÉES
+
+L'inspection visuelle des déploiements Render actuels révèle plusieurs défauts majeurs d'affichage et de configuration qu'il convient de corriger immédiatement :
+
+1. **Backend Django REST Framework (`/` -> 404 & Swagger) :**
+   - La racine `/` renvoie une erreur 404 standard Django. Il est exigé de configurer une redirection automatique de la racine `/` vers `/api/docs/swagger/` ou `/api/docs/redoc/`.
+   - Tous les endpoints Backend (Authentification, Profil, Offres, Abonnements) doivent comporter la décoration Swagger exhaustive (`@extend_schema` / `@swagger_auto_schema`) avec descriptions, paramètres, corps de requête et exemples de réponses HTTP.
+
+2. **Interface Web React (`https://luka-mosala-web.onrender.com/`) :**
+   - **Problème identifié :** Formulaire brut non stylisé HTML basique (champs de texte collés, boutons HTML natifs sans CSS, typographie par défaut Times/Serif).
+   - **Correction requise :** Appliquer le système de design PostulIA (Palette de couleurs `#0B1F3A`, `#185FA5`, `#0F6E56`, `#444441`, `#F1EFE8`), utiliser Tailwind CSS ou des composants stylisés modernes, ajouter un layout structuré avec Header, Hero Section, cartes Ombragées, et boutons CTA professionnels (`.btn-primary`).
+
+3. **Interface Mobile Flutter (`https://luka-mosala-mobile.onrender.com/`) :**
+   - **Problème identifié :** Écran quasi-vide ne contenant qu'un titre texte brut sans barre de navigation, ni boutons, ni composants applicatifs.
+   - **Correction requise :** Intégrer l'App Bar supérieure aux couleurs de la marque (`#0B1F3A`), la Bottom Navigation Bar, la liste des candidatures sous forme de cartes d'action, et le bouton d'action flottant (+ Nouveau dossier).
+
+---
+
+## 2. DOSSIER DE PREUVE VISUELLE (`images_test/`) & PR PREVIEWS
+
+1. **Dossier de Captures :**
+   - S'assurer que le dossier `images_test/` existe à la racine du projet (`/images_test`).
+   - Après chaque correction de style ou de layout, capturer l'écran de l'application et enregistrer le fichier image PNG/JPG dans `/images_test/` (ex: `images_test/web_app_corrected.png`, `images_test/mobile_app_corrected.png`, `images_test/swagger_docs.png`).
+
+2. **Validation Automatique des PR Previews :**
+   - Pour chaque Pull Request soumise sur GitHub, vérifier les 3 liens de PR Previews générés automatiquement sur Render (`*-pr-X.onrender.com`).
+   - S'assurer que le backend autorise CORS pour toutes les PR Previews sans erreur de blocage d'origine.
+
+
+================================================================================
+# PROMPT IA — RESOLUTION ERREURS AUTHENTIFICATION & COMPTE TEST PAR DÉFAUT
+================================================================================
+
+---
+
+## 1. CORRECTION DES ERREURS 500 D'AUTHENTIFICATION & CONFORMITÉ DES APIS BACKEND
+
+1. **Résolution de l'erreur 500 sur `POST /api/auth/login/` :**
+   - **Problème identifié :** La requête d'authentification `https://luka-mosala-web.onrender.com/api/auth/login/` renvoie un statut `500 Internal Server Error` (politique de provenance `strict-origin-when-cross-origin`).
+   - **Action exigée :** Diagnostiquer les logs Django DRF, corriger les handlers de connexion JWT / Session, s'assurer que les modèles `User` et `Profile` s'initialisent sans planter lors du login, et que les en-têtes CORS (`django-cors-headers`) gèrent correctement les origines frontend `https://luka-mosala-web.onrender.com` et mobile `https://luka-mosala-mobile.onrender.com`.
+
+2. **Intégration et Conformité des APIs (Frontend React & Mobile Flutter) :**
+   - Rendre l'ensemble des endpoints d'authentification, de gestion des profils, de téléchargement de documents et de paiement 100% conformes aux spécifications OpenAPI Swagger.
+   - Connecter de manière fluide le Frontend React et l'App Mobile Flutter à ces APIs avec une gestion propre des erreurs HTTP (badges, notifications toast, messages explicitants).
+
+---
+
+## 2. DÉPLOIEMENT D'UN COMPTE DE TEST PAR DÉFAUT (`admin` / `admin1234`)
+
+Pour permettre un test instantané sans blocage lors de l'évaluation :
+- Configurer une commande de seeding/migration (`python manage.py seed_data` ou signal Django `post_migrate`) qui crée ou met à jour automatiquement un utilisateur administrateur de démonstration :
+  - **Nom d'utilisateur :** `admin` (ou `obieydany`)
+  - **Mot de passe :** `admin1234`
+  - **Rôle :** Superutilisateur / Administrateur PRO avec profil complet et abonnement actif.
+
+
+================================================================================
+# PROMPT POUR JULES IA — Refonte du module "Profil" (Mobile + Frontend)
+================================================================================
+
+## CONTEXTE
+
+Tu es Jules, un agent IA de développement. Tu dois intervenir sur le module **Profil** de l'application (mobile + frontend web). Actuellement, certaines sections du profil sont affichées/éditées en **markdown libre**. Ta mission est de **remplacer ce système par des champs structurés** (formulaires typés, avec leurs propres modèles de données), et d'**ajouter des boutons d'action** permettant à l'utilisateur d'ajouter/modifier/supprimer chaque élément (expérience, certification, diplôme, projet).
+
+Cette refonte concerne :
+1. Le **backend** (API — modèles de données, endpoints CRUD, gestion des fichiers PDF)
+2. Le **frontend web**
+3. L'**application mobile**
+
+---
+
+## OBJECTIF GÉNÉRAL
+
+Remplacer l'édition markdown du profil par des **sections structurées avec formulaires dédiés**, chacune avec :
+- Un **bouton d'action "Ajouter"** (ex: "Ajouter une expérience", "Ajouter un certificat", "Ajouter un diplôme", "Ajouter un projet")
+- Des **boutons d'action par item** : Modifier / Supprimer
+- Une **validation des champs** côté frontend ET backend
+- Un **rendu propre** en lecture (fiche de profil) et en édition (formulaire)
+
+---
+
+## STRUCTURE DÉTAILLÉE DES SECTIONS ET CHAMPS
+
+### 1. INFO (informations générales — section unique, pas de liste)
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Nom | texte | Oui |
+| Prénom | texte | Oui |
+| Genre | choix (Homme / Femme / Autre — à définir selon les besoins métier) | Oui |
+| Date de naissance | date | Oui |
+| Numéro principal | téléphone | Oui |
+| Numéro secondaire | téléphone | Non |
+| Résumé professionnel | texte long (zone de texte, pas de markdown) | Non |
+| Adresse (à corriger : "adressepay" → "Adresse") | texte | Non |
+| Arrondissement | texte / liste déroulante | Non |
+| Quartier | texte | Non |
+
+### 2. EXPÉRIENCE (liste, avec bouton "Ajouter une expérience")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Poste occupé | texte | Oui |
+| Structure | texte | Oui |
+| Secteur d'activité | texte / liste déroulante | Oui |
+| Lieu | texte | Non |
+| Date de début | date | Oui |
+| Date de fin | date | Conditionnel |
+| Jusqu'à présent | booléen (case à cocher) | — si cochée, désactive/masque "Date de fin" |
+| Compétences acquises | liste de tags / texte | Non |
+
+### 3. CERTIFICATIONS ET ATTESTATIONS (liste, avec bouton "Ajouter un certificat")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Libellé du certificat | texte | Oui |
+| Année | numérique | Oui |
+| Institution | texte | Oui |
+| Lieu | texte | Non |
+| Date de début | date | Non |
+| Date de fin | date | Non |
+| Description | texte long | Non |
+| Certificat en PDF | upload fichier PDF | **Optionnel** |
+
+### 4. DIPLÔMES (liste, avec bouton "Ajouter un diplôme")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Libellé du diplôme | texte | Oui |
+| Année | numérique | Oui |
+| Institution | texte | Oui |
+| Niveau d'étude | texte / liste déroulante (ex: Bac, Licence, Master, Doctorat...) | Oui |
+| Spécialité | texte | Non |
+| Lieu | texte | Non |
+| Date de début | date | Non |
+| Date de fin | date | Non |
+| Diplôme en PDF | upload fichier PDF | **Optionnel** |
+| Compétences acquises | liste de tags / texte | Non |
+
+### 5. PROJETS (liste, avec bouton "Ajouter un projet")
+| Champ | Type | Obligatoire |
+|---|---|---|
+| Nom du projet | texte | Oui |
+| Secteur d'activité | texte / liste déroulante | Oui |
+| Bénéficiaire | texte | Non |
+| Lien d'hébergement | URL | Non |
+| Description | texte long | Non |
+
+---
+
+## ⚠️ EXIGENCE CRITIQUE — GESTION DES FICHIERS PDF (Certificats & Diplômes)
+
+1. L'upload des fichiers PDF (certificat, diplôme) est **OPTIONNEL** : l'utilisateur doit pouvoir créer/enregistrer un certificat ou un diplôme **sans** joindre de PDF.
+2. Quand un PDF **est** fourni :
+   - Le **backend** doit se charger de l'envoi du fichier vers **Google Drive**, via l'**API Google Drive** (jamais de stockage du PDF en local ou en base uniquement).
+   - Une fois le fichier stocké, le backend doit **rendre le lien de partage PUBLIC** (permission de lecture pour "toute personne disposant du lien").
+   - Le lien public généré doit être **enregistré en base** (champ `pdf_url` ou équivalent) et associé à l'entrée correspondante (certificat ou diplôme).
+   - Le frontend ne fait **jamais** l'upload direct vers Google Drive : il envoie le fichier au backend (multipart/form-data), et c'est le backend qui orchestre l'envoi vers Drive et la mise à jour de la permission.
+3. **Ces liens PDF publics doivent figurer sur le CV généré** (export CV / PDF de profil) : chaque certificat et diplôme listé sur le CV doit afficher un lien cliquable vers le PDF correspondant sur Google Drive, s'il existe.
+4. Prévoir une gestion d'erreur robuste : si l'upload vers Drive échoue, l'enregistrement de la certification/diplôme ne doit pas échouer entièrement — informer l'utilisateur que les données ont été enregistrées mais que le PDF n'a pas pu être uploadé, avec possibilité de réessayer plus tard.
+
+---
+
+## BOUTONS D'ACTION À IMPLÉMENTER (mobile + frontend)
+
+Pour chaque section liste (Expérience, Certifications, Diplômes, Projets) :
+- Bouton **"+ Ajouter [une expérience / un certificat / un diplôme / un projet]"** en haut ou en bas de la section
+- Sur chaque item existant : icônes/boutons **Modifier** et **Supprimer**
+- Confirmation avant suppression (modale/dialogue)
+- Retour visuel de succès/échec après chaque action (toast, snackbar, etc.)
+
+Pour la section Info :
+- Bouton **"Modifier mes informations"**
+- Sauvegarde avec validation en temps réel des champs obligatoires
+
+---
+
+## TÂCHES ATTENDUES DE JULES IA
+
+1. **Backend** :
+   - Créer/adapter les modèles de données pour chaque section (Info, Expérience, Certification, Diplôme, Projet) avec les champs listés ci-dessus.
+   - Créer les endpoints CRUD (create, read, update, delete) pour chaque section liste.
+   - Implémenter l'intégration Google Drive API (upload + permission publique) pour les PDF de certificats et diplômes.
+   - Exposer les liens PDF publics dans les endpoints de récupération du profil et dans l'endpoint/génération du CV.
+   - Gérer la validation des champs obligatoires côté serveur.
+
+2. **Frontend web** :
+   - Remplacer l'éditeur markdown actuel par des formulaires structurés par section.
+   - Implémenter les boutons d'action (Ajouter / Modifier / Supprimer) avec appels API correspondants.
+   - Champ upload PDF optionnel avec indicateur de statut d'upload (en cours / réussi / échoué).
+   - Afficher les liens PDF (Google Drive) sur les fiches de certificats/diplômes et sur le CV généré.
+
+3. **Mobile** :
+   - Même logique que le frontend web, adaptée aux composants natifs/mobiles (formulaires, boutons d'action, sélection de fichier PDF depuis l'appareil, upload optionnel).
+   - Gérer les permissions d'accès aux fichiers sur mobile (sélection PDF).
+
+4. **Cohérence CV** :
+   - S'assurer que le module de génération du CV (PDF ou autre format) récupère et affiche les liens publics des certificats et diplômes.
+
+---
+
+## CONTRAINTES TECHNIQUES / QUALITÉ
+
+- Ne pas casser les données existantes en markdown : prévoir une migration ou une compatibilité ascendante si des profils existants utilisent déjà l'ancien format.
+- Respecter la même stack que le reste du projet (à préciser par le développeur si Jules IA n'a pas accès au repo).
+- Code backend en Django REST Framework si applicable (endpoints RESTful, sérializers dédiés par section).
+- Champs "obligatoire/optionnel" doivent être validés à la fois côté client (UX immédiate) et côté serveur (sécurité des données).
+- Prévoir des tests unitaires/API pour les endpoints CRUD et pour l'upload PDF vers Google Drive.
+
+---
+
+## LIVRABLES ATTENDUS
+
+- Modèles de données mis à jour (migrations incluses)
+- Sérializers / endpoints API documentés
+- Intégration Google Drive fonctionnelle (upload + lien public)
+- Composants frontend web pour chaque section (formulaires + affichage)
+- Composants mobile équivalents
+- Mise à jour du module de génération de CV pour inclure les liens PDF
+
+
+================================================================================
+# PROMPT IA — RECAPITULATIF ET VALIDATION EXHAUSTIVE DES CHAMPS PROFIL
+================================================================================
+
+---
+
+## SYNTHÈSE DES CHAMPS STRUCTURÉS EXIGÉS PAR SECTION (BACKEND, FRONTEND & MOBILE)
+
+L'agent IA doit obligatoirement s'assurer que TOUS les champs ci-dessous sont modélisés en base de données, gérés par les sérialiseurs Django REST Framework, et intégrés dans les formulaires de saisie et fiches d'affichage du Frontend Web et de l'App Mobile :
+
+1. **Info Générale (Info) :**
+   - Nom, Prénom, Genre, Date de naissance, Numéro principal, Numéro secondaire, Résumé professionnel, Adresse (adressepay), Arrondissement, Quartier.
+
+2. **Expérience Professionnelle (Expérience) :**
+   - Action : Bouton "+ Ajouter une expérience".
+   - Champs : Poste occupé, Structure, Secteur d'activité, Lieu, Date de début, Date de fin, Jusqu'à présent (case à cocher), Compétences acquises.
+
+3. **Certifications et Attestations :**
+   - Action : Bouton "+ Ajouter un certificat".
+   - Champs : Libellé du certificat, Année, Institution, Lieu, Date de début, Date de fin, Description, Certificat en PDF (upload optionnel).
+
+4. **Diplômes :**
+   - Action : Bouton "+ Ajouter un diplôme".
+   - Champs : Libellé du diplôme, Année, Institution, Niveau d'étude, Spécialité, Lieu, Date de début, Date de fin, Diplôme en PDF (upload optionnel), Compétences acquises.
+
+5. **Projets :**
+   - Action : Bouton "+ Ajouter un projet".
+   - Champs : Nom du projet, Secteur d'activité, Bénéficiaire, Lien d'hébergement, Description.
+
+
+================================================================================
+# PROMPT IA — ENRICHISSEMENT MOBILE & ACTIONS CANDIDATURES (CV, LM, EMAIL, PAYER)
+================================================================================
+
+---
+
+## 1. GESTION DE LA PHOTO DE PROFIL (MOBILE & FRONTEND WEB)
+
+- **Composant Photo de Profil :**
+  - Dans la section **Info** du profil (Mobile & Frontend), ajouter la fonctionnalité de gestion de la photo de profil avec options :
+    - **Upload de fichier image :** Sélection d'une image depuis la galerie/fichiers.
+    - **Capture photo (Mobile) :** Prise de photo directe via l'appareil photo du téléphone.
+  - Recadrage et optimisation automatique de l'image (format carré/rond ultra-pro).
+  - Bouton **"Modifier profil"** global bien visible pour basculer en mode édition.
+
+---
+
+## 2. BOUTONS D'ACTION PAR CANDIDATURE & MODALE DÉTAILLÉE
+
+Dans la liste des candidatures (Mobile & Frontend), chaque carte d'offre d'emploi doit comporter les boutons d'action d'accès rapide :
+- **Bouton CV :** Accès direct au CV généré.
+- **Bouton LM :** Accès direct à la Lettre de Motivation générée.
+- **Bouton EMAIL :** Accès direct au texte du message email d'accompagnement.
+- **Bouton PAYER :** Lancement du flux de paiement (Airtel Money / MTN MoMo).
+
+### Interface / Modale d'Action (au clic sur CV, LM, EMAIL ou PAYER) :
+Le clic sur l'un de ces boutons doit ouvrir un écran / bottom-sheet / modale dédié contenant :
+1. **Actions Rapides :**
+   - **Voir :** Prévisualisation en direct du document (PDF ou texte email).
+   - **Télécharger :** Téléchargement direct du fichier PDF / copie du texte email dans le presse-papier.
+2. **Indicateurs de Statut en Temps Réel :**
+   - **Statut de Paiement (`payment_status`) :** `pending` (En attente), `failed` (Échoué), `approved` (Approuvé / Validé).
+   - **Statut de Traitement IA (`processing_status`) :** `pending` (En attente), `inprocess` (En cours de génération), `finalized` (Finalisé / Prêt).
+
+
+================================================================================
+# PROMPT IA — RECAPITULATIF DES ACTIONS FRONTEND & FORMULAIRE INFO MOBILE
+================================================================================
+
+---
+
+## 1. SYNTHÈSE DES BOUTONS D'ACTION (FRONTEND WEB & MOBILE FLUTTER)
+
+L'agent IA doit obligatoirement intégrer sur le Frontend Web et l'App Mobile :
+- **Sur le Profil :** Le bouton global **"Modifier profil"** permettant de basculer instantanément en mode édition des formulaires.
+- **Sur chaque carte de Candidature :** Les boutons d'accès rapide **CV**, **LM**, **EMAIL** et **PAYER**.
+
+---
+
+## 2. FORMULAIRE D'INFORMATION GÉNÉRALE (MOBILE FLUTTER)
+
+L'application Mobile Flutter doit comporter la fiche de saisie complète pour l'Information Générale (Info) comprenant les champs dédiés suivants :
+1. **Nom** (Texte)
+2. **Prénom** (Texte)
+3. **Genre** (Choix : Homme / Femme / Autre)
+4. **Date de naissance** (Sélecteur de date)
+5. **Numéro principal** (Téléphone)
+6. **Numéro secondaire** (Téléphone)
+7. **Résumé professionnel** (Zone de texte multi-lignes)
+8. **Adresse (adressepay)** (Texte)
+9. **Arrondissement** (Texte / Liste déroulante)
+10. **Quartier** (Texte)
+
+
+================================================================================
+# PROMPT IA — RAFRAÎCHISSEMENT PAR ONGLET, PHOTO 4 BOUTONS & CHAMP PAYS
+================================================================================
+
+---
+
+## 1. RAFRAÎCHISSEMENT AUTOMATIQUE DES DONNÉES PAR CHANGEMENT D'ONGLET (FRONTEND WEB)
+
+- Sur le Frontend Web React / Angular, forcer un rafraîchissement/rechargement des données depuis l'API dès que l'utilisateur clique sur un autre onglet (Tab Change).
+- Cela garantit que les données affichées (profil, candidatures, abonnements, statut de paiement) sont toujours 100% à jour sans nécessiter de rafraîchissement manuel de la page.
+
+---
+
+## 2. GESTION DE LA PHOTO DE PROFIL À 4 BOUTONS (FRONTEND WEB & MOBILE FLUTTER)
+
+Dans le module Profil (Section Info), la gestion de la photo de profil doit intégrer exactement 4 boutons d'action :
+1. **Modifier :** Editer / recadrer l'image existante.
+2. **Uploader :** Choisir une image depuis la galerie ou les fichiers locaux.
+3. **Caméra :** Prise de vue directe avec l'appareil photo du téléphone/webcam.
+4. **Voir :** Ouvrir la photo de profil en plein écran / modale de prévisualisation.
+
+---
+
+## 3. CORRECTION DES CHAMPS D'ADRESSE (SUPPRESSION ADRESSEPAY -> ADRESSE + PAYS)
+
+Sur le Mobile et le Frontend Web, mettre à jour la section **Info** :
+- **Supprimer définitivement le champ `adressepay`**.
+- **Conserver le champ `Adresse`** (champ texte standard pour l'adresse physique).
+- **Ajouter obligatoirement le champ `Pays`** (ex: Congo-Brazzaville, etc.) sous forme de champ texte ou liste déroulante.
+
+
+================================================================================
+# PROMPT IA — INTÉGRATION DE L'API JULES AU BACKEND DJANGO (luka-mosala / PostulIA)
+# COMPLÉMENT AU PROMPT MAÎTRE "Luka Mosala SaaS" DÉJÀ FOURNI
+================================================================================
+
+## CONTEXTE
+
+Ce prompt est un **additif** au prompt de spécification architecturale complet déjà transmis
+(projet **Luka Mosala / PostulIA** — Backend Django REST Framework, Frontend React, Admin
+Angular, Mobile Flutter, déploiement Render). Il ne remplace aucune section précédente ; il
+détaille spécifiquement la **connexion du backend Django à l'API Jules** (agent IA de
+génération de code, distincte de l'usage de Jules comme moteur de rédaction CV/LM déjà décrit
+dans le prompt maître), conformément à la documentation officielle :
+https://developers.google.com/jules/api
+
+Jules IA doit lire ce prompt en cohérence totale avec les sections 1 à 6 du prompt principal
+(architecture, render.yaml, apps Django, module Profil, etc.) et ne rien contredire de ce qui
+a déjà été spécifié.
+
+---
+
+## 1. RAPPEL DES CONCEPTS DE L'API JULES
+
+L'API Jules (alpha) est construite autour de 3 ressources REST, authentifiées via le header
+`X-Goog-Api-Key`, à la base URL `https://jules.googleapis.com/v1alpha` :
+
+- **Source** : le dépôt GitHub connecté (ex: `sources/github/<owner>/<repo>`).
+- **Session** : une unité de travail asynchrone confiée à l'agent (équivalent d'une conversation
+  de tâche continue), créée via `POST /v1alpha/sessions`.
+- **Activity** : chaque événement à l'intérieur d'une session (plan généré, message, résultat),
+  consultable via `GET /v1alpha/sessions/{session}/activities`.
+
+Endpoints clés à utiliser :
+- `GET /v1alpha/sources` — lister les dépôts connectés
+- `POST /v1alpha/sessions` — créer une session de travail (champs : `prompt`, `sourceContext`,
+  `title`, `automationMode` optionnel — ex: `AUTO_CREATE_PR`, `requirePlanApproval` optionnel)
+- `GET /v1alpha/sessions` — lister/paginer les sessions (`pageSize`)
+- `POST /v1alpha/sessions/{session}:approvePlan` — approuver un plan si `requirePlanApproval=true`
+- `POST /v1alpha/sessions/{session}:sendMessage` — envoyer un message dans une session existante
+- `GET /v1alpha/sessions/{session}/activities` — suivre la progression
+
+⚠️ L'API est en alpha : Jules IA doit prévoir une gestion d'erreurs tolérante (schémas et champs
+susceptibles d'évoluer), journaliser les réponses brutes en cas d'échec de parsing, et ne jamais
+bloquer le flux applicatif principal si l'API Jules est indisponible (dégradation gracieuse).
+
+---
+
+## 2. NOUVELLE APP DJANGO DÉDIÉE : `jules_integration`
+
+En complément des apps déjà listées dans le prompt maître (`users`, `profile_manager`, `jobs`,
+`subscriptions`, `ai_engine`, `pdf_generator`), créer une app dédiée :
+
+```
+backend/jules_integration/
+├── clients.py        # Client HTTP encapsulant les appels à jules.googleapis.com
+├── models.py          # JulesSession, JulesActivity (traçabilité locale)
+├── serializers.py
+├── services.py        # Logique métier : create_session, send_message, approve_plan, poll_activities
+├── views.py            # Endpoints internes exposés au Frontend/Admin (proxy sécurisé, jamais la clé API côté client)
+├── urls.py
+└── tests.py
+```
+
+### Modèles à prévoir
+- `JulesSession` : `session_id` (id distant), `source`, `title`, `prompt`, `status`,
+  `automation_mode`, `require_plan_approval`, `created_at`, `updated_at`, lien vers l'utilisateur
+  admin/dev à l'origine de la session.
+- `JulesActivity` : `session` (FK), `activity_id`, `type`, `payload` (JSON brut), `created_at`.
+
+### Client HTTP (`clients.py`)
+- Utiliser `requests` (ou `httpx`) avec timeout explicite, retry limité (ex: 3 tentatives,
+  backoff exponentiel) et gestion des codes 401/403/429/5xx.
+- Header d'authentification : `X-Goog-Api-Key: <valeur lue depuis la variable d'environnement>`.
+- Ne jamais logger la clé API en clair dans les logs Django.
+
+### Endpoints internes exposés (réservés au rôle Admin/Superutilisateur du Dashboard Angular)
+- `POST /api/jules/sessions/` → crée une session Jules (proxy vers `POST /v1alpha/sessions`)
+- `GET /api/jules/sessions/` → liste les sessions locales + statut synchronisé
+- `POST /api/jules/sessions/{id}/approve-plan/` → proxy `:approvePlan`
+- `POST /api/jules/sessions/{id}/send-message/` → proxy `:sendMessage`
+- `GET /api/jules/sessions/{id}/activities/` → proxy + persistance locale des activités
+- Documenter chacun de ces endpoints avec `@extend_schema` (drf-spectacular), conformément à la
+  section Swagger déjà définie dans le prompt maître.
+
+### Sécurité
+- Ces endpoints ne doivent jamais être accessibles à un utilisateur candidat standard : restreindre
+  via une permission DRF dédiée (`IsAdminOrSuperUser`).
+- La clé API Jules ne transite jamais vers le Frontend React ni vers l'App Mobile Flutter : tous
+  les appels passent exclusivement par le backend Django (pattern proxy).
+
+---
+
+## 3. VARIABLE D'ENVIRONNEMENT — AJOUT DANS `env.example`
+
+Ajouter au fichier `env.example` (racine `backend/` ou racine projet selon l'organisation
+existante) la variable suivante, sans jamais renseigner de valeur réelle dans ce fichier
+d'exemple :
+
+```env
+# --- Intégration Jules API (agent IA de développement — https://developers.google.com/jules/api) ---
+JULES_API_KEY=your_jules_api_key_here
+JULES_API_BASE_URL=https://jules.googleapis.com/v1alpha
+JULES_DEFAULT_SOURCE=sources/github/<owner>/<repo>
+JULES_AUTOMATION_MODE=AUTO_CREATE_PR
+JULES_REQUIRE_PLAN_APPROVAL=False
+```
+
+Dans `settings.py`, lire ces valeurs via variables d'environnement (`os.environ.get(...)` ou
+`django-environ`, cohérent avec le reste du projet) — ne jamais coder la clé en dur.
+
+---
+
+## 4. CONFIGURATION SQLITE POUR LES TESTS SUR RENDER
+
+Le prompt maître prévoit déjà `USE_SQLITE=True` comme variable d'environnement du service
+`backend-luka-mosala` sur Render (voir `render.yaml`, section 3). Pour les tests liés à
+l'intégration Jules :
+
+1. **Environnement de test dédié** : dans `settings.py`, si `USE_SQLITE=True` (ou si
+   `DJANGO_SETTINGS_MODULE` pointe vers un module de test), forcer la base de données sur
+   SQLite (`django.db.backends.sqlite3`, fichier `db_test.sqlite3`) plutôt que PostgreSQL, afin
+   de permettre l'exécution rapide des tests CI sur Render sans dépendance à une base managée.
+2. **Tests unitaires `jules_integration`** :
+   - Mocker systématiquement les appels réseau vers `jules.googleapis.com` (via `responses`,
+     `unittest.mock.patch`, ou un client HTTP factice) — ne jamais appeler l'API Jules réelle
+     pendant les tests automatisés.
+   - Couvrir : création de session (succès/échec), approbation de plan, envoi de message,
+     pagination des activités, gestion des erreurs 401/429/5xx, absence de clé API configurée.
+3. Ajouter dans `env.example` la variable de test suivante pour permettre de basculer explicitement
+   les tests en mode mock :
+
+```env
+JULES_API_MOCK_MODE=True
+```
+
+Quand `JULES_API_MOCK_MODE=True`, le client `clients.py` doit retourner des réponses simulées
+(fixtures JSON) au lieu d'appeler le réseau — utile pour les previews PR sur Render où la clé
+API réelle ne doit pas être exposée.
+
+---
+
+## 5. COHÉRENCE AVEC LE RESTE DU PROJET
+
+- Documenter tous les nouveaux endpoints dans Swagger/OpenAPI (`/api/docs/swagger/`), comme
+  exigé dans le prompt maître (section documentation Swagger).
+- Ajouter `jules.googleapis.com` à la liste des hôtes externes autorisés si un contrôle sortant
+  existe déjà dans la configuration réseau du projet.
+- N'introduire aucune régression sur les modules déjà spécifiés (`ai_engine` pour la génération
+  CV/LM, `pdf_generator`, module Profil structuré, paiements Mobile Money).
+- Toute capture d'écran de validation liée à ce module (ex: dashboard Admin Angular affichant les
+  sessions Jules) doit suivre la même convention que le reste du projet : dossier `/images_test/`
+  (ex: `images_test/admin_jules_sessions.png`).
+
+---
+
+## 6. LIVRABLES ATTENDUS POUR CE COMPLÉMENT
+
+- App Django `jules_integration` complète (modèles, migrations, serializers, services, vues,
+  permissions, tests avec mocks).
+- Mise à jour de `env.example` avec les variables listées en section 3 et 4.
+- Documentation Swagger des nouveaux endpoints.
+- Écran(s) Admin Angular minimal(aux) pour déclencher/suivre une session Jules (liste des
+  sessions, statut, bouton "Approuver le plan", bouton "Envoyer un message").
+- Suite de tests utilisant SQLite et mocks réseau, exécutable sur Render sans clé API réelle.
+
+
+================================================================================
+# PROMPT IA — PIPELINE D'AUTOMATISATION VIA COMMANDES, PHOTOS & DOSSIER RESULTAT
+================================================================================
+
+---
+
+## 1. TRAITEMENT CENTRALISÉ EN SESSION UNIQUE JULES IA SUR GITHUB
+
+- **Toutes les requêtes d'une exécution doivent être envoyées dans une SEULE et MÊME SESSION Jules IA**.
+- Le code source du backend réside directement sur GitHub (pas de passage par une API externe pour le code source).
+- L'administrateur de la plateforme déclenche l'exécution manuellement en connectant Jules au dépôt GitHub et en configurant l'automatisation des Pull Requests (PRs).
+
+---
+
+## 2. DOSSIER `COMMANDES` & ARBORESCENCE DE SYNCHRONISATION EN BASE DE DONNÉES
+
+Le backend Django doit synchroniser automatiquement les données saisies par les utilisateurs en base de données vers le dossier `/COMMANDES` à la racine du projet :
+
+```
+/COMMANDES
+├── INFO/               # Fichiers texte TXT des profils utilisateurs
+│   ├── <ID_UNIQUE_1>.txt
+│   ├── <ID_UNIQUE_2>.txt
+│   └── ...
+└── PHOTO/              # Photos de profil PNG des utilisateurs
+    ├── <ID_UNIQUE_1>.png
+    ├── <ID_UNIQUE_2>.png
+    └── ...
+```
+
+### Règle d'association et nommage :
+- **ID Unique :** Chaque utilisateur possède un `<ID_UNIQUE>` généré par le backend.
+- Le fichier profil texte `COMMANDES/INFO/<ID_UNIQUE>.txt` contient la totalité des données structurées de l'utilisateur (Info avec Nom, Prénom, Genre, Date de naissance, Numéro principal, Numéro secondaire, Résumé pro, Adresse, Pays, Arrondissement, Quartier ; Expériences ; Certifications ; Diplômes ; Projets).
+- La photo `COMMANDES/PHOTO/<ID_UNIQUE>.png` porte exactement le même `<ID_UNIQUE>` que le fichier textuel correspondant.
+
+---
+
+## 3. DOSSIER `RESULTAT` & DÉLIVRABILITÉ AUX CLIENTSS PAYANTS
+
+- L'agent Jules lit les fichiers `COMMANDES/INFO/<ID_UNIQUE>.txt` et `COMMANDES/PHOTO/<ID_UNIQUE>.png`.
+- Jules génère l'ensemble des livrables de candidature sur mesure et enregistre les résultats dans le dossier `/RESULTAT` à la racine du projet :
+
+```
+/RESULTAT
+└── <ID_UNIQUE>/
+    ├── <NOM_SITE_1>/
+    │   └── <INTITULE_POSTE_1>/
+    │       ├── CV.pdf
+    │       ├── LETTRE_DE_MOTIVATION.pdf
+    │       ├── OFFRE_EMPLOI.pdf
+    │       └── EMAIL.txt
+    └── <NOM_SITE_2>/
+        └── <INTITULE_POSTE_2>/
+            ├── CV.pdf
+            ├── LETTRE_DE_MOTIVATION.pdf
+            ├── OFFRE_EMPLOI.pdf
+            └── EMAIL.txt
+```
+
+### Service des fichiers par le Backend Django :
+- Le backend Django récupère les fichiers générés dans `/RESULTAT/<ID_UNIQUE>/`.
+- **Accès restreint :** Le backend sert ces fichiers (téléchargement PDF / texte Email) **EXCLUSIVEMENT aux utilisateurs qui ont réglé leur facture / abonnement** (`payment_status = approved`).
+
+---
+
+## 4. DÉPLOIEMENT AUTOMATISÉ (RENDER / VPS) & SCRIPT `git_pull_auto.sh`
+
+- Le backend est déployé sur Render / VPS avec support SQLite pour les tests rapides et PostgreSQL/SQLite en production.
+- Un script d'automatisation `git_pull_auto.sh` est disponible à la racine du projet pour automatiser la récupération des mises à jour du dépôt Git (`git fetch` / `git checkout`).
