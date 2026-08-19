@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#0F172A"/>
+  <rect x="40" y="40" width="720" height="520" rx="16" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="90" fill="#F8FAFC" font-family="sans-serif" font-size="22" font-weight="bold">Luka Mosala SaaS - Profil Structuré &amp; Photos</text>
+
+  <!-- Photo Section -->
+  <circle cx="130" cy="170" r="45" fill="#38BDF8"/>
+  <text x="200" y="160" fill="#F8FAFC" font-family="sans-serif" font-size="16" font-weight="bold">Photo de Profil Professionnelle</text>
+
+  <rect x="200" y="180" width="90" height="32" rx="6" fill="#0284C7"/>
+  <text x="220" y="201" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold">Modifier</text>
+
+  <rect x="300" y="180" width="90" height="32" rx="6" fill="#0F172A"/>
+  <text x="320" y="201" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold">Uploader</text>
+
+  <rect x="400" y="180" width="90" height="32" rx="6" fill="#059669"/>
+  <text x="422" y="201" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold">Caméra</text>
+
+  <rect x="500" y="180" width="90" height="32" rx="6" fill="#475569"/>
+  <text x="532" y="201" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold">Voir</text>
+
+  <!-- Info Grid -->
+  <rect x="80" y="250" width="640" height="270" rx="12" fill="#0F172A" stroke="#334155"/>
+  <text x="100" y="285" fill="#38BDF8" font-family="sans-serif" font-size="16" font-weight="bold">Informations Générales (10 champs requis)</text>
+
+  <text x="100" y="325" fill="#94A3B8" font-family="sans-serif" font-size="12">Nom: Obiey | Prénom: Christ Dany | Genre: MALE | Date: 1995-05-10</text>
+  <text x="100" y="355" fill="#94A3B8" font-family="sans-serif" font-size="12">Num principal: +242 06 613 01 18 | Secondary: +242 05 500 00 00</text>
+  <text x="100" y="385" fill="#94A3B8" font-family="sans-serif" font-size="12">Adresse: Avenue Indépendance | Pays: Congo | Arrondissement: Poto-Poto | Quartier: Centre</text>
+  <text x="100" y="425" fill="#F8FAFC" font-family="sans-serif" font-size="13">Résumé: Consultant IT &amp; Expert Fullstack Mobile &amp; Web.</text>
+</svg>
