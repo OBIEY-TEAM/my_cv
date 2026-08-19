@@ -134,6 +134,13 @@ class ApiService {
     return null;
   }
 
+  static Future<bool> deleteProfilePhoto() async {
+    try {
+      final res = await http.delete(Uri.parse('$baseUrl/api/profile/crop-photo/'), headers: headers);
+      return res.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
   static Future<bool> saveProfileInfo(Map<String, dynamic> data) async {
     try {
       final res = await http.patch(Uri.parse('$baseUrl/api/profile/info/'), headers: headers, body: jsonEncode(data));
@@ -1105,8 +1112,17 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                             ],
                           ),
                         ),
-                        onSelected: (val) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action photo: $val')));
+                        onSelected: (val) async {
+                          if (val == 'Supprimer') {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final ok = await ApiService.deleteProfilePhoto();
+                            if (ok) {
+                              _loadAll();
+                              messenger.showSnackBar(const SnackBar(content: Text('Photo de profil supprimée.')));
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action photo: $val')));
+                          }
                         },
                         itemBuilder: (ctx) => [
                           const PopupMenuItem(value: 'Caméra', child: Row(children: [Icon(Icons.camera), SizedBox(width: 8), Text('Caméra')])),
