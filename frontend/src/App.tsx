@@ -540,7 +540,7 @@ export default function App() {
             <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ width: '96px', height: '96px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #185FA5' }}>
                 {profile.cropped_photo ? (
-                  <img src={profile.cropped_photo} alt="Photo profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={profile.cropped_photo} alt="Photo profil" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
                   <Camera style={{ width: '36px', height: '36px', color: '#64748b' }} />
                 )}
@@ -739,7 +739,7 @@ export default function App() {
                 <button onClick={() => setShowPhotoView(false)} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X style={{ width: '20px', height: '20px' }} /></button>
               </div>
               {profile.cropped_photo ? (
-                <img src={profile.cropped_photo} alt="Photo" style={{ width: '100%', borderRadius: '12px', objectFit: 'cover' }} />
+                <img src={profile.cropped_photo} alt="Photo" style={{ width: '100%', borderRadius: '12px', objectFit: 'contain' }} />
               ) : (
                 <p>Aucune photo téléchargée</p>
               )}
@@ -775,7 +775,6 @@ export default function App() {
                   <Download style={{ width: '16px', height: '16px' }} /> Télécharger le document
                 </button>
                 <button onClick={() => { setActivePkgModal(null); setActiveTab('plans'); }} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <CreditCard style={{ width: '16px', height: '16px' }} /> Payer / Recharger Crédits
                 </button>
               </div>
             </div>
@@ -954,7 +953,7 @@ export default function App() {
         {activeTab === 'plans' && (
           <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement</h2>
+              <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Formules d'Abonnement (Airtel Money, MTN MoMo, Carte)</h2>
             </div>
             {paymentSuccessMsg && (
               <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #6ee7b7', padding: '16px', borderRadius: '12px', color: '#065f46', fontWeight: '800', textAlign: 'center' }}>
