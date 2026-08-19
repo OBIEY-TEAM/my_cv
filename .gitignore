@@ -1,0 +1,34 @@
+# Python / Django
+*.pyc
+__pycache__/
+**/__pycache__/
+*.sqlite3
+media/
+static/
+.env
+.venv/
+env/
+venv/
+
+# Commandes and Resultat directories
+commandes/
+resultat/
+
+# Node / Web Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.build/
+
+# Flutter / Mobile
+.dart_tool/
+.pub-cache/
+.pub/
+build/
+mobile/build/
+mobile/.dart_tool/
+mobile/.pub/
+mobile/.pub-cache/
+mobile/ios/
+mobile/android/

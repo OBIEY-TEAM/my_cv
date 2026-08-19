@@ -1,1 +1,79 @@
 
+# Mission — Candidatures automatisées à 3 offres d'emploi
+
+## Contexte
+Je suis **OBIEY Christ Dany**, Développeur Full Stack / Mobile basé à Pointe-Noire, République du Congo (email : obieychristdany@gmail.com — tél : +242 05 601 8686 — LinkedIn : linkedin.com/in/obiey).
+Mes informations de carrière détaillées se trouvent dans le fichier `read.me` du dépôt fourni. Ma photo de profil se trouve dans le dossier `/image`.
+
+Tu dois traiter **3 offres d'emploi**, créer une arborescence de dossiers, récupérer chaque offre en PDF, puis générer pour chacune un dossier de candidature complet (CV + lettre de motivation + email).
+
+---
+
+## Étape 1 — Créer l'arborescence de dossiers
+
+```
+/acpe
+  /Développeur Full Stack Mobile
+  /Ingénieur Réseaux, Systèmes et Télécoms (H-F)
+/bluecollarcongo
+  /Chargé(e) IT & Développement Web
+```
+
+## Étape 2 — Récupérer et enregistrer chaque offre en PDF
+
+| Dossier | Sous-dossier | Lien de l'offre |
+|---|---|---|
+| `/acpe` | `Développeur Full Stack Mobile` | https://www.acpe.cg/details-offre-emplois/4200 |
+| `/acpe` | `Ingénieur Réseaux, Systèmes et Télécoms (H-F)` | https://www.acpe.cg/details-offre-emplois/4191 |
+| `/bluecollarcongo` | `Chargé(e) IT & Développement Web` | https://www.bluecollarcongo.com/en/jobs/charge-e-it-developpement-web-717 |
+
+Pour chaque lien : ouvrir la page, extraire le contenu complet de l'offre (intitulé, entreprise, missions, profil recherché, compétences requises, lieu, contact) et l'enregistrer en **PDF** dans le sous-dossier correspondant (ex : `offre_developpeur_fullstack_mobile.pdf`).
+
+## Étape 3 — Préparer la photo de profil
+
+Récupérer la photo dans `/image` et la **recadrer de façon professionnelle** (format portrait CV standard, cadrage buste/visage centré, fond neutre conservé) avant de l'insérer dans les CV.
+
+## Étape 4 — Pour CHAQUE offre (3 dossiers de candidature au total)
+
+Générer dans le sous-dossier correspondant :
+
+1. **CV en PDF (1 page)**
+   - Basé sur les informations du fichier `read.me` (expérience, compétences, formations, projets)
+   - Adapté/reformulé pour coller au poste visé par l'offre
+   - Doit inclure la photo de profil recadrée
+   - Design professionnel, suivre la **structure/mise en page des CV modèles fournis en exemple** (upload)
+
+2. **Lettre de motivation en PDF (1 page)**
+   - Rédigée en français, personnalisée pour l'entreprise et le poste de l'offre
+   - Suivre la **structure de la lettre modèle fournie en exemple** (upload) : en-tête coordonnées, date/lieu, destinataire, objet, corps en 3-4 paragraphes, formule de politesse
+
+3. **Email de candidature en .txt**
+   - Objet + corps de mail court et professionnel, prêt à copier-coller
+   - Mentionne le poste visé, joint CV + lettre de motivation, coordonnées de contact
+
+## Contraintes générales
+- Langue : **français** pour tous les livrables
+- 1 CV et 1 lettre = **1 page maximum** chacun
+- Respecter strictement les modèles de CV et lettre de motivation fournis en pièces jointes comme référence de structure
+- Nom des fichiers clair et cohérent (ex : `CV_OBIEY_Christ_Dany_[poste].pdf`, `LM_[poste].pdf`, `email_[poste].txt`)
+
+## Livrable final attendu
+```
+/acpe
+  /Développeur Full Stack Mobile
+    offre_developpeur_fullstack_mobile.pdf
+    CV_OBIEY_Christ_Dany_Developpeur_FullStack_Mobile.pdf
+    LM_Developpeur_FullStack_Mobile.pdf
+    email_Developpeur_FullStack_Mobile.txt
+  /Ingénieur Réseaux, Systèmes et Télécoms (H-F)
+    offre_ingenieur_reseaux_systemes_telecoms.pdf
+    CV_OBIEY_Christ_Dany_Ingenieur_Reseaux_Systemes_Telecoms.pdf
+    LM_Ingenieur_Reseaux_Systemes_Telecoms.pdf
+    email_Ingenieur_Reseaux_Systemes_Telecoms.txt
+/bluecollarcongo
+  /Chargé(e) IT & Développement Web
+    offre_charge_it_developpement_web.pdf
+    CV_OBIEY_Christ_Dany_Charge_IT_Developpement_Web.pdf
+    LM_Charge_IT_Developpement_Web.pdf
+    email_Charge_IT_Developpement_Web.txt
+```

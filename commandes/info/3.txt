@@ -1,0 +1,20 @@
+=== INFORMATIONS UTILISATEUR (ID: 3) ===
+Nom : Makosso
+Prénom : Jean
+Genre : MALE
+Date de naissance : N/A
+Numéro principal : +242060000000
+Numéro secondaire :
+Adresse :
+Pays : Congo
+Arrondissement : Makélékélé
+Quartier :
+Résumé professionnel : Consultant IT & Expert Fullstack.
+
+=== EXPERIENCES PROFESSIONNELLES ===
+
+=== CERTIFICATIONS ET ATTESTATIONS ===
+
+=== DIPLOMES ===
+
+=== PROJETS ===
