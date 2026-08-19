@@ -1,0 +1,6 @@
+from django.apps import AppConfig
+
+
+class JulesIntegrationConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'jules_integration'
