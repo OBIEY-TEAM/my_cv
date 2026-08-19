@@ -66,6 +66,21 @@ class ApiService {
     return null;
   }
 
+  static Future<List<dynamic>> fetchPlans() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/subscriptions/plans/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (e) {
+      debugPrint('Fetch plans error: $e');
+    }
+    return [];
+  }
+
   static Future<List<dynamic>> fetchPackages() async {
     try {
       final response = await http.get(
@@ -137,6 +152,17 @@ class ApiService {
   static Future<bool> deleteProfilePhoto() async {
     try {
       final res = await http.delete(Uri.parse('$baseUrl/api/profile/crop-photo/'), headers: headers);
+      return res.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> uploadProfilePhoto(String photoType) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/profile/crop-photo/'),
+        headers: headers,
+        body: jsonEncode({'action': photoType}),
+      );
       return res.statusCode == 200;
     } catch (e) { return false; }
   }
@@ -449,7 +475,7 @@ class _DashboardTabState extends State<DashboardTab> {
     widget.onRefresh();
   }
 
-  // Preview Modal for CV, LM and Email WITHOUT recharge/payment button
+  // Preview Modal for CV, LM and Email styled harmoniously
   void _openDetailModal(dynamic pkg, String docType) {
     final offer = pkg['job_offer'] ?? {};
     final paymentStatus = pkg['payment_status'] ?? 'approuved';
@@ -458,9 +484,18 @@ class _DashboardTabState extends State<DashboardTab> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24.0),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -571,7 +606,7 @@ class _DashboardTabState extends State<DashboardTab> {
               ..._packages.map((pkg) {
                 final offer = pkg['job_offer'] ?? {};
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 20.0), // Increased card spacing
+                  margin: const EdgeInsets.only(bottom: 20.0),
                   child: Card(
                     color: Colors.white,
                     elevation: 2,
@@ -599,7 +634,6 @@ class _DashboardTabState extends State<DashboardTab> {
                           const SizedBox(height: 16),
                           const Divider(),
                           const SizedBox(height: 12),
-                          // Explicit icons replacing dark shapes
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -678,81 +712,68 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     });
   }
 
-  // Base dialog builder with full-screen toggle support
-  void _showModalWithFullScreenSupport({
+  // Harmonized compact bottom sheet modal styled like CV Preview
+  void _showHarmonizedModal({
     required String title,
     required Widget content,
     required VoidCallback onSave,
   }) {
-    bool isFullScreen = false;
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final dialogWidget = Dialog(
-            insetPadding: isFullScreen ? EdgeInsets.zero : const EdgeInsets.all(16),
-            shape: isFullScreen ? const RoundedRectangleBorder() : RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: SizedBox(
-              width: isFullScreen ? MediaQuery.of(context).size.width : 500,
-              height: isFullScreen ? MediaQuery.of(context).size.height : null,
-              child: Column(
-                mainAxisSize: isFullScreen ? MainAxisSize.max : MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    color: const Color(0xFF0B1F3A),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
-                              onPressed: () => setModalState(() => isFullScreen = !isFullScreen),
-                              tooltip: 'Basculer Plein Écran',
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white),
-                              onPressed: () => Navigator.pop(ctx),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: content,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-                        const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: () {
-                            onSave();
-                            Navigator.pop(ctx);
-                          },
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
-                          child: const Text('Enregistrer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        )
-                      ],
-                    ),
-                  )
-                ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+                IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+              ],
+            ),
+            const Divider(),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: content,
+                ),
               ),
             ),
-          );
-
-          return dialogWidget;
-        },
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    onSave();
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
+                  child: const Text('Enregistrer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                )
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -770,8 +791,8 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final neighborhoodCtrl = TextEditingController(text: _info['neighborhood'] ?? '');
     final summaryCtrl = TextEditingController(text: _info['professional_summary'] ?? '');
 
-    _showModalWithFullScreenSupport(
-      title: 'Informations Générales (Profil)',
+    _showHarmonizedModal(
+      title: 'Informations Générales',
       content: Column(
         children: [
           TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *', border: OutlineInputBorder())),
@@ -854,7 +875,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     bool isCurrent = expItem?['is_current'] ?? false;
     final skillsCtrl = TextEditingController(text: expItem?['skills_acquired'] ?? '');
 
-    _showModalWithFullScreenSupport(
+    _showHarmonizedModal(
       title: expItem != null ? 'Modifier Expérience' : 'Ajouter Expérience',
       content: StatefulBuilder(
         builder: (context, setModalState) => Column(
@@ -943,7 +964,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final yearCtrl = TextEditingController(text: certItem?['year']?.toString() ?? '2025');
     final instCtrl = TextEditingController(text: certItem?['institution'] ?? '');
 
-    _showModalWithFullScreenSupport(
+    _showHarmonizedModal(
       title: certItem != null ? 'Modifier Certificat' : 'Ajouter Certificat',
       content: Column(
         children: [
@@ -992,7 +1013,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final instCtrl = TextEditingController(text: eduItem?['institution'] ?? '');
     final degreeCtrl = TextEditingController(text: eduItem?['degree_level'] ?? 'Licence');
 
-    _showModalWithFullScreenSupport(
+    _showHarmonizedModal(
       title: eduItem != null ? 'Modifier Diplôme' : 'Ajouter Diplôme',
       content: Column(
         children: [
@@ -1042,7 +1063,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final nameCtrl = TextEditingController(text: projItem?['name'] ?? '');
     final industryCtrl = TextEditingController(text: projItem?['industry'] ?? 'Informatique');
 
-    _showModalWithFullScreenSupport(
+    _showHarmonizedModal(
       title: projItem != null ? 'Modifier Projet' : 'Ajouter Projet',
       content: Column(
         children: [
@@ -1091,7 +1112,6 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Display REAL profile photo if available, fallback to avatar
                       CircleAvatar(
                         radius: 36,
                         backgroundColor: const Color(0xFF185FA5),
@@ -1099,7 +1119,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                         child: photoUrl == null || photoUrl.isEmpty ? const Icon(Icons.person, color: Colors.white, size: 40) : null,
                       ),
 
-                      // Single contextual menu button grouping photo actions: Caméra, Galerie, Supprimer
+                      // Fully Operational Contextual Menu Popup for Photo Actions
                       PopupMenuButton<String>(
                         icon: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1113,19 +1133,25 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                           ),
                         ),
                         onSelected: (val) async {
+                          final messenger = ScaffoldMessenger.of(context);
                           if (val == 'Supprimer') {
-                            final messenger = ScaffoldMessenger.of(context);
                             final ok = await ApiService.deleteProfilePhoto();
                             if (ok) {
                               _loadAll();
                               messenger.showSnackBar(const SnackBar(content: Text('Photo de profil supprimée.')));
                             }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action photo: $val')));
+                          } else if (val == 'Caméra' || val == 'Galerie') {
+                            final ok = await ApiService.uploadProfilePhoto(val);
+                            if (ok) {
+                              _loadAll();
+                              messenger.showSnackBar(SnackBar(content: Text('Photo mise à jour via $val.')));
+                            } else {
+                              messenger.showSnackBar(SnackBar(content: Text('Action $val en cours de traitement.')));
+                            }
                           }
                         },
                         itemBuilder: (ctx) => [
-                          const PopupMenuItem(value: 'Caméra', child: Row(children: [Icon(Icons.camera), SizedBox(width: 8), Text('Caméra')])),
+                          const PopupMenuItem(value: 'Caméra', child: Row(children: [Icon(Icons.camera_alt), SizedBox(width: 8), Text('Caméra')])),
                           const PopupMenuItem(value: 'Galerie', child: Row(children: [Icon(Icons.photo_library), SizedBox(width: 8), Text('Galerie')])),
                           const PopupMenuItem(value: 'Supprimer', child: Row(children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 8), Text('Supprimer', style: TextStyle(color: Colors.red))])),
                         ],
@@ -1141,7 +1167,6 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                     ],
                   ),
 
-                  // DYNAMICALLY HIDE EMPTY PROFILE FIELDS
                   if (_info['primary_phone'] != null && _info['primary_phone'].toString().isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
@@ -1364,7 +1389,6 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
               const SizedBox(height: 12),
               const Center(child: Text('OU', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
               const SizedBox(height: 12),
-              // Option to upload PDF or Image of the job offer
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -1430,12 +1454,37 @@ class PaymentsTab extends StatefulWidget {
 
 class _PaymentsTabState extends State<PaymentsTab> {
   final _phoneController = TextEditingController(text: '+242066130118');
+  List<dynamic> _plans = [];
+  int? _selectedPlanId;
   String _selectedMethod = 'AIRTEL_MONEY';
   bool _isPaying = false;
+  bool _isLoadingPlans = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  void _loadPlans() async {
+    setState(() => _isLoadingPlans = true);
+    final plansList = await ApiService.fetchPlans();
+    setState(() {
+      _plans = plansList;
+      if (_plans.isNotEmpty) {
+        _selectedPlanId = _plans[0]['id'];
+      }
+      _isLoadingPlans = false;
+    });
+  }
 
   void _pay() async {
+    if (_selectedPlanId == null && _plans.isNotEmpty) {
+      _selectedPlanId = _plans[0]['id'];
+    }
+
     setState(() => _isPaying = true);
-    final success = await ApiService.payMobileMoney(2, _selectedMethod, _phoneController.text);
+    final success = await ApiService.payMobileMoney(_selectedPlanId ?? 1, _selectedMethod, _phoneController.text);
     setState(() => _isPaying = false);
 
     if (success) {
@@ -1456,11 +1505,36 @@ class _PaymentsTabState extends State<PaymentsTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingPlans) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_plans.isNotEmpty) ...[
+            const Text('Formules d\'Abonnement', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+            const SizedBox(height: 10),
+            ..._plans.map((p) => Card(
+              color: _selectedPlanId == p['id'] ? const Color(0xFFE0F2FE) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: _selectedPlanId == p['id'] ? const Color(0xFF185FA5) : Colors.grey.shade300,
+                  width: _selectedPlanId == p['id'] ? 2 : 1,
+                ),
+              ),
+              child: ListTile(
+                title: Text(p['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('${p['description'] ?? ''} (${p['applications_limit']} candidatures)'),
+                trailing: Text('${p['price_fcfa']} FCFA', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF185FA5), fontSize: 16)),
+                onTap: () => setState(() => _selectedPlanId = p['id']),
+              ),
+            )),
+            const SizedBox(height: 16),
+          ],
           Card(
             color: Colors.white,
             elevation: 2,
@@ -1470,10 +1544,8 @@ class _PaymentsTabState extends State<PaymentsTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pack 5 Candidatures IA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-                  const SizedBox(height: 4),
-                  const Text('2 000 FCFA', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF185FA5))),
-                  const SizedBox(height: 16),
+                  const Text('Règlement Mobile Money', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedMethod,
                     decoration: const InputDecoration(labelText: 'Mode de paiement', border: OutlineInputBorder()),
