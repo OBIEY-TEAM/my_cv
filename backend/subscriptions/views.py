@@ -9,9 +9,16 @@ from .serializers import SubscriptionPlanSerializer, UserSubscriptionSerializer,
 from .fintech_service import FintechPaymentService
 
 class PlanListView(generics.ListAPIView):
-    queryset = SubscriptionPlan.objects.all()
     serializer_class = SubscriptionPlanSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Auto-seed standard credit plans if not present
+        if not SubscriptionPlan.objects.exists():
+            SubscriptionPlan.objects.create(code='CREDIT_1', name='1 Crédit', price_fcfa=200, credits_included=1, description='1 Crédit de génération ou de modification')
+            SubscriptionPlan.objects.create(code='CREDIT_5', name='5 Crédits', price_fcfa=500, credits_included=5, description='Pack de 5 Crédits pour candidatures et modifications')
+            SubscriptionPlan.objects.create(code='CREDIT_25', name='25 Crédits', price_fcfa=1000, credits_included=25, description='Pack de 25 Crédits pour candidatures et modifications')
+        return SubscriptionPlan.objects.all().order_by('price_fcfa')
 
 class UserSubscriptionView(APIView):
     permission_classes = [permissions.IsAuthenticated]

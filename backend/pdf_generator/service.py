@@ -233,6 +233,191 @@ class PDFService:
         return output_path
 
     @staticmethod
+    def generate_cv_docx(data, output_path):
+        """Generates an editable Word (.docx) version of the CV."""
+        from docx import Document
+        from docx.shared import Pt, RGBColor, Inches
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+        doc = Document()
+        sections = doc.sections
+        for section in sections:
+            section.top_margin = Inches(0.5)
+            section.bottom_margin = Inches(0.5)
+            section.left_margin = Inches(0.6)
+            section.right_margin = Inches(0.6)
+
+        # Header Name & Title
+        title_p = doc.add_paragraph()
+        title_p.paragraph_format.space_after = Pt(2)
+        run_name = title_p.add_run(data.get('name', 'CHRIST DANY OBIEY') + '\n')
+        run_name.bold = True
+        run_name.font.size = Pt(18)
+        run_name.font.color.rgb = RGBColor(11, 31, 58)
+
+        run_sub = title_p.add_run(data.get('title', 'Consultant IT & Expert Fullstack'))
+        run_sub.bold = True
+        run_sub.font.size = Pt(11)
+        run_sub.font.color.rgb = RGBColor(24, 95, 165)
+
+        # Contact Info Line
+        contact_p = doc.add_paragraph()
+        contact_p.paragraph_format.space_after = Pt(10)
+        contact_info = f"📍 {data.get('location', 'Brazzaville, Congo')}  |  📞 {data.get('phone', '+242 06 613 01 18')}  |  ✉️ {data.get('email', 'obieydany@gmail.com')}"
+        run_contact = contact_p.add_run(contact_info)
+        run_contact.font.size = Pt(9)
+        run_contact.font.color.rgb = RGBColor(51, 65, 85)
+
+        # Summary Section
+        sum_head = doc.add_paragraph()
+        sum_head.paragraph_format.space_after = Pt(2)
+        r_sum_head = sum_head.add_run("RÉSUMÉ PROFESSIONNEL")
+        r_sum_head.bold = True
+        r_sum_head.font.size = Pt(12)
+        r_sum_head.font.color.rgb = RGBColor(11, 31, 58)
+
+        sum_body = doc.add_paragraph()
+        sum_body.paragraph_format.space_after = Pt(10)
+        r_sum_body = sum_body.add_run(data.get('summary', ''))
+        r_sum_body.font.size = Pt(9.5)
+        r_sum_body.font.color.rgb = RGBColor(51, 65, 85)
+
+        # Experiences Section
+        exp_head = doc.add_paragraph()
+        exp_head.paragraph_format.space_after = Pt(2)
+        r_exp_head = exp_head.add_run("PARCOURS PROFESSIONNEL")
+        r_exp_head.bold = True
+        r_exp_head.font.size = Pt(12)
+        r_exp_head.font.color.rgb = RGBColor(11, 31, 58)
+
+        for exp in data.get('experiences', []):
+            p_exp = doc.add_paragraph()
+            p_exp.paragraph_format.space_after = Pt(2)
+            r_role = p_exp.add_run(f"{exp.get('role')} — ")
+            r_role.bold = True
+            r_role.font.size = Pt(10)
+            r_comp = p_exp.add_run(f"{exp.get('company')} ")
+            r_comp.bold = True
+            r_comp.font.color.rgb = RGBColor(24, 95, 165)
+            r_dates = p_exp.add_run(f"({exp.get('dates')})")
+            r_dates.font.size = Pt(9)
+
+            for bullet in exp.get('bullets', []):
+                p_b = doc.add_paragraph(style='List Bullet')
+                p_b.paragraph_format.space_after = Pt(2)
+                r_b = p_b.add_run(bullet)
+                r_b.font.size = Pt(9)
+
+        # Skills
+        skills_head = doc.add_paragraph()
+        skills_head.paragraph_format.space_before = Pt(8)
+        skills_head.paragraph_format.space_after = Pt(2)
+        r_sk = skills_head.add_run("COMPÉTENCES CLÉS")
+        r_sk.bold = True
+        r_sk.font.size = Pt(12)
+        r_sk.font.color.rgb = RGBColor(11, 31, 58)
+
+        skills_dict = data.get('skills', {})
+        for cat, items in skills_dict.items():
+            p_sk = doc.add_paragraph()
+            p_sk.paragraph_format.space_after = Pt(2)
+            r_cat = p_sk.add_run(f"{cat}: ")
+            r_cat.bold = True
+            r_cat.font.size = Pt(9)
+            r_items = p_sk.add_run(", ".join(items))
+            r_items.font.size = Pt(9)
+
+        # Education / Certifications
+        edu_head = doc.add_paragraph()
+        edu_head.paragraph_format.space_before = Pt(8)
+        edu_head.paragraph_format.space_after = Pt(2)
+        r_ed = edu_head.add_run("FORMATIONS & CERTIFICATIONS")
+        r_ed.bold = True
+        r_ed.font.size = Pt(12)
+        r_ed.font.color.rgb = RGBColor(11, 31, 58)
+
+        for edu in data.get('education', []):
+            p_ed = doc.add_paragraph()
+            p_ed.paragraph_format.space_after = Pt(2)
+            r_deg = p_ed.add_run(f"{edu.get('degree')} - {edu.get('school')} ({edu.get('dates')})")
+            r_deg.font.size = Pt(9)
+
+        doc.save(output_path)
+        return output_path
+
+    @staticmethod
+    def generate_cover_letter_docx(data, output_path):
+        """Generates an editable Word (.docx) version of the Cover Letter."""
+        from docx import Document
+        from docx.shared import Pt, RGBColor, Inches
+
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = Inches(0.8)
+            section.bottom_margin = Inches(0.8)
+            section.left_margin = Inches(0.8)
+            section.right_margin = Inches(0.8)
+
+        # Header - Sender Info
+        sender_p = doc.add_paragraph()
+        sender_p.paragraph_format.space_after = Pt(12)
+        r_name = sender_p.add_run(data.get('name', 'CHRIST DANY OBIEY') + '\n')
+        r_name.bold = True
+        r_name.font.size = Pt(11)
+        r_name.font.color.rgb = RGBColor(11, 31, 58)
+
+        r_details = sender_p.add_run(
+            f"{data.get('location', 'Brazzaville, Congo')}\n"
+            f"📞 {data.get('phone', '+242 06 613 01 18')}\n"
+            f"✉️ {data.get('email', 'obieydany@gmail.com')}"
+        )
+        r_details.font.size = Pt(9.5)
+
+        # Recipient Info
+        rec_p = doc.add_paragraph()
+        rec_p.paragraph_format.space_after = Pt(16)
+        r_rec = rec_p.add_run(
+            f"À l'attention du Recruteur\n"
+            f"{data.get('company_name', 'L\'Entreprise')}\n"
+            f"{data.get('city', 'Pointe-Noire, Congo')}\n"
+            f"Date : {data.get('date', 'Octobre 2026')}"
+        )
+        r_rec.font.size = Pt(10)
+        r_rec.bold = True
+
+        # Subject
+        sub_p = doc.add_paragraph()
+        sub_p.paragraph_format.space_after = Pt(14)
+        r_sub = sub_p.add_run(f"OBJET : Candidature au poste de {data.get('job_title', 'Ingénieur / Développeur')}")
+        r_sub.bold = True
+        r_sub.font.size = Pt(11)
+        r_sub.font.color.rgb = RGBColor(24, 95, 165)
+
+        # Body
+        paragraphs = data.get('letter_body', '').split('\n\n')
+        for p in paragraphs:
+            if p.strip():
+                bp = doc.add_paragraph()
+                bp.paragraph_format.space_after = Pt(10)
+                r_body = bp.add_run(p.strip())
+                r_body.font.size = Pt(10)
+
+        # Closing
+        close_p = doc.add_paragraph()
+        close_p.paragraph_format.space_before = Pt(10)
+        close_p.paragraph_format.space_after = Pt(16)
+        r_close = close_p.add_run("Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.")
+        r_close.font.size = Pt(10)
+
+        sig_p = doc.add_paragraph()
+        r_sig = sig_p.add_run(data.get('name', 'CHRIST DANY OBIEY'))
+        r_sig.bold = True
+        r_sig.font.size = Pt(11)
+
+        doc.save(output_path)
+        return output_path
+
+    @staticmethod
     def verify_1_page_limit(pdf_path):
         reader = PdfReader(pdf_path)
         return len(reader.pages) == 1
