@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   http: ^1.2.0
   provider: ^6.1.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +21,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/logo_black.png
+    - assets/logo_white.jpg
+    - assets/loader_black.gif
+    - assets/loader_white.gif

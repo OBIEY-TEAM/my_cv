@@ -4,10 +4,44 @@ import zipfile
 import importlib
 from pathlib import Path
 from django.conf import settings
+import cloudinary
+import cloudinary.uploader
 from pdf_generator.service import PDFService
-from profile_manager.models import UserProfileInfo, Experience, Certification, Education, Project
+from profile_manager.models import Profile, UserProfileInfo, Experience, Certification, Education, Project
 
 class AIEngineService:
+    @staticmethod
+    def _upload_to_cloudinary_and_delete_old(file_path, old_url=None, resource_type="raw", public_id_prefix="applications"):
+        """Helper to upload file to Cloudinary after deleting the previous file if present."""
+        if not file_path or not os.path.exists(file_path):
+            return old_url or ""
+
+        # Cloudinary credentials configured via environment variables
+        try:
+            if old_url and "cloudinary.com" in str(old_url):
+                # Extract public_id from old url
+                parts = str(old_url).split('/')
+                filename = parts[-1]
+                public_id = filename.split('.')[0]
+                if public_id_prefix and public_id_prefix not in public_id:
+                    public_id = f"{public_id_prefix}/{public_id}"
+                try:
+                    cloudinary.uploader.destroy(public_id, resource_type=resource_type)
+                except Exception:
+                    pass
+
+            filename = Path(file_path).name
+            clean_pid = f"{public_id_prefix}/{Path(file_path).stem}"
+            res = cloudinary.uploader.upload(
+                file_path,
+                public_id=clean_pid,
+                resource_type=resource_type,
+                overwrite=True
+            )
+            return res.get('secure_url', file_path)
+        except Exception:
+            return file_path
+
     @staticmethod
     def extract_job_details(raw_text, url=None):
         text = raw_text.strip()
@@ -69,13 +103,17 @@ class AIEngineService:
         base_dir.mkdir(parents=True, exist_ok=True)
 
         cv_filename = f"OBIEY-{abbreviation}-CV.pdf"
+        cv_docx_filename = f"OBIEY-{abbreviation}-CV.docx"
         lm_filename = f"OBIEY-{abbreviation}-LM.pdf"
+        lm_docx_filename = f"OBIEY-{abbreviation}-LM.docx"
         email_filename = f"OBIEY-{abbreviation}-EMAIL.txt"
         offer_filename = f"OBIEY-{abbreviation}-OFFRE.pdf"
         zip_filename = f"OBIEY-{abbreviation}-CANDIDATURE.zip"
 
         cv_path = str(base_dir / cv_filename)
+        cv_docx_path = str(base_dir / cv_docx_filename)
         lm_path = str(base_dir / lm_filename)
+        lm_docx_path = str(base_dir / lm_docx_filename)
         email_path = str(base_dir / email_filename)
         offer_path = str(base_dir / offer_filename)
         zip_path = str(base_dir / zip_filename)
@@ -208,6 +246,10 @@ class AIEngineService:
         }
 
         PDFService.generate_cv_pdf(cv_data, cv_path)
+        try:
+            PDFService.generate_cv_docx(cv_data, cv_docx_path)
+        except Exception:
+            pass
 
         lm_data = {
             'name': user_name,
@@ -226,6 +268,10 @@ class AIEngineService:
         }
 
         PDFService.generate_cover_letter_pdf(lm_data, lm_path)
+        try:
+            PDFService.generate_cover_letter_docx(lm_data, lm_docx_path)
+        except Exception:
+            pass
 
         email_subject = f"Candidature au poste de {title} - {user_name}"
         email_body = (
@@ -254,14 +300,22 @@ class AIEngineService:
 
         with zipfile.ZipFile(zip_path, 'w') as zipf:
             zipf.write(cv_path, arcname=f"{site_cat}/{title}/{cv_filename}")
+            if os.path.exists(cv_docx_path):
+                zipf.write(cv_docx_path, arcname=f"{site_cat}/{title}/{cv_docx_filename}")
             zipf.write(lm_path, arcname=f"{site_cat}/{title}/{lm_filename}")
+            if os.path.exists(lm_docx_path):
+                zipf.write(lm_docx_path, arcname=f"{site_cat}/{title}/{lm_docx_filename}")
             zipf.write(email_path, arcname=f"{site_cat}/{title}/{email_filename}")
             zipf.write(offer_path, arcname=f"{site_cat}/{title}/{offer_filename}")
 
+        cv_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(cv_path)
+        lm_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(lm_path)
+        email_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(email_path)
+
         return {
-            'cv_pdf': cv_path,
-            'cover_letter_pdf': lm_path,
-            'email_txt': email_path,
+            'cv_pdf': cv_cloud or cv_path,
+            'cover_letter_pdf': lm_cloud or lm_path,
+            'email_txt': email_cloud or email_path,
             'offer_pdf': offer_path,
             'zip_package': zip_path,
             'cv_text': generated_cv_text,
@@ -290,10 +344,13 @@ class AIEngineService:
         folder = Path(package.folder_path) if package.folder_path else (Path(settings.MEDIA_ROOT) / 'applications' / 'generated' / (job_offer.site_category or 'acpe') / (job_offer.title or 'POSTE'))
         folder.mkdir(parents=True, exist_ok=True)
 
-        cv_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-CV.pdf")
-        lm_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-LM.pdf")
-        email_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-EMAIL.txt")
-        zip_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-CANDIDATURE.zip")
+        abbrev = job_offer.abbreviation or 'POSTE'
+        cv_path = str(folder / f"OBIEY-{abbrev}-CV.pdf")
+        cv_docx_path = str(folder / f"OBIEY-{abbrev}-CV.docx")
+        lm_path = str(folder / f"OBIEY-{abbrev}-LM.pdf")
+        lm_docx_path = str(folder / f"OBIEY-{abbrev}-LM.docx")
+        email_path = str(folder / f"OBIEY-{abbrev}-EMAIL.txt")
+        zip_path = str(folder / f"OBIEY-{abbrev}-CANDIDATURE.zip")
 
         info = getattr(user, 'profile_info', None)
         user_name = f"{info.first_name} {info.last_name}".strip() if info else (f"{user.first_name} {user.last_name}".strip() or "CHRIST DANY OBIEY")
@@ -331,7 +388,9 @@ class AIEngineService:
         }
         try:
             PDFService.generate_cv_pdf(cv_data, cv_path)
-            package.cv_pdf = cv_path
+            PDFService.generate_cv_docx(cv_data, cv_docx_path)
+            cv_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(cv_path, old_url=package.cv_pdf)
+            package.cv_pdf = cv_cloud or cv_path
         except Exception as e:
             pass
 
@@ -349,7 +408,9 @@ class AIEngineService:
         }
         try:
             PDFService.generate_cover_letter_pdf(lm_data, lm_path)
-            package.cover_letter_pdf = lm_path
+            PDFService.generate_cover_letter_docx(lm_data, lm_docx_path)
+            lm_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(lm_path, old_url=package.cover_letter_pdf)
+            package.cover_letter_pdf = lm_cloud or lm_path
         except Exception as e:
             pass
 
@@ -357,7 +418,8 @@ class AIEngineService:
         try:
             with open(email_path, 'w', encoding='utf-8') as f:
                 f.write(package.email_text or package.email_body or "")
-            package.email_txt = email_path
+            email_cloud = AIEngineService._upload_to_cloudinary_and_delete_old(email_path, old_url=package.email_txt)
+            package.email_txt = email_cloud or email_path
         except Exception as e:
             pass
 

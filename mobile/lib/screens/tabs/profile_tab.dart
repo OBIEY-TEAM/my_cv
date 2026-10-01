@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
+import '../../components/reusable_modal.dart';
 
 class StructuredProfileTab extends StatefulWidget {
   const StructuredProfileTab({super.key});
@@ -15,11 +17,61 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
   List<dynamic> _educations = [];
   List<dynamic> _projects = [];
   bool _isLoading = true;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _loadAll();
+  }
+
+  Future<void> _pickAndUploadPhoto(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Envoi de la photo de profil...')),
+        );
+        final res = await ApiService.uploadProfilePhoto(pickedFile.path);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res != null ? 'Photo mise à jour avec succès !' : 'Erreur lors de l\'envoi de la photo.')),
+        );
+        _loadAll();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
+      );
+    }
+  }
+
+  void _showPhotoPreview() {
+    ReusableModal.show(
+      context: context,
+      title: 'Aperçu Photo Profil',
+      headerBg: const Color(0xFF0B1F3A),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(
+              radius: 60,
+              backgroundColor: Color(0xFF185FA5),
+              child: Icon(Icons.person, color: Colors.white, size: 70),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${_info['first_name'] ?? 'Christ Dany'} ${_info['last_name'] ?? 'Obiey'}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0B1F3A)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _loadAll() async {
@@ -54,61 +106,59 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final neighborhoodCtrl = TextEditingController(text: _info['neighborhood'] ?? '');
     final summaryCtrl = TextEditingController(text: _info['professional_summary'] ?? '');
 
-    showDialog(
+    ReusableModal.show(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => AlertDialog(
-          title: const Text('1. Informations Générales'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *')),
-                TextField(controller: firstNameCtrl, decoration: const InputDecoration(labelText: 'Prénom *')),
-                DropdownButtonFormField<String>(
-                  initialValue: genderVal,
-                  decoration: const InputDecoration(labelText: 'Genre *'),
-                  items: const [
-                    DropdownMenuItem(value: 'MALE', child: Text('Homme')),
-                    DropdownMenuItem(value: 'FEMALE', child: Text('Femme')),
-                    DropdownMenuItem(value: 'OTHER', child: Text('Autre')),
-                  ],
-                  onChanged: (v) { if (v != null) setModalState(() => genderVal = v); },
-                ),
-                TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance *')),
-                TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
-                TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
-                TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse')),
-                TextField(controller: countryCtrl, decoration: const InputDecoration(labelText: 'Pays')),
-                TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
-                TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
-                TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
+      title: '1. Informations Générales',
+      headerBg: const Color(0xFF185FA5),
+      footer: ElevatedButton(
+        onPressed: () async {
+          final nav = Navigator.of(context);
+          await ApiService.saveProfileInfo({
+            'last_name': lastNameCtrl.text,
+            'first_name': firstNameCtrl.text,
+            'gender': genderVal,
+            'birth_date': birthCtrl.text,
+            'primary_phone': phoneCtrl.text,
+            'secondary_phone': secPhoneCtrl.text,
+            'address': addressCtrl.text,
+            'country': countryCtrl.text,
+            'district': districtCtrl.text,
+            'neighborhood': neighborhoodCtrl.text,
+            'professional_summary': summaryCtrl.text,
+          });
+          nav.pop();
+          _loadAll();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF0F6E56),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        child: const Text('Enregistrer mes informations', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      child: StatefulBuilder(
+        builder: (context, setModalState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: lastNameCtrl, decoration: const InputDecoration(labelText: 'Nom *')),
+            TextField(controller: firstNameCtrl, decoration: const InputDecoration(labelText: 'Prénom *')),
+            DropdownButtonFormField<String>(
+              initialValue: genderVal,
+              decoration: const InputDecoration(labelText: 'Genre *'),
+              items: const [
+                DropdownMenuItem(value: 'MALE', child: Text('Homme')),
+                DropdownMenuItem(value: 'FEMALE', child: Text('Femme')),
+                DropdownMenuItem(value: 'OTHER', child: Text('Autre')),
               ],
+              onChanged: (v) { if (v != null) setModalState(() => genderVal = v); },
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-            ElevatedButton(
-              onPressed: () async {
-                final nav = Navigator.of(ctx);
-                await ApiService.saveProfileInfo({
-                  'last_name': lastNameCtrl.text,
-                  'first_name': firstNameCtrl.text,
-                  'gender': genderVal,
-                  'birth_date': birthCtrl.text,
-                  'primary_phone': phoneCtrl.text,
-                  'secondary_phone': secPhoneCtrl.text,
-                  'address': addressCtrl.text,
-                  'country': countryCtrl.text,
-                  'district': districtCtrl.text,
-                  'neighborhood': neighborhoodCtrl.text,
-                  'professional_summary': summaryCtrl.text,
-                });
-                nav.pop();
-                _loadAll();
-              },
-              child: const Text('Enregistrer'),
-            )
+            TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance *')),
+            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
+            TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
+            TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse')),
+            TextField(controller: countryCtrl, decoration: const InputDecoration(labelText: 'Pays')),
+            TextField(controller: districtCtrl, decoration: const InputDecoration(labelText: 'Arrondissement')),
+            TextField(controller: neighborhoodCtrl, decoration: const InputDecoration(labelText: 'Quartier')),
+            TextField(controller: summaryCtrl, decoration: const InputDecoration(labelText: 'Résumé professionnel'), maxLines: 3),
           ],
         ),
       ),
@@ -122,43 +172,38 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final locationCtrl = TextEditingController();
     final skillsCtrl = TextEditingController();
 
-    showDialog(
+    ReusableModal.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter une expérience'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Poste occupé *')),
-              TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Structure *')),
-              TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
-              TextField(controller: locationCtrl, decoration: const InputDecoration(labelText: 'Lieu')),
-              TextField(controller: skillsCtrl, decoration: const InputDecoration(labelText: 'Compétences acquises')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleCtrl.text.isNotEmpty && companyCtrl.text.isNotEmpty) {
-                final nav = Navigator.of(ctx);
-                await ApiService.addSectionItem('experiences', {
-                  'title': titleCtrl.text,
-                  'company': companyCtrl.text,
-                  'industry': industryCtrl.text,
-                  'location': locationCtrl.text,
-                  'start_date': '2024-01-01',
-                  'is_current': true,
-                  'skills_acquired': skillsCtrl.text,
-                });
-                nav.pop();
-                _loadAll();
-              }
-            },
-            child: const Text('Ajouter'),
-          )
+      title: 'Ajouter une expérience',
+      headerBg: const Color(0xFF185FA5),
+      footer: ElevatedButton(
+        onPressed: () async {
+          if (titleCtrl.text.isNotEmpty && companyCtrl.text.isNotEmpty) {
+            final nav = Navigator.of(context);
+            await ApiService.addSectionItem('experiences', {
+              'title': titleCtrl.text,
+              'company': companyCtrl.text,
+              'industry': industryCtrl.text,
+              'location': locationCtrl.text,
+              'start_date': '2024-01-01',
+              'is_current': true,
+              'skills_acquired': skillsCtrl.text,
+            });
+            nav.pop();
+            _loadAll();
+          }
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(vertical: 14)),
+        child: const Text('Ajouter', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Poste occupé *')),
+          TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Structure *')),
+          TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
+          TextField(controller: locationCtrl, decoration: const InputDecoration(labelText: 'Lieu')),
+          TextField(controller: skillsCtrl, decoration: const InputDecoration(labelText: 'Compétences acquises')),
         ],
       ),
     );
@@ -169,35 +214,32 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final yearCtrl = TextEditingController(text: '2025');
     final instCtrl = TextEditingController();
 
-    showDialog(
+    ReusableModal.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter un certificat'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé certificat *')),
-            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
-            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleCtrl.text.isNotEmpty) {
-                final nav = Navigator.of(ctx);
-                await ApiService.addSectionItem('certifications', {
-                  'title': titleCtrl.text,
-                  'year': int.tryParse(yearCtrl.text) ?? 2025,
-                  'institution': instCtrl.text,
-                });
-                nav.pop();
-                _loadAll();
-              }
-            },
-            child: const Text('Ajouter'),
-          )
+      title: 'Ajouter un certificat',
+      headerBg: const Color(0xFF185FA5),
+      footer: ElevatedButton(
+        onPressed: () async {
+          if (titleCtrl.text.isNotEmpty) {
+            final nav = Navigator.of(context);
+            await ApiService.addSectionItem('certifications', {
+              'title': titleCtrl.text,
+              'year': int.tryParse(yearCtrl.text) ?? 2025,
+              'institution': instCtrl.text,
+            });
+            nav.pop();
+            _loadAll();
+          }
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(vertical: 14)),
+        child: const Text('Ajouter', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé certificat *')),
+          TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+          TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
         ],
       ),
     );
@@ -209,37 +251,34 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final instCtrl = TextEditingController();
     final degreeCtrl = TextEditingController(text: 'Licence');
 
-    showDialog(
+    ReusableModal.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter un diplôme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé du diplôme *')),
-            TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
-            TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
-            TextField(controller: degreeCtrl, decoration: const InputDecoration(labelText: 'Niveau d\'étude *')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleCtrl.text.isNotEmpty) {
-                final nav = Navigator.of(ctx);
-                await ApiService.addSectionItem('educations', {
-                  'title': titleCtrl.text,
-                  'year': int.tryParse(yearCtrl.text) ?? 2024,
-                  'institution': instCtrl.text,
-                  'degree_level': degreeCtrl.text,
-                });
-                nav.pop();
-                _loadAll();
-              }
-            },
-            child: const Text('Ajouter'),
-          )
+      title: 'Ajouter un diplôme',
+      headerBg: const Color(0xFF185FA5),
+      footer: ElevatedButton(
+        onPressed: () async {
+          if (titleCtrl.text.isNotEmpty) {
+            final nav = Navigator.of(context);
+            await ApiService.addSectionItem('educations', {
+              'title': titleCtrl.text,
+              'year': int.tryParse(yearCtrl.text) ?? 2024,
+              'institution': instCtrl.text,
+              'degree_level': degreeCtrl.text,
+            });
+            nav.pop();
+            _loadAll();
+          }
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(vertical: 14)),
+        child: const Text('Ajouter', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Libellé du diplôme *')),
+          TextField(controller: yearCtrl, decoration: const InputDecoration(labelText: 'Année *'), keyboardType: TextInputType.number),
+          TextField(controller: instCtrl, decoration: const InputDecoration(labelText: 'Institution *')),
+          TextField(controller: degreeCtrl, decoration: const InputDecoration(labelText: 'Niveau d\'étude *')),
         ],
       ),
     );
@@ -249,33 +288,30 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
     final nameCtrl = TextEditingController();
     final industryCtrl = TextEditingController(text: 'Informatique');
 
-    showDialog(
+    ReusableModal.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter un projet'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nom du projet *')),
-            TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameCtrl.text.isNotEmpty) {
-                final nav = Navigator.of(ctx);
-                await ApiService.addSectionItem('projects', {
-                  'name': nameCtrl.text,
-                  'industry': industryCtrl.text,
-                });
-                nav.pop();
-                _loadAll();
-              }
-            },
-            child: const Text('Ajouter'),
-          )
+      title: 'Ajouter un projet',
+      headerBg: const Color(0xFF185FA5),
+      footer: ElevatedButton(
+        onPressed: () async {
+          if (nameCtrl.text.isNotEmpty) {
+            final nav = Navigator.of(context);
+            await ApiService.addSectionItem('projects', {
+              'name': nameCtrl.text,
+              'industry': industryCtrl.text,
+            });
+            nav.pop();
+            _loadAll();
+          }
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(vertical: 14)),
+        child: const Text('Ajouter', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nom du projet *')),
+          TextField(controller: industryCtrl, decoration: const InputDecoration(labelText: 'Secteur d\'activité *')),
         ],
       ),
     );
@@ -323,31 +359,25 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // 4 EXPLICIT PHOTO ACTION BUTTONS MATCHING WEB
+                  // 3 ACTION BUTTONS (UPLOADER, CAMERA, VOIR) WITHOUT MODIFIER
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modification de la photo...'))),
-                        icon: const Icon(Icons.edit, size: 14),
-                        label: const Text('Modifier', style: TextStyle(fontSize: 11)),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload de la photo...'))),
+                        onPressed: () => _pickAndUploadPhoto(ImageSource.gallery),
                         icon: const Icon(Icons.upload, size: 14),
                         label: const Text('Uploader', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B1F3A), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ouverture de la caméra...'))),
+                        onPressed: () => _pickAndUploadPhoto(ImageSource.camera),
                         icon: const Icon(Icons.camera_alt, size: 14),
                         label: const Text('Caméra', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6E56), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aperçu de la photo...'))),
+                        onPressed: _showPhotoPreview,
                         icon: const Icon(Icons.visibility, size: 14),
                         label: const Text('Voir', style: TextStyle(fontSize: 11)),
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),

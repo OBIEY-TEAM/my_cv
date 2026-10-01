@@ -1,6 +1,7 @@
 import React from 'react';
-import { Eye, Download, CreditCard, X } from 'lucide-react';
+import { Eye, Download, CreditCard, Camera, Briefcase, Award, GraduationCap, FolderPlus } from 'lucide-react';
 import { ApplicationPackage, Experience, Certification, Education, Project } from '../types';
+import { ReusableModal } from './ReusableModal';
 
 interface PhotoModalProps {
   photoUrl: string | null;
@@ -9,19 +10,21 @@ interface PhotoModalProps {
 
 export const PhotoModal: React.FC<PhotoModalProps> = ({ photoUrl, onClose }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '400px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontWeight: '900' }}>Aperçu Photo Profil</h3>
-          <button onClick={onClose} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X style={{ width: '20px', height: '20px' }} /></button>
-        </div>
+    <ReusableModal
+      onClose={onClose}
+      title="Aperçu Photo Profil"
+      headerBg="#0B1F3A"
+      headerIcon={<Camera style={{ width: '20px', height: '20px' }} />}
+      maxWidth="420px"
+    >
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {photoUrl ? (
-          <img src={photoUrl} alt="Photo" style={{ width: '100%', borderRadius: '12px', objectFit: 'cover' }} />
+          <img src={photoUrl} alt="Photo" style={{ width: '100%', maxHeight: '400px', borderRadius: '12px', objectFit: 'cover' }} />
         ) : (
-          <p>Aucune photo téléchargée</p>
+          <p style={{ color: '#64748b', fontWeight: '600' }}>Aucune photo téléchargée</p>
         )}
       </div>
-    </div>
+    </ReusableModal>
   );
 };
 
@@ -33,16 +36,49 @@ interface PackageModalProps {
 
 export const PackageModal: React.FC<PackageModalProps> = ({ activeModal, onClose, onNavigateToPlans }) => {
   const { pkg, type } = activeModal;
-  const docUrl = type === 'CV' ? pkg.cv_pdf : pkg.cover_letter_pdf;
+  const docUrl = type === 'CV' ? pkg.cv_pdf : (type === 'LM' ? pkg.cover_letter_pdf : pkg.email_txt);
+  const docxUrl = docUrl ? docUrl.replace(/\.pdf$/i, '.docx') : '';
+
+  const isAvailable = !!docUrl && docUrl !== '#';
+
+  const handleOpenDoc = (url: string) => {
+    if (!isAvailable) {
+      alert("Document en cours de rédaction ...");
+      return;
+    }
+    window.open(url, '_blank');
+  };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '480px', width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontWeight: '900', color: '#0B1F3A' }}>{type} - {pkg.job_offer.title}</h3>
-          <button onClick={onClose} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X style={{ width: '20px', height: '20px' }} /></button>
-        </div>
-
+    <ReusableModal
+      onClose={onClose}
+      title={`${type} - ${pkg.job_offer.title}`}
+      subtitle={`Entreprise: ${pkg.job_offer.company}`}
+      headerBg="#0B1F3A"
+      maxWidth="500px"
+      footerButtons={
+        <button
+          onClick={() => { onClose(); onNavigateToPlans(); }}
+          style={{
+            width: '100%',
+            backgroundColor: '#0F6E56',
+            color: '#ffffff',
+            fontWeight: '800',
+            padding: '12px',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
+          <CreditCard style={{ width: '16px', height: '16px' }} /> Payer / Recharger Crédits
+        </button>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
           <span style={{ fontSize: '12px', fontWeight: '800' }}>Status Paiement:</span>
           <span style={{ fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px', backgroundColor: pkg.payment_status === 'approuved' ? '#dcfce7' : '#fef3c7', color: pkg.payment_status === 'approuved' ? '#166534' : '#92400e' }}>
@@ -54,19 +90,56 @@ export const PackageModal: React.FC<PackageModalProps> = ({ activeModal, onClose
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-          <button onClick={() => window.open(docUrl, '_blank')} style={{ width: '100%', backgroundColor: '#0B1F3A', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <Eye style={{ width: '16px', height: '16px' }} /> Voir le document
-          </button>
-          <button onClick={() => window.open(docUrl, '_blank')} style={{ width: '100%', border: '2px solid #0B1F3A', backgroundColor: 'transparent', color: '#0B1F3A', fontWeight: '800', padding: '12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <Download style={{ width: '16px', height: '16px' }} /> Télécharger le document
-          </button>
-          <button onClick={() => { onClose(); onNavigateToPlans(); }} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '800', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <CreditCard style={{ width: '16px', height: '16px' }} /> Payer / Recharger Crédits
-          </button>
-        </div>
+        {!isAvailable ? (
+          <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fef3c7', borderRadius: '8px', color: '#92400e', fontWeight: '800' }}>
+            Document en cours de rédaction ...
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button
+              onClick={() => handleOpenDoc(docUrl)}
+              style={{
+                width: '100%',
+                backgroundColor: '#0B1F3A',
+                color: '#ffffff',
+                fontWeight: '800',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              <Eye style={{ width: '16px', height: '16px' }} /> Voir / Télécharger le PDF
+            </button>
+            {(type === 'CV' || type === 'LM') && (
+              <button
+                onClick={() => handleOpenDoc(docxUrl)}
+                style={{
+                  width: '100%',
+                  border: '2px solid #185FA5',
+                  backgroundColor: '#f0f9ff',
+                  color: '#185FA5',
+                  fontWeight: '800',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <Download style={{ width: '16px', height: '16px' }} /> Ouvrir avec Word (.docx)
+              </button>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </ReusableModal>
   );
 };
 
@@ -79,9 +152,20 @@ interface ExpModalProps {
 
 export const ExperienceModal: React.FC<ExpModalProps> = ({ expForm, setExpForm, onClose, onSave }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: 0, fontWeight: '900' }}>Expérience Professionnelle</h3>
+    <ReusableModal
+      onClose={onClose}
+      title="Expérience Professionnelle"
+      headerBg="#185FA5"
+      headerIcon={<Briefcase style={{ width: '20px', height: '20px' }} />}
+      maxWidth="520px"
+      footerButtons={
+        <>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontWeight: '700', cursor: 'pointer' }}>Annuler</button>
+          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>Enregistrer</button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input type="text" placeholder="Poste occupé *" value={expForm.title} onChange={e => setExpForm({...expForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Structure *" value={expForm.company} onChange={e => setExpForm({...expForm, company: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Secteur d'activité *" value={expForm.industry} onChange={e => setExpForm({...expForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
@@ -93,12 +177,8 @@ export const ExperienceModal: React.FC<ExpModalProps> = ({ expForm, setExpForm, 
         </div>
         {!expForm.is_current && <input type="date" value={expForm.end_date || ''} onChange={e => setExpForm({...expForm, end_date: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />}
         <input type="text" placeholder="Compétences acquises" value={expForm.skills_acquired} onChange={e => setExpForm({...expForm, skills_acquired: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
-          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
-        </div>
       </div>
-    </div>
+    </ReusableModal>
   );
 };
 
@@ -112,9 +192,20 @@ interface CertModalProps {
 
 export const CertificationModal: React.FC<CertModalProps> = ({ certForm, setCertForm, setCertFile, onClose, onSave }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: 0, fontWeight: '900' }}>Certificat & Attestation</h3>
+    <ReusableModal
+      onClose={onClose}
+      title="Certificat & Attestation"
+      headerBg="#185FA5"
+      headerIcon={<Award style={{ width: '20px', height: '20px' }} />}
+      maxWidth="520px"
+      footerButtons={
+        <>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontWeight: '700', cursor: 'pointer' }}>Annuler</button>
+          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>Enregistrer</button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input type="text" placeholder="Libellé du certificat *" value={certForm.title} onChange={e => setCertForm({...certForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="number" placeholder="Année *" value={certForm.year} onChange={e => setCertForm({...certForm, year: parseInt(e.target.value) || 2025})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Institution *" value={certForm.institution} onChange={e => setCertForm({...certForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
@@ -124,12 +215,8 @@ export const CertificationModal: React.FC<CertModalProps> = ({ certForm, setCert
           <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Certificat PDF (Optionnel - Google Drive)</label>
           <input type="file" accept="application/pdf" onChange={e => setCertFile(e.target.files ? e.target.files[0] : null)} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
-          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
-        </div>
       </div>
-    </div>
+    </ReusableModal>
   );
 };
 
@@ -143,9 +230,20 @@ interface EduModalProps {
 
 export const EducationModal: React.FC<EduModalProps> = ({ eduForm, setEduForm, setEduFile, onClose, onSave }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: 0, fontWeight: '900' }}>Diplôme</h3>
+    <ReusableModal
+      onClose={onClose}
+      title="Diplôme"
+      headerBg="#185FA5"
+      headerIcon={<GraduationCap style={{ width: '20px', height: '20px' }} />}
+      maxWidth="520px"
+      footerButtons={
+        <>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontWeight: '700', cursor: 'pointer' }}>Annuler</button>
+          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>Enregistrer</button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input type="text" placeholder="Libellé du diplôme *" value={eduForm.title} onChange={e => setEduForm({...eduForm, title: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="number" placeholder="Année *" value={eduForm.year} onChange={e => setEduForm({...eduForm, year: parseInt(e.target.value) || 2024})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Institution *" value={eduForm.institution} onChange={e => setEduForm({...eduForm, institution: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
@@ -156,12 +254,8 @@ export const EducationModal: React.FC<EduModalProps> = ({ eduForm, setEduForm, s
           <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', marginBottom: '4px' }}>Diplôme PDF (Optionnel - Google Drive)</label>
           <input type="file" accept="application/pdf" onChange={e => setEduFile(e.target.files ? e.target.files[0] : null)} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
-          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
-        </div>
       </div>
-    </div>
+    </ReusableModal>
   );
 };
 
@@ -174,19 +268,26 @@ interface ProjModalProps {
 
 export const ProjectModal: React.FC<ProjModalProps> = ({ projForm, setProjForm, onClose, onSave }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '16px', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: 0, fontWeight: '900' }}>Projet</h3>
+    <ReusableModal
+      onClose={onClose}
+      title="Projet"
+      headerBg="#185FA5"
+      headerIcon={<FolderPlus style={{ width: '20px', height: '20px' }} />}
+      maxWidth="520px"
+      footerButtons={
+        <>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontWeight: '700', cursor: 'pointer' }}>Annuler</button>
+          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>Enregistrer</button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input type="text" placeholder="Nom du projet *" value={projForm.name} onChange={e => setProjForm({...projForm, name: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Secteur d'activité *" value={projForm.industry} onChange={e => setProjForm({...projForm, industry: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="text" placeholder="Bénéficiaire" value={projForm.beneficiary} onChange={e => setProjForm({...projForm, beneficiary: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <input type="url" placeholder="Lien d'hébergement" value={projForm.link_url} onChange={e => setProjForm({...projForm, link_url: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
         <textarea placeholder="Description" value={projForm.description} onChange={e => setProjForm({...projForm, description: e.target.value})} style={{ padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px' }}></textarea>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>Annuler</button>
-          <button onClick={onSave} style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#185FA5', color: '#fff', border: 'none' }}>Enregistrer</button>
-        </div>
       </div>
-    </div>
+    </ReusableModal>
   );
 };

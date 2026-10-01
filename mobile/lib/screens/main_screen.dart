@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../components/loader_showcase_dialog.dart';
 import 'tabs/dashboard_tab.dart';
 import 'tabs/create_application_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -42,26 +43,49 @@ class _MainTabScreenState extends State<MainTabScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text(
-          'Luka Mosala SaaS',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        backgroundColor: Colors.black,
+        elevation: 2,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/logo_black.png',
+              height: 38,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, color: Colors.amber),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Luka Mosala',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Loaders & Code Source',
+            icon: const Icon(Icons.animation, color: Colors.amber),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const LoaderShowcaseDialog(),
+              );
+            },
+          ),
           Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF185FA5),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
-                const Icon(Icons.stars, color: Colors.amber, size: 18),
-                const SizedBox(width: 6),
+                const Icon(Icons.stars, color: Colors.amber, size: 16),
+                const SizedBox(width: 4),
                 Text(
-                  '$_creditsRemaining Crédit(s)',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  '$_creditsRemaining CR',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                 ),
               ],
             ),
