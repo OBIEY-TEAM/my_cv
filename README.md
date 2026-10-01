@@ -7,9 +7,22 @@ La plateforme repose sur une architecture moderne intégrant l'intelligence arti
 
 ## Architecture & Technologies
 - **Backend API REST** : Python / Django, Django REST Framework, Groq Cloud API (Modèles LLM Llama3/Mixtral), ReportLab (Génération PDF), PostgreSQL / SQLite.
-- **Frontend Web** : TypeScript, React, Vite, Tailwind CSS / UI Responsive.
-- **Application Mobile** : Dart, Flutter (Android & iOS).
+- **Frontend Web** : TypeScript, React, Vite, Tailwind CSS / UI Responsive. Architecture modulaire basée sur des composants et services réutilisables.
+- **Application Mobile** : Dart, Flutter (Android & iOS). Architecture modulaire organisée en écrans (`screens/`), onglets (`tabs/`), et services API (`services/`).
 - **Services Fintech & Stockage** : Intégration Airtel Money (préfixe `05`), MTN Mobile Money (préfixe `06`), Google Drive / Cloudinary pour les pièces jointes (diplômes, certifications).
+
+## Sécurité & Déploiement (Variables d'Environnement)
+> ⚠️ **Remarque Importante concernant les Clés API & Sécurité :**
+> Aucune clé d'API (Groq API, Cloudinary, Secret Key Django, Identifiants de base de données, etc.) ne doit être codée en dur dans le code source ou dans les fichiers de configuration versionnés.
+>
+> Lors du déploiement sur **Render**, **Docker** ou tout autre hébergeur cloud :
+> 1. Définissez les clés API via le panneau de configuration des variables d'environnement de l'hébergeur.
+> 2. Variables requises :
+>    - `GROQ_API_KEY` : Clé d'API Groq Cloud pour la génération LLM.
+>    - `GROQ_MODEL` : Modèle sélectionné (ex: `openai/gpt-oss-20b` ou `llama3-70b-8192`).
+>    - `SECRET_KEY` : Clé secrète Django.
+>    - `DATABASE_URL` / `SUPABASE_DATABASE_URL` : URL de connexion PostgreSQL.
+>    - `CLOUDINARY_URL`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` : Identifiants Cloudinary pour l'hébergement des médias.
 
 ## Fonctionnalités Principales
 1. **Génération Intelligente de Dossiers** : Traitement d'offres d'emploi (texte ou lien URL) et génération instantanée de CV 1P, Lettre de Motivation 1P et Email de candidature.

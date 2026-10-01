@@ -23,7 +23,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY:-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}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
       - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-lukamosala}
     depends_on:
