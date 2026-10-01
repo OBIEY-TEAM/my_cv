@@ -127,11 +127,33 @@ class ApplicationPackageUpdateContentView(generics.GenericAPIView):
         lm_text = request.data.get('lm_text')
         email_text = request.data.get('email_text') or request.data.get('email_body')
 
+        # Calculate credit cost: 1 credit per item modified (CV, LM, EMAIL)
+        items_modified_count = 0
+        if cv_text is not None and cv_text != package.cv_text:
+            items_modified_count += 1
+        if lm_text is not None and lm_text != package.lm_text:
+            items_modified_count += 1
+        if email_text is not None and email_text != package.email_text and email_text != package.email_body:
+            items_modified_count += 1
+
+        # If items were modified, verify and deduct credits
+        sub, _ = UserSubscription.objects.get_or_create(user=request.user)
+        if items_modified_count > 0:
+            if sub.credits_remaining < items_modified_count:
+                return Response({
+                    "error": f"Crédits insuffisants. Cette modification nécessite {items_modified_count} crédit(s). Vous disposez de {sub.credits_remaining} crédit(s)."
+                }, status=status.HTTP_402_PAYMENT_REQUIRED)
+
+            sub.credits_remaining = max(0, sub.credits_remaining - items_modified_count)
+            sub.save()
+
         updated_pkg = AIEngineService.update_and_regenerate_package(
             package, cv_text=cv_text, lm_text=lm_text, email_text=email_text
         )
 
-        return Response(ApplicationPackageSerializer(updated_pkg).data, status=status.HTTP_200_OK)
+        res_data = ApplicationPackageSerializer(updated_pkg).data
+        res_data['credits_remaining'] = sub.credits_remaining
+        return Response(res_data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
         return self.patch(request, pk)

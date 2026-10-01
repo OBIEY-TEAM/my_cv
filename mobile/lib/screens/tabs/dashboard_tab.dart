@@ -176,6 +176,15 @@ class _DashboardTabState extends State<DashboardTab> {
     final paymentStatus = pkg['payment_status'] ?? 'approuved';
     final processingStatus = pkg['processing_status'] ?? 'finalized';
 
+    final cvPdf = pkg['cv_pdf'] ?? '';
+    final lmPdf = pkg['cover_letter_pdf'] ?? '';
+    final emailTxt = pkg['email_txt'] ?? '';
+
+    bool isAvailable = true;
+    if (docType == 'CV' && (cvPdf == null || cvPdf.toString().isEmpty)) isAvailable = false;
+    if (docType == 'LM' && (lmPdf == null || lmPdf.toString().isEmpty)) isAvailable = false;
+    if (docType == 'EMAIL' && (emailTxt == null || emailTxt.toString().isEmpty)) isAvailable = false;
+
     ReusableModal.show(
       context: context,
       title: '$docType - ${offer['title'] ?? 'Poste'}',
@@ -206,23 +215,33 @@ class _DashboardTabState extends State<DashboardTab> {
             ],
           ),
           const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Aperçu du $docType en cours...')));
-            },
-            icon: const Icon(Icons.visibility),
-            label: Text('Voir $docType'),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B1F3A)),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Téléchargement du $docType en cours...')));
-            },
-            icon: const Icon(Icons.download),
-            label: Text('Télécharger $docType'),
-          ),
-          const SizedBox(height: 10),
+          if (!isAvailable)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(10)),
+              child: const Text('Document en cours de rédaction ...', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF92400E), fontWeight: FontWeight.bold)),
+            )
+          else ...[
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Aperçu du PDF $docType...')));
+              },
+              icon: const Icon(Icons.visibility),
+              label: Text('Voir / Télécharger PDF $docType'),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B1F3A)),
+            ),
+            const SizedBox(height: 10),
+            if (docType == 'CV' || docType == 'LM')
+              OutlinedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ouverture du fichier Word (.docx) $docType depuis Word...')));
+                },
+                icon: const Icon(Icons.description),
+                label: Text('Ouvrir avec Word (.docx)'),
+                style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF185FA5), side: const BorderSide(color: Color(0xFF185FA5))),
+              ),
+          ],
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);

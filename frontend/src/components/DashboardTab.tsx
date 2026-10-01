@@ -14,18 +14,19 @@ interface DashboardTabProps {
 const DEFAULT_DEMO_PACKAGE: ApplicationPackage = {
   id: 1,
   job_offer: {
-    id: 1,
     title: 'Ingénieur Logiciel Fullstack',
     company: 'Tech Congo',
     site_category: 'ACPE',
-    raw_text: 'Offre développeur fullstack',
-    source_type: 'TEXT'
+    abbreviation: 'DEV-FULLSTACK'
   },
   cv_text: 'Ingénieur Logiciel et Consultant IT expérimenté en Python, React, Flutter et Architecture Cloud.',
   lm_text: "A l'attention du Recruteur\nTech Congo\n\nOBJET : Candidature au poste d'Ingénieur Logiciel Fullstack\n\nMadame, Monsieur,\n\nC'est avec un grand intérêt que je vous présente ma candidature...",
   email_text: "Objet : Candidature au poste d'Ingénieur Logiciel Fullstack\n\nMadame, Monsieur,\n\nVeuillez trouver ci-joint mon dossier de candidature.\n\nCordialement,",
   cv_pdf: 'https://example.com/cv.pdf',
   cover_letter_pdf: 'https://example.com/lm.pdf',
+  email_txt: 'https://example.com/email.txt',
+  zip_package: 'https://example.com/package.zip',
+  created_at: new Date().toISOString(),
   payment_status: 'approuved',
   processing_status: 'finalized'
 };

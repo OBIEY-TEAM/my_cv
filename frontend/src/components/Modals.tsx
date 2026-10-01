@@ -36,7 +36,18 @@ interface PackageModalProps {
 
 export const PackageModal: React.FC<PackageModalProps> = ({ activeModal, onClose, onNavigateToPlans }) => {
   const { pkg, type } = activeModal;
-  const docUrl = type === 'CV' ? pkg.cv_pdf : pkg.cover_letter_pdf;
+  const docUrl = type === 'CV' ? pkg.cv_pdf : (type === 'LM' ? pkg.cover_letter_pdf : pkg.email_txt);
+  const docxUrl = docUrl ? docUrl.replace(/\.pdf$/i, '.docx') : '';
+
+  const isAvailable = !!docUrl && docUrl !== '#';
+
+  const handleOpenDoc = (url: string) => {
+    if (!isAvailable) {
+      alert("Document en cours de rédaction ...");
+      return;
+    }
+    window.open(url, '_blank');
+  };
 
   return (
     <ReusableModal
@@ -79,46 +90,54 @@ export const PackageModal: React.FC<PackageModalProps> = ({ activeModal, onClose
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button
-            onClick={() => window.open(docUrl, '_blank')}
-            style={{
-              width: '100%',
-              backgroundColor: '#0B1F3A',
-              color: '#ffffff',
-              fontWeight: '800',
-              padding: '12px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-          >
-            <Eye style={{ width: '16px', height: '16px' }} /> Voir le document
-          </button>
-          <button
-            onClick={() => window.open(docUrl, '_blank')}
-            style={{
-              width: '100%',
-              border: '2px solid #0B1F3A',
-              backgroundColor: 'transparent',
-              color: '#0B1F3A',
-              fontWeight: '800',
-              padding: '12px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-          >
-            <Download style={{ width: '16px', height: '16px' }} /> Télécharger le document
-          </button>
-        </div>
+        {!isAvailable ? (
+          <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fef3c7', borderRadius: '8px', color: '#92400e', fontWeight: '800' }}>
+            Document en cours de rédaction ...
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button
+              onClick={() => handleOpenDoc(docUrl)}
+              style={{
+                width: '100%',
+                backgroundColor: '#0B1F3A',
+                color: '#ffffff',
+                fontWeight: '800',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              <Eye style={{ width: '16px', height: '16px' }} /> Voir / Télécharger le PDF
+            </button>
+            {(type === 'CV' || type === 'LM') && (
+              <button
+                onClick={() => handleOpenDoc(docxUrl)}
+                style={{
+                  width: '100%',
+                  border: '2px solid #185FA5',
+                  backgroundColor: '#f0f9ff',
+                  color: '#185FA5',
+                  fontWeight: '800',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <Download style={{ width: '16px', height: '16px' }} /> Ouvrir avec Word (.docx)
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </ReusableModal>
   );

@@ -25,9 +25,18 @@ La plateforme repose sur une architecture moderne intégrant l'intelligence arti
 >    - `CLOUDINARY_URL`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` : Identifiants Cloudinary pour l'hébergement des médias.
 
 ## Fonctionnalités Principales
-1. **Génération Intelligente de Dossiers** : Traitement d'offres d'emploi (texte ou lien URL) et génération instantanée de CV 1P, Lettre de Motivation 1P et Email de candidature.
-2. **Profil Utilisateur Structuré** : Gestion centralisée des informations personnelles, expériences, certifications, diplômes et projets, synchronisés sur Web et Mobile.
-3. **Système de Crédits & Recharge Mobile Money** : Achat de recharges de crédits via Airtel Money (05) et Mobile Money MTN (06) avec tarification dynamique :
-   - 1 Crédit : 200 FCFA
-   - 5 Crédits : 500 FCFA
-   - 25 Crédits : 1000 FCFA
+1. **Génération Intelligente de Dossiers (Word & PDF)** : Traitement d'offres d'emploi (texte ou lien URL) et génération instantanée de CV 1P, Lettre de Motivation 1P et Email de candidature. Les fichiers Word (.docx) sont également générés par le backend pour permettre l'édition directe depuis Microsoft Word via l'application Web React et Mobile Flutter.
+2. **Gestion Cloudinary & Suppression Automatique** : Après modification des textes de candidature (CV, Lettre de motivation ou Email), les nouveaux fichiers PDF/DOCX sont sauvegardés et mis à jour sur Cloudinary en supprimant automatiquement l'ancien fichier enregistré via l'API Cloudinary.
+3. **Gestion des Documents en cours de rédaction** : Dans le cas où les fichiers (CV, LM, EMAIL) ne sont pas encore générés ni disponibles, un message d'alerte explicite "Document en cours de rédaction ..." est affiché lors du clic sur le document.
+4. **Profil Utilisateur & Actions Photo Mobile** : Sur l'application mobile Flutter, les boutons d'action de photo de profil permettent :
+   - **Uploader** : Choisir une image depuis la galerie.
+   - **Caméra** : Prendre une photo directement avec l'appareil.
+   - **Voir** : Consulter la photo de profil actuelle dans une modale.
+   *(Le bouton "Modifier" à été retiré sur la version mobile au profit d'actions claires).*
+5. **Règles de Crédits & Tarification** :
+   - **Création de candidature** : 1 candidature = 1 crédit.
+   - **Modifications** : 1 modification de CV, de LM ou d'Email coûte 1 crédit pour chaque élément modifié.
+   - **Tarifs des packs de crédits (Web & Mobile)** :
+     - 1 Crédit : 200 FCFA
+     - 5 Crédits : 500 FCFA
+     - 25 Crédits : 1000 FCFA

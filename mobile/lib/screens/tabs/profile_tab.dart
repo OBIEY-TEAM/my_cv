@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 import '../../components/reusable_modal.dart';
 
@@ -16,11 +17,61 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
   List<dynamic> _educations = [];
   List<dynamic> _projects = [];
   bool _isLoading = true;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _loadAll();
+  }
+
+  Future<void> _pickAndUploadPhoto(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Envoi de la photo de profil...')),
+        );
+        final res = await ApiService.uploadProfilePhoto(pickedFile.path);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res != null ? 'Photo mise à jour avec succès !' : 'Erreur lors de l\'envoi de la photo.')),
+        );
+        _loadAll();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
+      );
+    }
+  }
+
+  void _showPhotoPreview() {
+    ReusableModal.show(
+      context: context,
+      title: 'Aperçu Photo Profil',
+      headerBg: const Color(0xFF0B1F3A),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(
+              radius: 60,
+              backgroundColor: Color(0xFF185FA5),
+              child: Icon(Icons.person, color: Colors.white, size: 70),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${_info['first_name'] ?? 'Christ Dany'} ${_info['last_name'] ?? 'Obiey'}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0B1F3A)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _loadAll() async {
@@ -308,31 +359,25 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // 4 EXPLICIT PHOTO ACTION BUTTONS MATCHING WEB
+                  // 3 ACTION BUTTONS (UPLOADER, CAMERA, VOIR) WITHOUT MODIFIER
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modification de la photo...'))),
-                        icon: const Icon(Icons.edit, size: 14),
-                        label: const Text('Modifier', style: TextStyle(fontSize: 11)),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload de la photo...'))),
+                        onPressed: () => _pickAndUploadPhoto(ImageSource.gallery),
                         icon: const Icon(Icons.upload, size: 14),
                         label: const Text('Uploader', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B1F3A), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ouverture de la caméra...'))),
+                        onPressed: () => _pickAndUploadPhoto(ImageSource.camera),
                         icon: const Icon(Icons.camera_alt, size: 14),
                         label: const Text('Caméra', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6E56), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aperçu de la photo...'))),
+                        onPressed: _showPhotoPreview,
                         icon: const Icon(Icons.visibility, size: 14),
                         label: const Text('Voir', style: TextStyle(fontSize: 11)),
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
