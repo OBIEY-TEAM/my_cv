@@ -271,3 +271,108 @@ class AIEngineService:
             'email_body': email_body,
             'folder_path': str(base_dir)
         }
+
+    @staticmethod
+    def update_and_regenerate_package(package, cv_text=None, lm_text=None, email_text=None):
+        if cv_text is not None:
+            package.cv_text = cv_text
+        if lm_text is not None:
+            package.lm_text = lm_text
+        if email_text is not None:
+            package.email_text = email_text
+            package.email_body = email_text
+
+        user = package.user
+        job_offer = package.job_offer
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        # Get file paths from package or construct them
+        folder = Path(package.folder_path) if package.folder_path else (Path(settings.MEDIA_ROOT) / 'applications' / 'generated' / (job_offer.site_category or 'acpe') / (job_offer.title or 'POSTE'))
+        folder.mkdir(parents=True, exist_ok=True)
+
+        cv_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-CV.pdf")
+        lm_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-LM.pdf")
+        email_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-EMAIL.txt")
+        zip_path = str(folder / f"OBIEY-{job_offer.abbreviation or 'POSTE'}-CANDIDATURE.zip")
+
+        info = getattr(user, 'profile_info', None)
+        user_name = f"{info.first_name} {info.last_name}".strip() if info else (f"{user.first_name} {user.last_name}".strip() or "CHRIST DANY OBIEY")
+        user_phone = info.primary_phone if info and info.primary_phone else (profile.phone or "+242 06 613 01 18")
+
+        photo_path = None
+        if profile.cropped_photo and os.path.exists(profile.cropped_photo.path):
+            photo_path = profile.cropped_photo.path
+        elif os.path.exists('image/profile_cropped.png'):
+            photo_path = 'image/profile_cropped.png'
+
+        # Regenerate CV PDF with modified summary/text
+        cv_data = {
+            'name': user_name,
+            'title': f"{profile.title} | Spécialiste {job_offer.title or 'POSTE'}",
+            'location': profile.cities or "Brazzaville & Pointe-Noire, Congo",
+            'phone': user_phone,
+            'email': user.email or "obieydany@gmail.com",
+            'photo_path': photo_path,
+            'summary': package.cv_text[:300] if package.cv_text else "Consultant IT & Expert Fullstack.",
+            'experiences': [
+                {
+                    'role': 'Ingénieur Logiciel Fullstack',
+                    'company': 'NOISIM ENGINEERING',
+                    'dates': '2026 - Présent',
+                    'bullets': [package.cv_text[:120] if package.cv_text else 'Développement fullstack REST & Mobile']
+                }
+            ],
+            'skills': {
+                'Backend & Cloud': ['Python', 'Django REST', 'Docker'],
+                'Frontend & Mobile': ['Flutter', 'React', 'TypeScript']
+            },
+            'education': [{'degree': 'Licence Pro Systèmes & Réseaux', 'school': 'ESTAM', 'dates': '2020 - 2025'}],
+            'projects': [{'title': 'Luka Mosala SaaS', 'desc': 'Plateforme IA de candidature'}]
+        }
+        try:
+            PDFService.generate_cv_pdf(cv_data, cv_path)
+            package.cv_pdf = cv_path
+        except Exception as e:
+            pass
+
+        # Regenerate LM PDF with modified lm_text
+        lm_data = {
+            'name': user_name,
+            'location': profile.cities or "Brazzaville & Pointe-Noire, Congo",
+            'phone': user_phone,
+            'email': user.email or "obieydany@gmail.com",
+            'company_name': job_offer.company or "Société",
+            'job_title': job_offer.title or "Poste",
+            'city': 'Pointe-Noire, Congo',
+            'date': 'Octobre 2026',
+            'letter_body': package.lm_text or "Lettre de motivation"
+        }
+        try:
+            PDFService.generate_cover_letter_pdf(lm_data, lm_path)
+            package.cover_letter_pdf = lm_path
+        except Exception as e:
+            pass
+
+        # Rewrite Email file
+        try:
+            with open(email_path, 'w', encoding='utf-8') as f:
+                f.write(package.email_text or package.email_body or "")
+            package.email_txt = email_path
+        except Exception as e:
+            pass
+
+        # Update ZIP archive
+        try:
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                if os.path.exists(cv_path):
+                    zipf.write(cv_path, arcname=os.path.basename(cv_path))
+                if os.path.exists(lm_path):
+                    zipf.write(lm_path, arcname=os.path.basename(lm_path))
+                if os.path.exists(email_path):
+                    zipf.write(email_path, arcname=os.path.basename(email_path))
+            package.zip_package = zip_path
+        except Exception as e:
+            pass
+
+        package.save()
+        return package

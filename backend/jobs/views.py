@@ -111,3 +111,27 @@ class ApplicationPackageListView(generics.ListAPIView):
     def get_queryset(self):
         pkgs = ApplicationPackage.objects.filter(user=self.request.user).order_by('-created_at')
         return [check_resultat_folder_overrides(pkg, self.request.user) for pkg in pkgs]
+
+
+class ApplicationPackageUpdateContentView(generics.GenericAPIView):
+    serializer_class = ApplicationPackageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            package = ApplicationPackage.objects.get(pk=pk, user=request.user)
+        except ApplicationPackage.DoesNotExist:
+            return Response({"error": "Candidature non trouvée."}, status=status.HTTP_404_NOT_FOUND)
+
+        cv_text = request.data.get('cv_text')
+        lm_text = request.data.get('lm_text')
+        email_text = request.data.get('email_text') or request.data.get('email_body')
+
+        updated_pkg = AIEngineService.update_and_regenerate_package(
+            package, cv_text=cv_text, lm_text=lm_text, email_text=email_text
+        )
+
+        return Response(ApplicationPackageSerializer(updated_pkg).data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        return self.patch(request, pk)

@@ -119,11 +119,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', 'cloudinary://888993441467871:oE6J6qrx6jNyCRdGKRlInvoilSo@wgu6xpxq')
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', '')
 import cloudinary
 cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'wgu6xpxq'),
-    api_key=os.getenv('CLOUDINARY_API_KEY', '888993441467871'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET', 'oE6J6qrx6jNyCRdGKRlInvoilSo'),
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+    api_key=os.getenv('CLOUDINARY_API_KEY', ''),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', ''),
     secure=True
 )

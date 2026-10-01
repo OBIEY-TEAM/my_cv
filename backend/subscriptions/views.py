@@ -33,6 +33,23 @@ class InitiatePaymentView(APIView):
         except SubscriptionPlan.DoesNotExist:
             return Response({"error": "Plan d'abonnement introuvable."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Validation du prefixe du numero de telephone
+        clean_phone = ''.join(filter(str.isdigit, phone_number))
+        if payment_method == 'AIRTEL_MONEY':
+            # Doit commencer par 05 (apres d'éventuels indicatifs pays comme 24205...)
+            if not clean_phone.startswith('05') and not clean_phone.startswith('24205'):
+                return Response(
+                    {"error": "Le numéro Airtel Money doit commencer par 05 (ex: 05XXXXXXX ou +24205XXXXXXX)."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        elif payment_method == 'MTN_MOMO':
+            # Doit commencer par 06 (apres d'éventuels indicatifs pays comme 24206...)
+            if not clean_phone.startswith('06') and not clean_phone.startswith('24206'):
+                return Response(
+                    {"error": "Le numéro MTN Mobile Money doit commencer par 06 (ex: 06XXXXXXX ou +24206XXXXXXX)."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         tx_ref = f"TX-{uuid.uuid4().hex[:10].upper()}"
 
         tx = Transaction.objects.create(

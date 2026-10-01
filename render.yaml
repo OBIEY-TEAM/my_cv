@@ -21,7 +21,7 @@ services:
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: GROQ_API_KEY
-        value: "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"
+        sync: false
       - key: GROQ_MODEL
         value: "openai/gpt-oss-20b"
       - key: DJANGO_SETTINGS_MODULE
