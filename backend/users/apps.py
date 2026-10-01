@@ -8,12 +8,12 @@ def create_default_user(sender, **kwargs):
 
     try:
         plan, _ = SubscriptionPlan.objects.get_or_create(
-            code='PACK_5',
+            code='CREDIT_5',
             defaults={
-                'name': 'Formule Pack 5 Candidatures',
-                'price_fcfa': 2000,
+                'name': 'Formule de 5 Crédits à 500 FRS',
+                'price_fcfa': 500,
                 'credits_included': 5,
-                'description': '5 candidatures générées sur mesure.'
+                'description': 'Une candidature complète ou CV uniquement vaut 1 crédit, une modification de candidature vaut 1 crédit.'
             }
         )
 

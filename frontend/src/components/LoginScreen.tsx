@@ -49,13 +49,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div style={{ minHeight: '100vh', backgroundColor: '#0A192F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '440px', backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', backgroundColor: '#185FA5', borderRadius: '14px', marginBottom: '12px' }}>
-            <Briefcase style={{ width: '30px', height: '30px', color: '#ffffff' }} />
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '16px', overflow: 'hidden', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <img src="/logo_white.jpg" alt="Logo Web" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
-          <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Luka Mosala SaaS</h1>
+          <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Luka Mosala Web</h1>
           <p style={{ fontSize: '13px', color: '#444441', fontWeight: '600', marginTop: '6px' }}>
             Générateur de dossiers de candidature sur mesure (Généré par Luka Mossala).
           </p>
+          {authLoading && (
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+              <img src="/loader_white.gif" alt="Chargement..." style={{ width: '48px', height: '48px' }} />
+            </div>
+          )}
         </div>
 
         {/* TOGGLE BETWEEN LOGIN & REGISTER */}

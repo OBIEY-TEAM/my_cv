@@ -234,10 +234,15 @@ class _DashboardTabState extends State<DashboardTab> {
             if (docType == 'CV' || docType == 'LM')
               OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ouverture du fichier Word (.docx) $docType depuis Word...')));
+                  final docxFile = docType == 'CV'
+                      ? (pkg['cv_docx'] ?? (cvPdf.toString().endsWith('.pdf') ? cvPdf.toString().replaceAll(RegExp(r'\.pdf$', caseSensitive: false), '.docx') : cvPdf))
+                      : (pkg['cover_letter_docx'] ?? (lmPdf.toString().endsWith('.pdf') ? lmPdf.toString().replaceAll(RegExp(r'\.pdf$', caseSensitive: false), '.docx') : lmPdf));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Ouverture/Téléchargement Word (.docx) : $docxFile')),
+                  );
                 },
                 icon: const Icon(Icons.description),
-                label: Text('Ouvrir avec Word (.docx)'),
+                label: const Text('Ouvrir avec Word (.docx)'),
                 style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF185FA5), side: const BorderSide(color: Color(0xFF185FA5))),
               ),
           ],
