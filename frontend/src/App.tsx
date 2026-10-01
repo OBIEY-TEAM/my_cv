@@ -413,7 +413,7 @@ export default function App() {
       setSourceUrl('');
       await fetchData();
       setActiveTab('dashboard');
-      alert("Document / Candidature généré(e) avec succès par Ollama LLM !");
+      alert("Document / Candidature généré(e) avec succès par Groq Cloud API !");
     } catch (e: any) {
       alert(e?.response?.data?.error || "Erreur lors de la génération.");
     } finally {
@@ -944,7 +944,7 @@ export default function App() {
               </div>
 
               <button onClick={handleGenerateApplication} disabled={isGenerating} style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
-                {isGenerating ? 'Génération par Ollama LLM en cours...' : (!jobText && !sourceUrl ? 'Générer le CV Uniquement (Sans Offre)' : 'Générer CV (1P), LM (1P) & Email')}
+                {isGenerating ? 'Génération par Groq Cloud AI en cours...' : (!jobText && !sourceUrl ? 'Générer le CV Uniquement (Sans Offre)' : 'Générer CV (1P), LM (1P) & Email')}
               </button>
             </div>
           </div>

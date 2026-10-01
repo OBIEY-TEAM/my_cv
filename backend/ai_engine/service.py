@@ -164,14 +164,14 @@ class AIEngineService:
                 {'title': 'Directeur Technique - FoncierChain', 'desc': '1er Prix au MIABE Hackathon 2026. Architecture logicielle complète.'}
             ]
 
-        # Appel Ollama LLM Agent pour rédiger le texte du CV, LM et Email
+        # Appel Groq Cloud LLM Agent pour rédiger le texte du CV, LM et Email
         import importlib.util
-        agent_ia_path = Path(settings.BASE_DIR).parent / "agent-ia" / "agent_ollama.py"
-        spec = importlib.util.spec_from_file_location("agent_ollama", agent_ia_path)
-        ollama_mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(ollama_mod)
+        agent_ia_path = Path(settings.BASE_DIR).parent / "agent-ia" / "agent_groq.py"
+        spec = importlib.util.spec_from_file_location("agent_groq", agent_ia_path)
+        groq_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(groq_mod)
 
-        agent = ollama_mod.OllamaCVAgent()
+        agent = groq_mod.GroqCVAgent()
 
         candidate_data = {
             "fullname": user_name,

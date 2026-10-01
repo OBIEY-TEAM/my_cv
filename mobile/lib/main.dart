@@ -1063,7 +1063,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
       widget.onGenerated();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Génération effectuée par Ollama LLM !')),
+          const SnackBar(content: Text('Génération effectuée par Groq Cloud AI !')),
         );
       }
     } else {
@@ -1118,7 +1118,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
               ElevatedButton.icon(
                 onPressed: _isGenerating ? null : _generate,
                 icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.auto_awesome),
-                label: Text(_isGenerating ? 'Génération Ollama...' : 'Générer (Ollama LLM)'),
+                label: Text(_isGenerating ? 'Génération Groq AI...' : 'Générer (Groq Cloud AI)'),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
               )
             ],
