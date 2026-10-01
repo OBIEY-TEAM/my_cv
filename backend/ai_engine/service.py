@@ -1,7 +1,6 @@
 import os
 import re
 import zipfile
-import base64
 import importlib
 from pathlib import Path
 from django.conf import settings
@@ -84,12 +83,6 @@ class AIEngineService:
         photo_path = None
         if user_profile.cropped_photo and os.path.exists(user_profile.cropped_photo.path):
             photo_path = user_profile.cropped_photo.path
-            try:
-                with open(photo_path, "rb") as pf:
-                    user_profile.photo_base64 = base64.b64encode(pf.read()).decode('utf-8')
-                    user_profile.save(update_fields=['photo_base64'])
-            except Exception as pe:
-                print(f"Error encoding photo to base64: {pe}")
         elif os.path.exists('image/profile_cropped.png'):
             photo_path = 'image/profile_cropped.png'
 

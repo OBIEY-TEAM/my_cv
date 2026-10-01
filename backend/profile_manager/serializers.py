@@ -13,6 +13,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name',
             'title', 'phone', 'cities', 'github_url', 'linkedin_url',
             'readme_content', 'original_photo', 'cropped_photo',
+            'original_photo_url', 'cropped_photo_url',
             'created_at', 'updated_at'
         )
 
