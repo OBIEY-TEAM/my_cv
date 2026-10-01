@@ -31,6 +31,104 @@ class _DashboardTabState extends State<DashboardTab> {
     widget.onRefresh();
   }
 
+  void _openEditModal(dynamic pkg) {
+    final offer = pkg['job_offer'] ?? {};
+    final cvCtrl = TextEditingController(text: pkg['cv_text'] ?? 'Résumé / Contenu du CV pour ${offer['title']}');
+    final lmCtrl = TextEditingController(text: pkg['lm_text'] ?? 'Corps de la lettre de motivation pour ${offer['title']}');
+    final emailCtrl = TextEditingController(text: pkg['email_text'] ?? pkg['email_body'] ?? 'Objet : Candidature\n\nMadame, Monsieur...');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Éditer - ${offer['title'] ?? 'Candidature'}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+                ],
+              ),
+              const Divider(),
+              const SizedBox(height: 8),
+
+              const Text('1. Contenu / Résumé CV', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: cvCtrl,
+                maxLines: 4,
+                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Texte du CV'),
+              ),
+              const SizedBox(height: 12),
+
+              const Text('2. Lettre de Motivation (LM)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: lmCtrl,
+                maxLines: 5,
+                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Texte de la LM'),
+              ),
+              const SizedBox(height: 12),
+
+              const Text('3. Email de Candidature', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: emailCtrl,
+                maxLines: 4,
+                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Texte de l\'Email'),
+              ),
+              const SizedBox(height: 20),
+
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final nav = Navigator.of(ctx);
+                  final success = await ApiService.updatePackageContent(pkg['id'], {
+                    'cv_text': cvCtrl.text,
+                    'lm_text': lmCtrl.text,
+                    'email_text': emailCtrl.text,
+                  });
+                  if (!mounted) return;
+                  nav.pop();
+                  if (success) {
+                    _loadPackages();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Contenu modifié et PDF régénéré par Luka Mossala !')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Erreur lors de la modification.')),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.save),
+                label: const Text('Enregistrer & Régénérer PDF', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F6E56),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _openDetailModal(dynamic pkg, String docType) {
     final offer = pkg['job_offer'] ?? {};
     final paymentStatus = pkg['payment_status'] ?? 'approuved';
@@ -198,6 +296,12 @@ class _DashboardTabState extends State<DashboardTab> {
                               onPressed: () => _openDetailModal(pkg, 'EMAIL'),
                               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
                               child: const Text('EMAIL', style: TextStyle(fontSize: 12)),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () => _openEditModal(pkg),
+                              icon: const Icon(Icons.edit, size: 14),
+                              label: const Text('Modifier', style: TextStyle(fontSize: 12)),
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD97706), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
                             ),
                             ElevatedButton(
                               onPressed: () => _openDetailModal(pkg, 'Paiement'),

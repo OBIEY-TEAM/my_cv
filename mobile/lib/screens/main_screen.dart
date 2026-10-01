@@ -77,7 +77,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Candidatures'),
-          BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'Générer'),
+          BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Luka Mosala'),
           BottomNavigationBarItem(icon: Icon(Icons.badge), label: 'Profil'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Abonnement'),
         ],

@@ -33,6 +33,21 @@ export class ApiService {
     }
   }
 
+  static async registerByPhone(phone: string, password: string, confirmPassword?: string) {
+    const res = await axios.post('/api/auth/register/', {
+      phone_number: phone,
+      username: phone,
+      password: password,
+      password_confirm: confirmPassword || password
+    });
+    return res.data.access;
+  }
+
+  static async updatePackageContent(pkgId: number, content: { cv_text?: string; lm_text?: string; email_text?: string }) {
+    const res = await axios.patch(`/api/jobs/packages/${pkgId}/update-content/`, content);
+    return res.data;
+  }
+
   static async fetchAllProfileData() {
     const [profRes, infoRes, subRes, pkgsRes, expRes, certRes, eduRes, projRes, plansRes] = await Promise.all([
       axios.get('/api/profile/'),

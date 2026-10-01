@@ -29,7 +29,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
       _textController.clear();
       widget.onGenerated();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Génération effectuée par Groq Cloud AI !')),
+        const SnackBar(content: Text('Génération effectuée par Luka Mossala !')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +50,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Générer un Dossier Sur Mesure',
+              const Text('Générer par Luka Mossala',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
               const SizedBox(height: 6),
               const Text(
@@ -80,8 +80,8 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _isGenerating ? null : _generate,
-                icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.auto_awesome),
-                label: Text(_isGenerating ? 'Génération Groq AI...' : 'Générer (Groq Cloud AI)'),
+                icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.post_add),
+                label: Text(_isGenerating ? 'Génération par Luka Mossala...' : 'Générer par Luka Mossala'),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
               )
             ],

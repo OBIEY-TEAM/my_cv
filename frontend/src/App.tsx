@@ -219,6 +219,7 @@ export default function App() {
             packages={packages}
             onOpenCreate={() => setActiveTab('create')}
             onOpenPkgModal={(pkg, type) => setActivePkgModal({ pkg, type })}
+            onRefresh={fetchData}
           />
         )}
 

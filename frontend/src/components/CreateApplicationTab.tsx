@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FilePlus } from 'lucide-react';
 import { ApiService } from '../services/api';
 
 interface CreateApplicationTabProps {
@@ -16,7 +17,7 @@ export const CreateApplicationTab: React.FC<CreateApplicationTabProps> = ({ onSu
       await ApiService.generateApplication(jobText, sourceUrl);
       setJobText('');
       setSourceUrl('');
-      alert("Document / Candidature généré(e) avec succès par Groq Cloud API !");
+      alert("Document / Candidature généré(e) avec succès par Luka Mossala !");
       onSuccess();
     } catch (e: any) {
       alert(e?.response?.data?.error || "Erreur lors de la génération.");
@@ -27,7 +28,7 @@ export const CreateApplicationTab: React.FC<CreateApplicationTabProps> = ({ onSu
 
   return (
     <div style={{ maxWidth: '768px', margin: '0 auto', backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
-      <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0B1F3A', margin: '0 0 8px' }}>Générer un Dossier Sur Mesure</h2>
+      <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0B1F3A', margin: '0 0 8px' }}>Générer par Luka Mossala</h2>
       <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
         Renseignez l'offre d'emploi pour générer le CV (1P), la LM (1P) et l'Email, ou laissez vide pour la <strong>rédaction du CV uniquement</strong>.
       </p>
@@ -44,8 +45,9 @@ export const CreateApplicationTab: React.FC<CreateApplicationTabProps> = ({ onSu
           <textarea rows={6} placeholder="Collez ici l'offre d'emploi (laisser vide pour générer un CV seul)..." value={jobText} onChange={e => setJobText(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }}></textarea>
         </div>
 
-        <button onClick={handleGenerate} disabled={isGenerating} style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
-          {isGenerating ? 'Génération par Groq Cloud AI en cours...' : (!jobText && !sourceUrl ? 'Générer le CV Uniquement (Sans Offre)' : 'Générer CV (1P), LM (1P) & Email')}
+        <button onClick={handleGenerate} disabled={isGenerating} style={{ width: '100%', backgroundColor: '#185FA5', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <FilePlus style={{ width: '20px', height: '20px' }} />
+          <span>{isGenerating ? 'Génération par Luka Mossala en cours...' : (!jobText && !sourceUrl ? 'Générer le CV Uniquement (Luka Mossala)' : 'Générer CV, LM & Email par Luka Mossala')}</span>
         </button>
       </div>
     </div>

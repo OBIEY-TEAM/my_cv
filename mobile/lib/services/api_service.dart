@@ -11,6 +11,43 @@ class ApiService {
         if (authToken != null) 'Authorization': 'Bearer $authToken',
       };
 
+  static Future<bool> registerByPhone(String phone, String password, String confirmPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/register/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone_number': phone,
+          'username': phone,
+          'password': password,
+          'password_confirm': confirmPassword,
+        }),
+      );
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        authToken = data['access'];
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Register error: $e');
+    }
+    return false;
+  }
+
+  static Future<bool> updatePackageContent(int pkgId, Map<String, dynamic> data) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/api/jobs/packages/$pkgId/update-content/'),
+        headers: headers,
+        body: jsonEncode(data),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Update package content error: $e');
+    }
+    return false;
+  }
+
   static Future<bool> login(String username, String password) async {
     try {
       final response = await http.post(
