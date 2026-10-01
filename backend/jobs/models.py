@@ -47,6 +47,10 @@ class ApplicationPackage(models.Model):
     offer_pdf = models.FileField(upload_to='applications/offer/', blank=True, null=True)
     zip_package = models.FileField(upload_to='applications/zip/', blank=True, null=True)
 
+    cv_text = models.TextField(blank=True, default='', help_text="Texte du CV généré par Ollama LLM")
+    lm_text = models.TextField(blank=True, default='', help_text="Texte de la LM générée par Ollama LLM")
+    email_text = models.TextField(blank=True, default='', help_text="Texte de l'Email généré par Ollama LLM")
+
     email_subject = models.CharField(max_length=255, blank=True, default='')
     email_body = models.TextField(blank=True, default='')
 

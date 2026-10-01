@@ -1049,15 +1049,12 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
   bool _isGenerating = false;
 
   void _generate() async {
-    if (_urlController.text.isEmpty && _textController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez spécifier l\'URL ou le texte de l\'offre.')),
-      );
-      return;
-    }
+    final rawTxt = _textController.text.isEmpty && _urlController.text.isEmpty
+        ? "RÉDACTION CV UNIQUEMENT SANS OFFRE D'EMPLOI"
+        : _textController.text;
 
     setState(() => _isGenerating = true);
-    final success = await ApiService.generateApplication(_textController.text, _urlController.text);
+    final success = await ApiService.generateApplication(rawTxt, _urlController.text);
     setState(() => _isGenerating = false);
 
     if (success) {
@@ -1066,7 +1063,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
       widget.onGenerated();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Candidature sur mesure générée avec succès !')),
+          const SnackBar(content: Text('Génération effectuée par Ollama LLM !')),
         );
       }
     } else {
@@ -1092,11 +1089,16 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
             children: [
               const Text('Générer un Dossier Sur Mesure',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+              const SizedBox(height: 6),
+              const Text(
+                'Laissez les champs vides pour générer le CV uniquement (sans offre d\'emploi).',
+                style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: _urlController,
                 decoration: const InputDecoration(
-                  labelText: 'Lien URL de l\'offre',
+                  labelText: 'Lien URL de l\'offre (Optionnel)',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.link),
                 ),
@@ -1108,7 +1110,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
                 controller: _textController,
                 maxLines: 4,
                 decoration: const InputDecoration(
-                  labelText: 'Texte brut de l\'offre',
+                  labelText: 'Texte brut de l\'offre (Optionnel)',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -1116,7 +1118,7 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
               ElevatedButton.icon(
                 onPressed: _isGenerating ? null : _generate,
                 icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.auto_awesome),
-                label: Text(_isGenerating ? 'Génération en cours...' : 'Lancer la Génération IA'),
+                label: Text(_isGenerating ? 'Génération Ollama...' : 'Générer (Ollama LLM)'),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
               )
             ],

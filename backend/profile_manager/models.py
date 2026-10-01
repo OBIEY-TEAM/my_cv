@@ -13,6 +13,7 @@ class Profile(models.Model):
 
     original_photo = models.ImageField(upload_to='profiles/original/', blank=True, null=True)
     cropped_photo = models.ImageField(upload_to='profiles/cropped/', blank=True, null=True)
+    photo_base64 = models.TextField(blank=True, default="", help_text="Photo de profil encodée en Base64")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: luka_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lukamosala}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: luka_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: luka_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-lukamosala}
+    depends_on:
+      - db
+      - ollama
+    volumes:
+      - ./backend:/app
+      - ./agent-ia:/app/agent-ia
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: luka_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  ollama_data:
