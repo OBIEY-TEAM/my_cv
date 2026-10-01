@@ -3,9 +3,9 @@ from django.contrib.auth.models import User
 
 class SubscriptionPlan(models.Model):
     PLAN_TYPES = (
-        ('FREE', 'Formule Découverte (Gratuit)'),
-        ('PACK_5', 'Formule Pack 5 Candidatures'),
-        ('UNLIMITED', 'Formule Illimitée Mensuelle'),
+        ('CREDIT_1', '1 Crédit'),
+        ('CREDIT_5', '5 Crédits'),
+        ('CREDIT_25', '25 Crédits'),
     )
 
     code = models.CharField(max_length=20, choices=PLAN_TYPES, unique=True)

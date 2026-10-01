@@ -195,10 +195,11 @@ export default function App() {
   const [packages, setPackages] = useState<ApplicationPackage[]>([]);
   const [subscription, setSubscription] = useState<SubscriptionData>({ credits_remaining: 1, plan: null });
 
-  const [selectedPlan, setSelectedPlan] = useState<number>(2);
-  const [paymentMethod, setPaymentMethod] = useState<'AIRTEL_MONEY' | 'MTN_MOMO' | 'PAYDUNYA'>('AIRTEL_MONEY');
-  const [phoneNumber, setPhoneNumber] = useState('+242066130118');
+  const [selectedPlan, setSelectedPlan] = useState<number>(1);
+  const [paymentMethod, setPaymentMethod] = useState<'AIRTEL_MONEY' | 'MTN_MOMO'>('AIRTEL_MONEY');
+  const [phoneNumber, setPhoneNumber] = useState('056130118');
   const [paymentSuccessMsg, setPaymentSuccessMsg] = useState<string | null>(null);
+  const [paymentErrorMsg, setPaymentErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -423,16 +424,31 @@ export default function App() {
 
   const handlePayment = async () => {
     setPaymentSuccessMsg(null);
+    setPaymentErrorMsg(null);
+
+    // Dynamic phone prefix check
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    if (paymentMethod === 'AIRTEL_MONEY' && !cleanPhone.startsWith('05') && !cleanPhone.startsWith('24205')) {
+      setPaymentErrorMsg("Pour Airtel Money, le numéro doit commencer par 05 (ex: 05XXXXXXX).");
+      return;
+    }
+    if (paymentMethod === 'MTN_MOMO' && !cleanPhone.startsWith('06') && !cleanPhone.startsWith('24206')) {
+      setPaymentErrorMsg("Pour Mobile Money (MTN), le numéro doit commencer par 06 (ex: 06XXXXXXX).");
+      return;
+    }
+
     try {
       await axios.post('/api/subscriptions/pay/', {
         plan_id: selectedPlan,
         payment_method: paymentMethod,
         phone_number: phoneNumber
       });
-      setPaymentSuccessMsg(`Paiement réussi via ${paymentMethod} ! Vos crédits ont été rechargés.`);
+      const selectedPlanObj = availablePlans.find(p => p.id === selectedPlan);
+      setPaymentSuccessMsg(`Achat réussi via ${paymentMethod === 'AIRTEL_MONEY' ? 'Airtel Money' : 'Mobile Money (MTN)'} ! Vos ${selectedPlanObj?.applications_limit || ''} crédits ont été rechargés.`);
       await fetchData();
     } catch (e: any) {
-      alert("Échec de la transaction Fintech Mobile Money.");
+      const errMsg = e?.response?.data?.error || "Échec de la transaction Fintech Mobile Money.";
+      setPaymentErrorMsg(errMsg);
     }
   };
 
@@ -987,15 +1003,52 @@ export default function App() {
             </div>
 
             <div style={{ backgroundColor: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #cbd5e1', maxWidth: '512px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Mobile Money (Airtel / MTN / PayDunya)</h3>
-              <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value as any)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }}>
-                <option value="AIRTEL_MONEY">Airtel Money Congo</option>
-                <option value="MTN_MOMO">MTN Mobile Money Congo</option>
-                <option value="PAYDUNYA">PayDunya / Carte</option>
-              </select>
-              <input type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px' }} />
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0B1F3A', margin: 0 }}>Mode de Paiement</h3>
+
+              {paymentErrorMsg && (
+                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', padding: '12px', borderRadius: '10px', color: '#991b1b', fontSize: '13px', fontWeight: '800' }}>
+                  {paymentErrorMsg}
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '8px' }}>Sélectionnez le mode de paiement :</label>
+                <select
+                  value={paymentMethod}
+                  onChange={e => {
+                    const method = e.target.value as 'AIRTEL_MONEY' | 'MTN_MOMO';
+                    setPaymentMethod(method);
+                    setPhoneNumber(method === 'AIRTEL_MONEY' ? '05' : '06');
+                  }}
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '14px', fontWeight: '700' }}
+                >
+                  <option value="AIRTEL_MONEY">Airtel Money (Entrer numéro commençant par 05)</option>
+                  <option value="MTN_MOMO">Mobile Money MTN (Entrer numéro commençant par 06)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0B1F3A', marginBottom: '8px' }}>
+                  {paymentMethod === 'AIRTEL_MONEY' ? 'Numéro Airtel Money (Débute par 05)' : 'Numéro Mobile Money MTN (Débute par 06)'}
+                </label>
+                <input
+                  type="text"
+                  value={phoneNumber}
+                  placeholder={paymentMethod === 'AIRTEL_MONEY' ? '05XXXXXXX' : '06XXXXXXX'}
+                  onChange={e => setPhoneNumber(e.target.value)}
+                  style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '10px', fontSize: '15px', fontWeight: '700' }}
+                />
+              </div>
+
+              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#334155' }}>Montant à payer :</span>
+                <span style={{ fontSize: '20px', fontWeight: '900', color: '#185FA5' }}>
+                  {availablePlans.find(p => p.id === selectedPlan)?.price_fcfa || 0} FCFA
+                </span>
+              </div>
+
               <button onClick={handlePayment} style={{ width: '100%', backgroundColor: '#0F6E56', color: '#ffffff', fontWeight: '900', fontSize: '16px', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
-                Payer et recharger
+                Acheter ({availablePlans.find(p => p.id === selectedPlan)?.price_fcfa || 0} FCFA)
               </button>
             </div>
           </div>
