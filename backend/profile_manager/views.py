@@ -141,9 +141,11 @@ class CertificationViewSet(viewsets.ModelViewSet):
         cert = serializer.save(user=self.request.user)
         if 'pdf_file' in self.request.FILES:
             file_obj = self.request.FILES['pdf_file']
-            drive_url = GoogleDriveService.upload_pdf_file(file_obj, "certifications")
-            if drive_url:
-                cert.pdf_url = drive_url
+            c_url = CloudinaryService.upload_pdf(file_obj, folder="certifications")
+            if not c_url:
+                c_url = GoogleDriveService.upload_pdf_file(file_obj, "certifications")
+            if c_url:
+                cert.pdf_url = c_url
                 cert.save()
         CommandesSyncService.sync_user_commandes(self.request.user)
 
@@ -151,9 +153,11 @@ class CertificationViewSet(viewsets.ModelViewSet):
         cert = serializer.save()
         if 'pdf_file' in self.request.FILES:
             file_obj = self.request.FILES['pdf_file']
-            drive_url = GoogleDriveService.upload_pdf_file(file_obj, "certifications")
-            if drive_url:
-                cert.pdf_url = drive_url
+            c_url = CloudinaryService.upload_pdf(file_obj, folder="certifications")
+            if not c_url:
+                c_url = GoogleDriveService.upload_pdf_file(file_obj, "certifications")
+            if c_url:
+                cert.pdf_url = c_url
                 cert.save()
         CommandesSyncService.sync_user_commandes(self.request.user)
 
@@ -170,9 +174,11 @@ class EducationViewSet(viewsets.ModelViewSet):
         edu = serializer.save(user=self.request.user)
         if 'pdf_file' in self.request.FILES:
             file_obj = self.request.FILES['pdf_file']
-            drive_url = GoogleDriveService.upload_pdf_file(file_obj, "educations")
-            if drive_url:
-                edu.pdf_url = drive_url
+            c_url = CloudinaryService.upload_pdf(file_obj, folder="educations")
+            if not c_url:
+                c_url = GoogleDriveService.upload_pdf_file(file_obj, "educations")
+            if c_url:
+                edu.pdf_url = c_url
                 edu.save()
         CommandesSyncService.sync_user_commandes(self.request.user)
 
@@ -180,9 +186,11 @@ class EducationViewSet(viewsets.ModelViewSet):
         edu = serializer.save()
         if 'pdf_file' in self.request.FILES:
             file_obj = self.request.FILES['pdf_file']
-            drive_url = GoogleDriveService.upload_pdf_file(file_obj, "educations")
-            if drive_url:
-                edu.pdf_url = drive_url
+            c_url = CloudinaryService.upload_pdf(file_obj, folder="educations")
+            if not c_url:
+                c_url = GoogleDriveService.upload_pdf_file(file_obj, "educations")
+            if c_url:
+                edu.pdf_url = c_url
                 edu.save()
         CommandesSyncService.sync_user_commandes(self.request.user)
 

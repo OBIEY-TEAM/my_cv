@@ -81,6 +81,10 @@ export interface ApplicationPackage {
   cover_letter_pdf: string;
   email_txt: string;
   zip_package: string;
+  cv_text?: string;
+  lm_text?: string;
+  email_text?: string;
+  email_body?: string;
   payment_status: 'approuved' | 'pending' | 'failed';
   processing_status: 'finalized' | 'pending' | 'inprocess';
   created_at: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Sparkles, User, CreditCard } from 'lucide-react';
+import { Briefcase, FilePlus, User, CreditCard } from 'lucide-react';
 
 export type TabType = 'dashboard' | 'profile' | 'create' | 'plans';
 
@@ -12,7 +12,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, onTabChange }) => {
   const tabs = [
     { id: 'dashboard' as TabType, label: 'Mes Candidatures', icon: Briefcase },
-    { id: 'create' as TabType, label: 'Générer un Dossier', icon: Sparkles },
+    { id: 'create' as TabType, label: 'Générer par Luka Mossala', icon: FilePlus },
     { id: 'profile' as TabType, label: 'Profil Structuré', icon: User },
     { id: 'plans' as TabType, label: 'Abonnements & Crédits', icon: CreditCard },
   ];
