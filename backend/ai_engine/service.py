@@ -1,6 +1,7 @@
 import os
 import re
 import zipfile
+import importlib
 from pathlib import Path
 from django.conf import settings
 from pdf_generator.service import PDFService
@@ -163,6 +164,31 @@ class AIEngineService:
                 {'title': 'Directeur Technique - FoncierChain', 'desc': '1er Prix au MIABE Hackathon 2026. Architecture logicielle complète.'}
             ]
 
+        # Appel Groq Cloud LLM Agent pour rédiger le texte du CV, LM et Email
+        import importlib.util
+        agent_ia_path = Path(settings.BASE_DIR).parent / "agent-ia" / "agent_groq.py"
+        spec = importlib.util.spec_from_file_location("agent_groq", agent_ia_path)
+        groq_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(groq_mod)
+
+        agent = groq_mod.GroqCVAgent()
+
+        candidate_data = {
+            "fullname": user_name,
+            "phone": user_phone,
+            "email": user.email or "obieydany@gmail.com",
+            "location": user_profile.cities or "Brazzaville & Pointe-Noire, Congo",
+            "professional_summary": user_summary,
+            "experiences": experiences_list,
+            "education": education_list,
+            "projects": projects_list
+        }
+
+        job_desc = job_offer.cleaned_description or job_offer.raw_text or ""
+        generated_cv_text = agent.generate_cv_text(candidate_data, job_desc if job_desc else None)
+        generated_lm_text = agent.generate_cover_letter_text(candidate_data, job_desc, title, job_offer.company or "Entreprise")
+        generated_email_text = agent.generate_email_text(candidate_data, title, job_offer.company or "Entreprise")
+
         cv_data = {
             'name': user_name,
             'title': f"{user_profile.title} | Spécialiste {title}",
@@ -238,6 +264,9 @@ class AIEngineService:
             'email_txt': email_path,
             'offer_pdf': offer_path,
             'zip_package': zip_path,
+            'cv_text': generated_cv_text,
+            'lm_text': generated_lm_text,
+            'email_text': generated_email_text,
             'email_subject': email_subject,
             'email_body': email_body,
             'folder_path': str(base_dir)

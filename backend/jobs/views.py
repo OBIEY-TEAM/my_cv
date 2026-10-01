@@ -84,6 +84,9 @@ class JobOfferListCreateView(generics.ListCreateAPIView):
             email_txt=pkg_data['email_txt'],
             offer_pdf=pkg_data['offer_pdf'],
             zip_package=pkg_data['zip_package'],
+            cv_text=pkg_data.get('cv_text', ''),
+            lm_text=pkg_data.get('lm_text', ''),
+            email_text=pkg_data.get('email_text', ''),
             email_subject=pkg_data['email_subject'],
             email_body=pkg_data['email_body'],
             folder_path=pkg_data['folder_path']

@@ -14,6 +14,7 @@ from .serializers import (
 )
 from .gdrive_service import GoogleDriveService
 from .commandes_service import CommandesSyncService
+from .cloudinary_service import CloudinaryService
 
 
 class ProfileDetailView(generics.RetrieveUpdateAPIView):
@@ -36,7 +37,18 @@ class PhotoCropView(APIView):
         if 'photo' in request.FILES:
             photo_file = request.FILES['photo']
             profile.original_photo = photo_file
+
+            # Upload original photo to Cloudinary
+            orig_url = CloudinaryService.upload_image(
+                photo_file,
+                folder="profiles/original",
+                public_id=f"profile_original_{request.user.id}"
+            )
+            if orig_url:
+                profile.original_photo_url = orig_url
+
             profile.save()
+            photo_file.seek(0)
             img = Image.open(photo_file)
         elif profile.original_photo:
             img = Image.open(profile.original_photo.path)
@@ -58,9 +70,22 @@ class PhotoCropView(APIView):
 
         buffer = BytesIO()
         img_cropped.save(buffer, format='PNG')
+        buffer.seek(0)
         file_name = f"profile_cropped_{request.user.id}.png"
 
-        profile.cropped_photo.save(file_name, ContentFile(buffer.getvalue()), save=True)
+        profile.cropped_photo.save(file_name, ContentFile(buffer.getvalue()), save=False)
+
+        # Upload cropped photo to Cloudinary
+        buffer.seek(0)
+        cropped_url = CloudinaryService.upload_image(
+            buffer,
+            folder="profiles/cropped",
+            public_id=f"profile_cropped_{request.user.id}"
+        )
+        if cropped_url:
+            profile.cropped_photo_url = cropped_url
+
+        profile.save()
         CommandesSyncService.sync_user_commandes(request.user)
 
         return Response(ProfileSerializer(profile).data, status=status.HTTP_200_OK)

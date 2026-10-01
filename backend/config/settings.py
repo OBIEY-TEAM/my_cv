@@ -62,12 +62,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+import dj_database_url
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+database_url = os.getenv('DATABASE_URL') or os.getenv('SUPABASE_DATABASE_URL')
+if database_url and os.getenv('USE_SQLITE', 'False').lower() not in ('true', '1'):
+    DATABASES['default'] = dj_database_url.config(
+        default=database_url,
+        conn_max_age=600,
+        ssl_require=True if 'supabase' in database_url else False
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -108,3 +118,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', 'cloudinary://888993441467871:oE6J6qrx6jNyCRdGKRlInvoilSo@wgu6xpxq')
+import cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'wgu6xpxq'),
+    api_key=os.getenv('CLOUDINARY_API_KEY', '888993441467871'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', 'oE6J6qrx6jNyCRdGKRlInvoilSo'),
+    secure=True
+)

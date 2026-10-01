@@ -13,6 +13,8 @@ class Profile(models.Model):
 
     original_photo = models.ImageField(upload_to='profiles/original/', blank=True, null=True)
     cropped_photo = models.ImageField(upload_to='profiles/cropped/', blank=True, null=True)
+    original_photo_url = models.URLField(max_length=1000, blank=True, default="", help_text="URL Cloudinary de la photo originale")
+    cropped_photo_url = models.URLField(max_length=1000, blank=True, default="", help_text="URL Cloudinary de la photo recadrée")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
