@@ -37,7 +37,9 @@ interface PackageModalProps {
 export const PackageModal: React.FC<PackageModalProps> = ({ activeModal, onClose, onNavigateToPlans }) => {
   const { pkg, type } = activeModal;
   const docUrl = type === 'CV' ? pkg.cv_pdf : (type === 'LM' ? pkg.cover_letter_pdf : pkg.email_txt);
-  const docxUrl = docUrl ? docUrl.replace(/\.pdf$/i, '.docx') : '';
+  const docxUrl = type === 'CV'
+    ? (pkg.cv_docx || (docUrl ? docUrl.replace(/\.pdf$/i, '.docx') : ''))
+    : (type === 'LM' ? (pkg.cover_letter_docx || (docUrl ? docUrl.replace(/\.pdf$/i, '.docx') : '')) : '');
 
   const isAvailable = !!docUrl && docUrl !== '#';
 

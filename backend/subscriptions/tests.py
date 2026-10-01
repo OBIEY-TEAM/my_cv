@@ -9,10 +9,10 @@ class SubscriptionsTest(TestCase):
         self.user = User.objects.create_user(username='subuser', password='Password123!')
         self.client.force_authenticate(user=self.user)
         self.plan, _ = SubscriptionPlan.objects.get_or_create(
-            code='PACK_5',
+            code='CREDIT_5',
             defaults={
-                'name': 'Formule Pack 5 Candidatures',
-                'price_fcfa': 2000,
+                'name': 'Formule de 5 Crédits à 500 FRS',
+                'price_fcfa': 500,
                 'credits_included': 5
             }
         )

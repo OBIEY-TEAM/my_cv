@@ -203,4 +203,22 @@ class ApiService {
       return res.statusCode == 204;
     } catch (e) { return false; }
   }
+
+  static Future<Map<String, dynamic>?> uploadProfilePhoto(String filePath) async {
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/profile/upload-photo/'));
+      if (authToken != null) {
+        request.headers['Authorization'] = 'Bearer $authToken';
+      }
+      request.files.add(await http.MultipartFile.fromPath('cropped_photo', filePath));
+      final streamedRes = await request.send();
+      final res = await http.Response.fromStream(streamedRes);
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      }
+    } catch (e) {
+      debugPrint('Upload photo error: $e');
+    }
+    return null;
+  }
 }

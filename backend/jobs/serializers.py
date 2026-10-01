@@ -11,6 +11,8 @@ class ApplicationPackageSerializer(serializers.ModelSerializer):
     job_offer = JobOfferSerializer(read_only=True)
     cv_pdf = serializers.SerializerMethodField()
     cover_letter_pdf = serializers.SerializerMethodField()
+    cv_docx = serializers.SerializerMethodField()
+    cover_letter_docx = serializers.SerializerMethodField()
     email_txt = serializers.SerializerMethodField()
     offer_pdf = serializers.SerializerMethodField()
 
@@ -32,6 +34,18 @@ class ApplicationPackageSerializer(serializers.ModelSerializer):
 
     def get_cover_letter_pdf(self, obj):
         return self._get_file_url(obj, 'cover_letter_pdf')
+
+    def get_cv_docx(self, obj):
+        val = self._get_file_url(obj, 'cv_pdf')
+        if val and val.lower().endswith('.pdf'):
+            return val[:-4] + '.docx'
+        return val
+
+    def get_cover_letter_docx(self, obj):
+        val = self._get_file_url(obj, 'cover_letter_pdf')
+        if val and val.lower().endswith('.pdf'):
+            return val[:-4] + '.docx'
+        return val
 
     def get_email_txt(self, obj):
         return self._get_file_url(obj, 'email_txt')

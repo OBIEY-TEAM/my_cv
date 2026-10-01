@@ -34,6 +34,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [showLoaderShowcase, setShowLoaderShowcase] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [profile, setProfile] = useState<ProfileData>({
     title: 'Consultant IT & Expert Fullstack',
@@ -218,6 +226,16 @@ export default function App() {
       await fetchData();
     }
   };
+
+  if (isInitializing) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+        <img src="/logo_white.jpg" alt="Logo Web" style={{ width: '120px', height: '120px', borderRadius: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }} />
+        <img src="/loader_white.gif" alt="Chargement..." style={{ width: '80px', height: '80px' }} />
+        <p style={{ color: '#0B1F3A', fontWeight: '800', fontSize: '15px' }}>Chargement de l'application Web...</p>
+      </div>
+    );
+  }
 
   if (!token) {
     return <LoginScreen onLoginSuccess={(newToken) => { setToken(newToken); fetchData(); }} />;

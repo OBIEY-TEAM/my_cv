@@ -13,6 +13,19 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoggedIn = false;
   bool _isLoading = false;
   bool _isRegisterMode = false;
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    });
+  }
   final _usernameController = TextEditingController(text: 'admin');
   final _phoneController = TextEditingController(text: '066130118');
   final _passwordController = TextEditingController(text: 'admin1234');
@@ -61,11 +74,45 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0B1F3A),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/logo_black.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Image.asset(
+                'assets/loader_black.gif',
+                width: 70,
+                height: 70,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Démarrage de l\'application Mobile...',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_isLoggedIn) {
       return const MainTabScreen();
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0B1F3A),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -78,19 +125,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF185FA5),
-                        borderRadius: BorderRadius.circular(16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        'assets/logo_black.png',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
                       ),
-                      child: const Icon(Icons.work, color: Colors.white, size: 36),
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Luka Mosala SaaS',
+                      'Luka Mosala Mobile',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A)),
                     ),
+                    if (_isLoading) ...[
+                      const SizedBox(height: 12),
+                      Image.asset('assets/loader_black.gif', width: 48, height: 48),
+                    ],
                     const SizedBox(height: 6),
                     const Text(
                       'Générateur automatique de candidatures sur mesure',

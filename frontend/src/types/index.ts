@@ -79,6 +79,8 @@ export interface ApplicationPackage {
   };
   cv_pdf: string;
   cover_letter_pdf: string;
+  cv_docx?: string;
+  cover_letter_docx?: string;
   email_txt: string;
   zip_package: string;
   cv_text?: string;
