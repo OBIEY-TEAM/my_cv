@@ -7,8 +7,18 @@ class JobOffer(models.Model):
         ('PDF', 'Fichier PDF'),
         ('TEXT', 'Texte Brut'),
     )
+    LANGUAGE_CHOICES = (
+        ('fr', 'Français'),
+        ('en', 'English'),
+        ('ar', 'العربية'),
+        ('pt', 'Português'),
+        ('es', 'Español'),
+        ('sw', 'Kiswahili'),
+        ('zh', '中文'),
+    )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_offers')
+    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='fr')
     source_type = models.CharField(max_length=10, choices=SOURCE_TYPES, default='TEXT')
     source_url = models.URLField(blank=True, null=True)
     source_file = models.FileField(upload_to='jobs/sources/', blank=True, null=True)

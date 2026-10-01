@@ -129,7 +129,7 @@ class ApiService {
     return [];
   }
 
-  static Future<bool> generateApplication(String rawText, String sourceUrl) async {
+  static Future<bool> generateApplication(String rawText, String sourceUrl, {String language = 'fr'}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/jobs/offers/'),
@@ -137,6 +137,7 @@ class ApiService {
         body: jsonEncode({
           'source_type': sourceUrl.isNotEmpty ? 'URL' : 'TEXT',
           'source_url': sourceUrl,
+          'language': language,
           'raw_text': rawText,
         }),
       );

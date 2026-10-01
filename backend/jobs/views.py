@@ -57,11 +57,13 @@ class JobOfferListCreateView(generics.ListCreateAPIView):
 
         raw_text = request.data.get('raw_text', '')
         source_url = request.data.get('source_url', '')
+        language = request.data.get('language', 'fr')
 
         extracted = AIEngineService.extract_job_details(raw_text, source_url)
 
         job_offer = JobOffer.objects.create(
             user=request.user,
+            language=language,
             source_type=request.data.get('source_type', 'TEXT'),
             source_url=source_url,
             raw_text=raw_text,

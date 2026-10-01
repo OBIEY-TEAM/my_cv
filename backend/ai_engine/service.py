@@ -223,9 +223,10 @@ class AIEngineService:
         }
 
         job_desc = job_offer.cleaned_description or job_offer.raw_text or ""
-        generated_cv_text = agent.generate_cv_text(candidate_data, job_desc if job_desc else None)
-        generated_lm_text = agent.generate_cover_letter_text(candidate_data, job_desc, title, job_offer.company or "Entreprise")
-        generated_email_text = agent.generate_email_text(candidate_data, title, job_offer.company or "Entreprise")
+        lang = getattr(job_offer, 'language', 'fr') or 'fr'
+        generated_cv_text = agent.generate_cv_text(candidate_data, job_desc if job_desc else None, language=lang)
+        generated_lm_text = agent.generate_cover_letter_text(candidate_data, job_desc, title, job_offer.company or "Entreprise", language=lang)
+        generated_email_text = agent.generate_email_text(candidate_data, title, job_offer.company or "Entreprise", language=lang)
 
         cv_data = {
             'name': user_name,
