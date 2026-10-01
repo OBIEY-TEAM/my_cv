@@ -49,22 +49,28 @@ class GroqCVAgent:
             print(f"[GroqCVAgent] Connexion Groq API impossible : {e}")
         return ""
 
-    def generate_cv_text(self, candidate_info: dict, job_offer_text: str = None) -> str:
+    def generate_cv_text(self, candidate_info: dict, job_offer_text: str = None, language: str = "fr") -> str:
         """
         Génère le texte structuré du CV.
         Si job_offer_text est None ou vide => Génération du CV uniquement (sans offre d'emploi).
         """
+        lang_names = {
+            "fr": "français", "en": "english", "ar": "arabic (العربية)",
+            "pt": "portuguese", "es": "spanish", "sw": "swahili", "zh": "chinese (中文)"
+        }
+        lang_str = lang_names.get(language, "français")
+
         system_prompt = (
-            "Vous êtes un expert en rédaction de CV professionnels et optimisation ATS. "
-            "Rédigez un CV clair, percutant et structuré en français."
+            f"You are an expert in writing professional CVs and ATS optimization. "
+            f"Write a clear, impactful, and structured CV strictly in {lang_str}."
         )
 
-        prompt = f"Informations du candidat :\n{json.dumps(candidate_info, ensure_ascii=False, indent=2)}\n\n"
+        prompt = f"Candidate info:\n{json.dumps(candidate_info, ensure_ascii=False, indent=2)}\n\n"
         if job_offer_text and job_offer_text.strip():
-            prompt += f"Offre d'emploi ciblée :\n{job_offer_text}\n\n"
-            prompt += "Rédigez un profil et un contenu de CV adaptés à cette offre d'emploi."
+            prompt += f"Job Offer:\n{job_offer_text}\n\n"
+            prompt += f"Write a tailored profile and CV content strictly in {lang_str} for this job offer."
         else:
-            prompt += "REDACTION DU CV UNIQUEMENT : Aucune offre d'emploi fournie. Rédigez un CV généraliste complet et valorisant basé sur le profil du candidat."
+            prompt += f"CV ONLY: No job offer provided. Write a full generalist CV strictly in {lang_str}."
 
         result = self._call_groq(prompt, system_prompt)
         if not result:
@@ -74,7 +80,7 @@ class GroqCVAgent:
 
         return result
 
-    def generate_cover_letter_text(self, candidate_info: dict, job_offer_text: str, job_title: str, company_name: str) -> str:
+    def generate_cover_letter_text(self, candidate_info: dict, job_offer_text: str, job_title: str, company_name: str, language: str = "fr") -> str:
         """
         Génère le texte de la Lettre de Motivation (LM).
         Ne doit être généré QUE si l'offre d'emploi est présente.
@@ -82,18 +88,24 @@ class GroqCVAgent:
         if not job_offer_text or not job_offer_text.strip():
             return "LM non disponible : Aucune offre d'emploi fournie."
 
+        lang_names = {
+            "fr": "français", "en": "english", "ar": "arabic (العربية)",
+            "pt": "portuguese", "es": "spanish", "sw": "swahili", "zh": "chinese (中文)"
+        }
+        lang_str = lang_names.get(language, "français")
+
         system_prompt = (
-            "Vous êtes un expert en recrutement. Rédigez une Lettre de Motivation professionnelle en français "
-            "selon la structure Vous / Moi / Nous, directe et convaincante (strictement 1 page)."
+            f"You are a recruitment expert. Write a professional Cover Letter strictly in {lang_str} "
+            "following a direct, convincing structure (strictly 1 page)."
         )
 
         prompt = (
-            f"Candidat : {candidate_info.get('fullname', 'Candidat')}\n"
-            f"Poste : {job_title}\n"
-            f"Entreprise : {company_name}\n"
-            f"Profil candidat : {json.dumps(candidate_info, ensure_ascii=False)}\n"
-            f"Offre d'emploi :\n{job_offer_text}\n\n"
-            "Rédigez la lettre de motivation complète."
+            f"Candidate : {candidate_info.get('fullname', 'Candidate')}\n"
+            f"Job Title : {job_title}\n"
+            f"Company : {company_name}\n"
+            f"Candidate Profile : {json.dumps(candidate_info, ensure_ascii=False)}\n"
+            f"Job Offer :\n{job_offer_text}\n\n"
+            f"Write the full cover letter strictly in {lang_str}."
         )
 
         result = self._call_groq(prompt, system_prompt)
@@ -106,14 +118,20 @@ class GroqCVAgent:
             )
         return result
 
-    def generate_email_text(self, candidate_info: dict, job_title: str, company_name: str) -> str:
+    def generate_email_text(self, candidate_info: dict, job_title: str, company_name: str, language: str = "fr") -> str:
         """
         Génère l'Email de candidature.
         """
-        system_prompt = "Rédigez un email de candidature court, poli et professionnel en français."
+        lang_names = {
+            "fr": "français", "en": "english", "ar": "arabic (العربية)",
+            "pt": "portuguese", "es": "spanish", "sw": "swahili", "zh": "chinese (中文)"
+        }
+        lang_str = lang_names.get(language, "français")
+
+        system_prompt = f"Write a short, polite, and professional application email strictly in {lang_str}."
         prompt = (
-            f"Objet: Candidature - {job_title} - {candidate_info.get('fullname', '')}\n"
-            f"Rédiger le corps du mail à l'attention du recruteur de {company_name}."
+            f"Subject/Topic: Application - {job_title} - {candidate_info.get('fullname', '')}\n"
+            f"Write the email body to the recruiter at {company_name} in {lang_str}."
         )
 
         result = self._call_groq(prompt, system_prompt)

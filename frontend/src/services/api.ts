@@ -153,10 +153,11 @@ export class ApiService {
     return await axios.delete(`/api/profile/projects/${id}/`);
   }
 
-  static async generateApplication(jobText: string, sourceUrl: string) {
+  static async generateApplication(jobText: string, sourceUrl: string, language: string = 'fr') {
     return await axios.post('/api/jobs/offers/', {
       source_type: sourceUrl ? 'URL' : 'TEXT',
       source_url: sourceUrl,
+      language: language,
       raw_text: jobText || "RÉDACTION CV UNIQUEMENT SANS OFFRE D'EMPLOI"
     });
   }
