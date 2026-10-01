@@ -81,6 +81,21 @@ class ApiService {
     return [];
   }
 
+  static Future<List<dynamic>> fetchPlans() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/subscriptions/plans/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (e) {
+      debugPrint('Fetch plans error: $e');
+    }
+    return [];
+  }
+
   static Future<bool> generateApplication(String rawText, String sourceUrl) async {
     try {
       final response = await http.post(
@@ -670,7 +685,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) => AlertDialog(
-          title: const Text('Modifier Profil (Info)'),
+          title: const Text('1. Informations Générales'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -687,7 +702,7 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                   ],
                   onChanged: (v) { if (v != null) setModalState(() => genderVal = v); },
                 ),
-                TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance (AAAA-MM-JJ) *')),
+                TextField(controller: birthCtrl, decoration: const InputDecoration(labelText: 'Date de naissance *')),
                 TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Numéro principal *')),
                 TextField(controller: secPhoneCtrl, decoration: const InputDecoration(labelText: 'Numéro secondaire')),
                 TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Adresse')),
@@ -908,45 +923,77 @@ class _StructuredProfileTabState extends State<StructuredProfileTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const CircleAvatar(
-                        radius: 28,
+                        radius: 30,
                         backgroundColor: Color(0xFF185FA5),
-                        child: Icon(Icons.person, color: Colors.white, size: 32),
+                        child: Icon(Icons.person, color: Colors.white, size: 36),
                       ),
-                      TextButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saisie photo disponible.')));
-                        },
-                        icon: const Icon(Icons.camera_alt, size: 16),
-                        label: const Text('Photo'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${_info['first_name'] ?? 'Christ Dany'} ${_info['last_name'] ?? 'Obiey'}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0B1F3A)),
+                            ),
+                            const Text('Photo de Profil Professionnelle', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       )
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  // 4 EXPLICIT PHOTO ACTION BUTTONS ON MOBILE
+                  const SizedBox(height: 12),
+                  // 4 EXPLICIT PHOTO ACTION BUTTONS MATCHING WEB
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.edit, size: 14), label: const Text('Modifier', style: TextStyle(fontSize: 11))),
-                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.upload, size: 14), label: const Text('Uploader', style: TextStyle(fontSize: 11))),
-                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.camera, size: 14), label: const Text('Caméra', style: TextStyle(fontSize: 11))),
-                      OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.visibility, size: 14), label: const Text('Voir', style: TextStyle(fontSize: 11))),
+                      ElevatedButton.icon(
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modification de la photo...'))),
+                        icon: const Icon(Icons.edit, size: 14),
+                        label: const Text('Modifier', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload de la photo...'))),
+                        icon: const Icon(Icons.upload, size: 14),
+                        label: const Text('Uploader', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B1F3A), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ouverture de la caméra...'))),
+                        icon: const Icon(Icons.camera_alt, size: 14),
+                        label: const Text('Caméra', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6E56), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aperçu de la photo...'))),
+                        icon: const Icon(Icons.visibility, size: 14),
+                        label: const Text('Voir', style: TextStyle(fontSize: 11)),
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                      ),
                     ],
                   ),
-                  const Divider(height: 20),
+                  const Divider(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${_info['first_name'] ?? 'Christ'} ${_info['last_name'] ?? 'Obiey'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Text('1. Informations Générales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0B1F3A))),
                       IconButton(onPressed: _editInfoDialog, icon: const Icon(Icons.edit, color: Color(0xFF185FA5))),
                     ],
                   ),
-                  Text('Tél: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                  Text('Adresse: ${_info['address'] ?? 'Avenue de l\'Indépendance'} | Pays: ${_info['country'] ?? 'Congo'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  Text('Arrondissement: ${_info['district'] ?? 'Poto-Poto'} | Quartier: ${_info['neighborhood'] ?? 'Centre'}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  Text('Genre: ${_info['gender'] == 'FEMALE' ? 'Femme' : 'Homme'} | Né(e) le: ${_info['birth_date'] ?? '10/05/1995'}', style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                  Text('Téléphone Principal: ${_info['primary_phone'] ?? '+242 06 613 01 18'}', style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                  if ((_info['secondary_phone'] ?? '').isNotEmpty) Text('Téléphone Secondaire: ${_info['secondary_phone']}', style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                  Text('Adresse: ${_info['address'] ?? 'Avenue de l\'Indépendance'} | Pays: ${_info['country'] ?? 'Congo'}', style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                  Text('Arrondissement: ${_info['district'] ?? 'Poto-Poto'} | Quartier: ${_info['neighborhood'] ?? 'Centre'}', style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                  if ((_info['professional_summary'] ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text('Résumé: ${_info['professional_summary']}', style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Color(0xFF475569))),
+                  ]
                 ],
               ),
             ),
@@ -1138,61 +1185,181 @@ class PaymentsTab extends StatefulWidget {
 }
 
 class _PaymentsTabState extends State<PaymentsTab> {
-  final _phoneController = TextEditingController(text: '+242066130118');
+  List<dynamic> _plans = [];
+  int? _selectedPlanId;
+  String _paymentMethod = 'AIRTEL_MONEY';
+  final _phoneController = TextEditingController(text: '056130118');
+  bool _isLoadingPlans = true;
   bool _isPaying = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  void _loadPlans() async {
+    setState(() => _isLoadingPlans = true);
+    final plansList = await ApiService.fetchPlans();
+    setState(() {
+      _plans = plansList;
+      if (_plans.isNotEmpty) {
+        _selectedPlanId = _plans[0]['id'];
+      }
+      _isLoadingPlans = false;
+    });
+  }
 
   void _pay() async {
+    setState(() {
+      _errorMessage = null;
+    });
+
+    if (_selectedPlanId == null) {
+      setState(() => _errorMessage = 'Veuillez sélectionner un forfait.');
+      return;
+    }
+
+    final cleanPhone = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    if (_paymentMethod == 'AIRTEL_MONEY' && !cleanPhone.startsWith('05') && !cleanPhone.startsWith('24205')) {
+      setState(() => _errorMessage = 'Le numéro Airtel Money doit commencer par 05.');
+      return;
+    }
+    if (_paymentMethod == 'MTN_MOMO' && !cleanPhone.startsWith('06') && !cleanPhone.startsWith('24206')) {
+      setState(() => _errorMessage = 'Le numéro Mobile Money MTN doit commencer par 06.');
+      return;
+    }
+
     setState(() => _isPaying = true);
-    final success = await ApiService.payMobileMoney(2, 'AIRTEL_MONEY', _phoneController.text);
+    final success = await ApiService.payMobileMoney(_selectedPlanId!, _paymentMethod, _phoneController.text);
     setState(() => _isPaying = false);
 
     if (success) {
       widget.onPaid();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Paiement réussi ! Crédits rechargés.')),
+          const SnackBar(content: Text('Achat réussi ! Crédits rechargés.')),
         );
       }
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Échec de la transaction.')),
-        );
-      }
+      setState(() => _errorMessage = 'Échec de la transaction Fintech Mobile Money.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingPlans) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    dynamic selectedPlanObj;
+    try {
+      selectedPlanObj = _plans.firstWhere((p) => p['id'] == _selectedPlanId);
+    } catch (_) {}
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Text('Forfaits Crédits', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+          const SizedBox(height: 12),
+
+          // DISPLAY DYNAMIC PLANS LIST
+          ..._plans.map((plan) {
+            final isSelected = plan['id'] == _selectedPlanId;
+            return Card(
+              color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: isSelected ? const Color(0xFF185FA5) : Colors.grey.shade300, width: isSelected ? 2 : 1),
+              ),
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                onTap: () => setState(() => _selectedPlanId = plan['id']),
+                title: Text(plan['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
+                subtitle: Text('${plan['description'] ?? ''}\n${plan['applications_limit'] ?? 0} Crédit(s)'),
+                isThreeLine: true,
+                trailing: Text('${plan['price_fcfa']} FCFA', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF185FA5))),
+              ),
+            );
+          }),
+
+          const SizedBox(height: 16),
           Card(
             color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pack 5 Candidatures', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-                  const SizedBox(height: 4),
-                  const Text('2 000 FCFA', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF185FA5))),
+                  const Text('Mode de Paiement', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _phoneController,
+
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                      child: Text(_errorMessage!, style: TextStyle(color: Colors.red.shade900, fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+
+                  DropdownButtonFormField<String>(
+                    value: _paymentMethod,
                     decoration: const InputDecoration(
-                      labelText: 'Numéro Mobile Money (+242)',
+                      labelText: 'Type de paiement',
                       border: OutlineInputBorder(),
                     ),
+                    items: const [
+                      DropdownMenuItem(value: 'AIRTEL_MONEY', child: Text('Airtel Money (Débute par 05)')),
+                      DropdownMenuItem(value: 'MTN_MOMO', child: Text('Mobile Money MTN (Débute par 06)')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _paymentMethod = val;
+                          _phoneController.text = val == 'AIRTEL_MONEY' ? '056130118' : '066130118';
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isPaying ? null : _pay,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6E56)),
-                    child: Text(_isPaying ? 'Traitement...' : 'Payer via Airtel / MTN MoMo'),
-                  )
+
+                  TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: _paymentMethod == 'AIRTEL_MONEY' ? 'Numéro Airtel Money (05...)' : 'Numéro Mobile Money MTN (06...)',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Montant à payer :', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text('${selectedPlanObj != null ? selectedPlanObj['price_fcfa'] : 0} FCFA', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF185FA5))),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isPaying ? null : _pay,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F6E56),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(
+                        _isPaying ? 'Achat en cours...' : 'Acheter (${selectedPlanObj != null ? selectedPlanObj['price_fcfa'] : 0} FCFA)',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

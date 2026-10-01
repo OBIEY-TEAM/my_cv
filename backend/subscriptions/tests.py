@@ -21,7 +21,15 @@ class SubscriptionsTest(TestCase):
         response = self.client.post('/api/subscriptions/pay/', {
             'plan_id': self.plan.id,
             'payment_method': 'AIRTEL_MONEY',
-            'phone_number': '+242066130118'
+            'phone_number': '+242056130118'
         }, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['credits_remaining'], 6)
+
+    def test_initiate_payment_mtn(self):
+        response = self.client.post('/api/subscriptions/pay/', {
+            'plan_id': self.plan.id,
+            'payment_method': 'MTN_MOMO',
+            'phone_number': '+242066130118'
+        }, format='json')
+        self.assertEqual(response.status_code, 201)
