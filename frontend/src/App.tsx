@@ -6,6 +6,7 @@ import {
 } from './types';
 import { Header } from './components/Header';
 import { Navigation, TabType } from './components/Navigation';
+import { Language, LANGUAGES } from './i18n';
 import { LoginScreen } from './components/LoginScreen';
 import { DashboardTab } from './components/DashboardTab';
 import { CreateApplicationTab } from './components/CreateApplicationTab';
@@ -18,6 +19,18 @@ import {
 import { LoaderShowcase } from './components/LoaderShowcase';
 
 export default function App() {
+  const [language, setLanguage] = useState<Language>(
+    (localStorage.getItem('app_lang') as Language) || 'fr'
+  );
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem('app_lang', lang);
+  };
+
+  const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+  const activeDir = currentLangObj.dir;
+
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [showLoaderShowcase, setShowLoaderShowcase] = useState(false);
@@ -211,8 +224,14 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0B1F3A', fontFamily: 'sans-serif' }}>
-      <Header subscription={subscription} onLogout={handleLogout} onOpenLoaderShowcase={() => setShowLoaderShowcase(true)} />
+    <div dir={activeDir} style={{ minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0B1F3A', fontFamily: 'sans-serif' }}>
+      <Header
+        subscription={subscription}
+        language={language}
+        onLanguageChange={handleLanguageChange}
+        onLogout={handleLogout}
+        onOpenLoaderShowcase={() => setShowLoaderShowcase(true)}
+      />
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} onTabChange={fetchData} />
 
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
@@ -227,6 +246,7 @@ export default function App() {
 
         {activeTab === 'create' && (
           <CreateApplicationTab
+            language={language}
             onSuccess={() => {
               fetchData();
               setActiveTab('dashboard');

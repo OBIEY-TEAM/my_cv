@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
+import '../../l10n/translations.dart';
 
 class CreateApplicationTab extends StatefulWidget {
   final VoidCallback onGenerated;
@@ -20,7 +21,11 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
         : _textController.text;
 
     setState(() => _isGenerating = true);
-    final success = await ApiService.generateApplication(rawTxt, _urlController.text);
+    final success = await ApiService.generateApplication(
+      rawTxt,
+      _urlController.text,
+      language: AppTranslations.currentLanguage,
+    );
     if (!mounted) return;
     setState(() => _isGenerating = false);
 
@@ -40,51 +45,63 @@ class _CreateApplicationTabState extends State<CreateApplicationTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('Générer par Luka Mossala',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A))),
-              const SizedBox(height: 6),
-              const Text(
-                'Laissez les champs vides pour générer le CV uniquement (sans offre d\'emploi).',
-                style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _urlController,
-                decoration: const InputDecoration(
-                  labelText: 'Lien URL de l\'offre (Optionnel)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
+    return Directionality(
+      textDirection: AppTranslations.currentDirection,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppTranslations.t('generateTitle'),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B1F3A)),
                 ),
-              ),
-              const SizedBox(height: 12),
-              const Center(child: Text('OU', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _textController,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Texte brut de l\'offre (Optionnel)',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 6),
+                Text(
+                  AppTranslations.t('generateSubtitle'),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
                 ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _isGenerating ? null : _generate,
-                icon: _isGenerating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.post_add),
-                label: Text(_isGenerating ? 'Génération par Luka Mossala...' : 'Générer par Luka Mossala'),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
-              )
-            ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: AppTranslations.t('urlLabel'),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.link),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    AppTranslations.t('or'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _textController,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: AppTranslations.t('textLabel'),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _isGenerating ? null : _generate,
+                  icon: _isGenerating
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Icon(Icons.post_add),
+                  label: Text(_isGenerating ? AppTranslations.t('btnGenerating') : AppTranslations.t('btnGenerate')),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF185FA5)),
+                )
+              ],
+            ),
           ),
         ),
       ),
