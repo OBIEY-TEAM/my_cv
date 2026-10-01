@@ -6,6 +6,7 @@ drf-spectacular
 reportlab
 pillow
 requests
+cloudinary
 beautifulsoup4
 pypdf
 python-dotenv
