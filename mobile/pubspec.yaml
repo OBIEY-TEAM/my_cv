@@ -21,3 +21,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/logo_black.png
+    - assets/logo_white.jpg
+    - assets/loader_black.gif
+    - assets/loader_white.gif
