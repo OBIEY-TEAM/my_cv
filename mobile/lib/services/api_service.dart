@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'https://luka-mosala-backend.onrender.com';
+  static const String baseUrl = 'https://luka-mosala-backend-kwaq.onrender.com';
   static String? authToken;
 
   static Map<String, String> get headers => {
