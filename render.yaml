@@ -13,29 +13,27 @@ services:
       - key: USE_SQLITE
         value: "False"
       - key: SECRET_KEY
-        sync: false
+        value: "django-insecure-ai-jobapply-saas-key-2026"
       - key: DATABASE_URL
-        sync: false
+        value: "postgresql://postgres:Ecoguard2026@db.wmplhahetukexpdethxg.supabase.co:5432/postgres"
       - key: SUPABASE_DATABASE_URL
-        sync: false
+        value: "postgresql://postgres:Ecoguard2026@db.wmplhahetukexpdethxg.supabase.co:5432/postgres"
       - key: SUPABASE_URL
-        sync: false
+        value: "https://wmplhahetukexpdethxg.supabase.co"
       - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+        value: "sb_publishable_sveXTwoixioc7dQZ2zQN5w_qryVNsVY"
       - key: GROQ_API_KEY
-        sync: false
+        value: "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"
       - key: GROQ_MODEL
         value: "openai/gpt-oss-20b"
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: "wgu6xpxq"
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: "888993441467871"
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: "oE6J6qrx6jNyCRdGKRlInvoilSo"
       - key: CLOUDINARY_URL
-        sync: false
+        value: "cloudinary://888993441467871:oE6J6qrx6jNyCRdGKRlInvoilSo@wgu6xpxq"
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
       - key: CORS_ALLOWED_ORIGINS
