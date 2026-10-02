@@ -16,13 +16,25 @@ La plateforme repose sur une architecture moderne intégrant l'intelligence arti
 > Aucune clé d'API (Groq API, Cloudinary, Secret Key Django, Identifiants de base de données, etc.) ne doit être codée en dur dans le code source ou dans les fichiers de configuration versionnés.
 >
 > Lors du déploiement sur **Render**, **Docker** ou tout autre hébergeur cloud :
-> 1. Définissez les clés API via le panneau de configuration des variables d'environnement de l'hébergeur.
-> 2. Variables requises :
->    - `GROQ_API_KEY` : Clé d'API Groq Cloud pour la génération LLM.
->    - `GROQ_MODEL` : Modèle sélectionné (ex: `openai/gpt-oss-20b` ou `llama3-70b-8192`).
->    - `SECRET_KEY` : Clé secrète Django.
->    - `DATABASE_URL` / `SUPABASE_DATABASE_URL` : URL de connexion PostgreSQL.
->    - `CLOUDINARY_URL`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` : Identifiants Cloudinary pour l'hébergement des médias.
+>
+> Définissez les clés API via le panneau de configuration des variables d'environnement de l'hébergeur.
+>
+> **Variables requises :**
+> - `GROQ_API_KEY` : Clé d'API Groq Cloud pour la génération LLM.
+> - `GROQ_MODEL` : Modèle sélectionné (ex: `openai/gpt-oss-20b` ou `llama3-70b-8192`).
+> - `SECRET_KEY` : Clé secrète Django.
+> - `SUPABASE_DATABASE_URL` / `DATABASE_URL` : URL de connexion PostgreSQL.
+> - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` ou `CLOUDINARY_URL` : Identifiants Cloudinary pour l'hébergement et la gestion dynamique des médias.
+>
+> **Exemple de configuration Cloudinary dans Django (chargement dynamique) :**
+> ```python
+> cloudinary.config(
+>     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+>     api_key=os.getenv('CLOUDINARY_API_KEY', ''),
+>     api_secret=os.getenv('CLOUDINARY_API_SECRET', ''),
+>     secure=True
+> )
+> ```
 
 ## Fonctionnalités Principales
 1. **Génération Intelligente de Dossiers (Word & PDF)** : Traitement d'offres d'emploi (texte ou lien URL) et génération instantanée de CV 1P, Lettre de Motivation 1P et Email de candidature. Les fichiers Word (.docx) sont également générés par le backend pour permettre l'édition directe depuis Microsoft Word via l'application Web React et Mobile Flutter.
