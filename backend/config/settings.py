@@ -71,13 +71,30 @@ DATABASES = {
     }
 }
 
-database_url = os.getenv('DATABASE_URL') or os.getenv('SUPABASE_DATABASE_URL')
+# Database URL resolution with resilience against invalid URLs (e.g. web URLs starting with https://)
+raw_db_url = os.getenv('DATABASE_URL', '').strip()
+raw_supabase_url = os.getenv('SUPABASE_DATABASE_URL', '').strip()
+
+database_url = None
+for candidate in (raw_db_url, raw_supabase_url):
+    if candidate:
+        if candidate.startswith(('http://', 'https://')):
+            import logging
+            logging.warning(f'Ignored invalid DATABASE_URL scheme in environment: {candidate[:15]}... Expected postgres:// or postgresql://')
+        else:
+            database_url = candidate
+            break
+
 if database_url and os.getenv('USE_SQLITE', 'False').lower() not in ('true', '1'):
-    DATABASES['default'] = dj_database_url.config(
-        default=database_url,
-        conn_max_age=600,
-        ssl_require=True if 'supabase' in database_url else False
-    )
+    try:
+        DATABASES['default'] = dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            ssl_require=True if 'supabase' in database_url else False
+        )
+    except Exception as e:
+        import logging
+        logging.error(f'Failed to parse database URL: {e}. Falling back to default database.')
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

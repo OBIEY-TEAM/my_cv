@@ -36,6 +36,14 @@ La plateforme repose sur une architecture moderne intégrant l'intelligence arti
 > )
 > ```
 
+### Résolution des erreurs `DATABASE_URL` sur Render (`UnknownSchemeError`)
+Si le déploiement sur Render échoue avec une erreur de schéma de base de données (ex: `UnknownSchemeError`), la variable `DATABASE_URL` dans le tableau de bord Render contient probablement une URL Web (`https://...`) au lieu d'un schéma PostgreSQL valide (`postgres://...` ou `postgresql://...`).
+
+**Pour corriger sur Render :**
+1. Accédez à votre Render Dashboard -> Service **luka-mosala-backend** -> Section **Environment**.
+2. Modifiez la variable `DATABASE_URL` (ou `SUPABASE_DATABASE_URL`) pour qu'elle contienne une URL de connexion PostgreSQL valide : `postgres://utilisateur:mot_de_passe@hôte:5432/nom_db`.
+3. Enregistrez les modifications (*Save Changes*) pour relancer le déploiement.
+
 ## Fonctionnalités Principales
 1. **Génération Intelligente de Dossiers (Word & PDF)** : Traitement d'offres d'emploi (texte ou lien URL) et génération instantanée de CV 1P, Lettre de Motivation 1P et Email de candidature. Les fichiers Word (.docx) sont également générés par le backend pour permettre l'édition directe depuis Microsoft Word via l'application Web React et Mobile Flutter.
 2. **Gestion Cloudinary & Suppression Automatique** : Après modification des textes de candidature (CV, Lettre de motivation ou Email), les nouveaux fichiers PDF/DOCX sont sauvegardés et mis à jour sur Cloudinary en supprimant automatiquement l'ancien fichier enregistré via l'API Cloudinary.
