@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 100), () {
+    Future.delayed(const Duration(seconds: 15), () {
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -76,32 +76,30 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     if (_isInitializing) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0B1F3A),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/logo_black.png',
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/bg_black.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/loader_white.gif',
+                  width: 220,
+                  height: 220,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Image.asset(
-                'assets/loader_black.gif',
-                width: 70,
-                height: 70,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Démarrage de l\'application Mobile...',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ],
+                const SizedBox(height: 24),
+                const Text(
+                  'Démarrage de l'application Mobile...',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -112,8 +110,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1F3A),
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/bg_black.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
@@ -268,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+        ),
       ),
     );
   }
-}

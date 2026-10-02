@@ -39,7 +39,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitializing(false);
-    }, 100000);
+    }, 15000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -229,10 +229,20 @@ export default function App() {
 
   if (isInitializing) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-        <img src="/logo_white.jpg" alt="Logo Web" style={{ width: '120px', height: '120px', borderRadius: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }} />
-        <img src="/loader_white.gif" alt="Chargement..." style={{ width: '80px', height: '80px' }} />
-        <p style={{ color: '#0B1F3A', fontWeight: '800', fontSize: '15px' }}>Chargement de l'application Web...</p>
+      <div style={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/bg_black.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '24px',
+        padding: '20px'
+      }}>
+        <img src="/loader_white.gif" alt="Chargement..." style={{ width: '220px', height: '220px', objectFit: 'contain' }} />
+        <p style={{ color: '#ffffff', fontWeight: '800', fontSize: '18px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Chargement de l'application Web...</p>
       </div>
     );
   }
