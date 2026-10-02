@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    Future.delayed(const Duration(seconds: 15), () {
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -26,10 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     });
   }
-  final _usernameController = TextEditingController(text: 'admin');
-  final _phoneController = TextEditingController(text: '066130118');
-  final _passwordController = TextEditingController(text: 'admin1234');
-  final _confirmPasswordController = TextEditingController(text: 'admin1234');
+  final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   String? _errorMessage;
 
   void _handleAuth() async {
@@ -76,32 +76,30 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     if (_isInitializing) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0B1F3A),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/logo_black.png',
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/bg_black.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/loader_white.gif',
+                  width: 220,
+                  height: 220,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Image.asset(
-                'assets/loader_black.gif',
-                width: 70,
-                height: 70,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Démarrage de l\'application Mobile...',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ],
+                const SizedBox(height: 24),
+                const Text(
+                  'Démarrage de l'application Mobile...',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -112,8 +110,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1F3A),
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/bg_black.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
@@ -261,18 +265,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Text(_isRegisterMode ? 'Créer mon compte' : 'Se connecter', style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      '💡 Compte par défaut: admin / admin1234',
-                      style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
+
                   ],
                 ),
               ),
             ),
           ),
         ),
+        ),
       ),
     );
   }
-}

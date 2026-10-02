@@ -45,7 +45,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  const displayPackages = packages.length > 0 ? packages : [DEFAULT_DEMO_PACKAGE];
+  const displayPackages = packages;
 
   const handleOpenEdit = (pkg: ApplicationPackage) => {
     setEditingPkg(pkg);
