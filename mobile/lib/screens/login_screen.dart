@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    Future.delayed(const Duration(seconds: 100), () {
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -26,10 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     });
   }
-  final _usernameController = TextEditingController(text: 'admin');
-  final _phoneController = TextEditingController(text: '066130118');
-  final _passwordController = TextEditingController(text: 'admin1234');
-  final _confirmPasswordController = TextEditingController(text: 'admin1234');
+  final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   String? _errorMessage;
 
   void _handleAuth() async {
@@ -261,11 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Text(_isRegisterMode ? 'Créer mon compte' : 'Se connecter', style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      '💡 Compte par défaut: admin / admin1234',
-                      style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
+
                   ],
                 ),
               ),

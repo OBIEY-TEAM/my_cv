@@ -1,10 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (
-  window.location.hostname.includes('onrender.com')
-    ? 'https://luka-mosala-backend.onrender.com'
-    : ''
-);
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://luka-mosala-backend.onrender.com';
 
 axios.defaults.baseURL = API_BASE_URL;
 

@@ -39,31 +39,31 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitializing(false);
-    }, 1200);
+    }, 100000);
     return () => clearTimeout(timer);
   }, []);
 
   const [profile, setProfile] = useState<ProfileData>({
-    title: 'Consultant IT & Expert Fullstack',
-    phone: '+242 06 613 01 18',
-    cities: 'Brazzaville & Pointe-Noire, Congo',
+    title: '',
+    phone: '',
+    cities: '',
     readme_content: '',
     cropped_photo: null,
     original_photo: null
   });
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
-    first_name: 'Christ Dany',
-    last_name: 'Obiey',
-    gender: 'MALE',
-    birth_date: '1995-05-10',
-    primary_phone: '+242 06 613 01 18',
+    first_name: '',
+    last_name: '',
+    gender: '',
+    birth_date: '',
+    primary_phone: '',
     secondary_phone: '',
-    professional_summary: 'Consultant IT & Expert Fullstack.',
+    professional_summary: '',
     address: 'Avenue de l\'Indépendance',
-    country: 'Congo',
-    district: 'Poto-Poto',
-    neighborhood: 'Centre'
+    country: '',
+    district: '',
+    neighborhood: ''
   });
 
   const [experiences, setExperiences] = useState<Experience[]>([]);
