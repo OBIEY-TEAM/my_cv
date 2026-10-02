@@ -58,7 +58,7 @@ services:
     plan: free
     region: frankfurt
     buildCommand: "git clone https://github.com/flutter/flutter.git -b stable --depth 1 && export PATH=\"$PATH:`pwd`/flutter/bin\" && cd mobile && flutter create . --platforms web && flutter build web --release"
-    startCommand: "npx serve -s mobile/build/web -p $PORT"
+    startCommand: "npx serve -s mobile/build/web -l $PORT"
     envVars:
       - key: VITE_API_BASE_URL
         value: "https://luka-mosala-backend-kwaq.onrender.com/api"
