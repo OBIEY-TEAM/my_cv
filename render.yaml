@@ -12,7 +12,11 @@ services:
         value: 3.12.13
       - key: USE_SQLITE
         value: "False"
+      - key: SECRET_KEY
+        sync: false
       - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_DATABASE_URL
         sync: false
       - key: SUPABASE_URL
         sync: false
@@ -24,6 +28,14 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: "openai/gpt-oss-20b"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
       - key: CORS_ALLOWED_ORIGINS
