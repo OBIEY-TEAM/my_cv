@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Luka Mosala SaaS - Générateur automatique de candidatures sur mesure">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Luka Mosala">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Luka Mosala Mobile</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0b1f3a;
+      background-image: url("assets/assets/bg_black.png");
+      background-size: cover;
+      background-position: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      text-align: center;
+      color: #ffffff;
+    }
+    .loading-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
+      object-fit: cover;
+    }
+    .loading-gif {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+      object-fit: contain;
+    }
+    .loading-text {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading-container">
+    <img class="loading-logo" src="assets/assets/logo_black.png" alt="Logo" onerror="this.src='favicon.png'" />
+    <img class="loading-gif" src="assets/assets/loader_white.gif" alt="Chargement..." />
+    <div class="loading-text">Démarrage de l'application Mobile...</div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
